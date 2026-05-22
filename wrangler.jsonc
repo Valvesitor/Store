@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "official-website-the-wanted-sole-studio",
+  "main": "cloudflare/worker.mjs",
+  "compatibility_date": "2025-11-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "vars": {
+    "TEBEX_PUBLIC_TOKEN": "132na-1c1984f72b78f7b52212dfbea35543ccb051bb66"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tws_store_db",
+      "database_id": "COLOQUE_AQUI_O_ID_DO_D1"
+    }
+  ]
+}
