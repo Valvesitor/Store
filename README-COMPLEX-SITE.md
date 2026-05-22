@@ -94,4 +94,4 @@ Este projeto compila com `npm run build`, mas a API/admin só funciona em produ�
 - secret `TEBEX_WEBHOOK_SECRET`
 - D1 com o schema `cloudflare/schema.sql`
 
-Não faça deploy direto sem trocar `COLOQUE_AQUI_O_ID_DO_D1`, senão o Worker não terá banco para salvar produtos e pedidos.
+Não faça deploy direto sem trocar `d305422f-2527-4d95-ae7d-a16c4f8bf968`, senão o Worker não terá banco para salvar produtos e pedidos.
