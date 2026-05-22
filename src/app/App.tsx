@@ -5,7 +5,7 @@ import {
   MessageCircle, Star, Zap, Shield, Crown, ArrowRight,
   Package, Users, Palette, Code2, ChevronDown, Check,
   ChevronRight, Sparkles, LayoutGrid, Filter, LogIn, ShoppingCart,
-  Play, Image as ImageIcon, Github
+  Play, Image as ImageIcon, User, LogOut, Github
 } from "lucide-react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 
@@ -402,6 +402,27 @@ function getStoredTebexBasket() {
 
 function storeTebexBasket(basketIdent: string) {
   window.localStorage.setItem(TEBEX_BASKET_KEY, basketIdent);
+  window.dispatchEvent(new Event("tws:tebex-session-changed"));
+}
+
+function clearTebexSession() {
+  window.localStorage.removeItem(TEBEX_BASKET_KEY);
+  window.dispatchEvent(new Event("tws:tebex-session-changed"));
+}
+
+function getTebexAccountName(basket: any) {
+  const username =
+    basket?.username?.name ??
+    basket?.username?.username ??
+    basket?.username ??
+    basket?.customer?.username ??
+    basket?.account?.username ??
+    basket?.username_id ??
+    "";
+
+  return typeof username === "string" || typeof username === "number"
+    ? String(username)
+    : "";
 }
 
 function getStoredSiteLanguage(): SiteLanguage {
@@ -538,6 +559,27 @@ async function launchTebexCheckout(product: Product) {
 
   window.alert("Produto ainda nao configurado com packageId da Tebex.");
 }
+
+
+async function addProductToTebexCart(product: Product) {
+  if (product.packageId) {
+    const basketIdent = getStoredTebexBasket() ?? await createTebexBasket();
+    storeTebexBasket(basketIdent);
+
+    const updatedBasketIdent = await addPackageToTebexBasket(basketIdent, product.packageId);
+    storeTebexBasket(updatedBasketIdent);
+
+    return updatedBasketIdent;
+  }
+
+  if (isValidUrl(product.tebexUrl)) {
+    window.open(product.tebexUrl, "_blank", "noopener,noreferrer");
+    return null;
+  }
+
+  throw new Error("Produto ainda nao configurado com packageId da Tebex.");
+}
+
 
 async function startTebexLogin() {
   try {
@@ -816,12 +858,52 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [accountName, setAccountName] = useState("");
+
+  const refreshNavbarAccount = useCallback(async () => {
+    const basketIdent = getStoredTebexBasket();
+
+    if (!basketIdent) {
+      setAccountName("");
+      return;
+    }
+
+    try {
+      const basketPayload = await fetchTebexBasket(basketIdent);
+      setAccountName(getTebexAccountName(basketPayload));
+    } catch (error) {
+      console.error(error);
+      setAccountName("");
+    }
+  }, []);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 30);
     window.addEventListener("scroll", handler, { passive: true });
     return () => window.removeEventListener("scroll", handler);
   }, []);
+
+  useEffect(() => {
+    refreshNavbarAccount();
+
+    const handler = () => refreshNavbarAccount();
+    window.addEventListener("tws:tebex-session-changed", handler);
+    window.addEventListener("storage", handler);
+
+    return () => {
+      window.removeEventListener("tws:tebex-session-changed", handler);
+      window.removeEventListener("storage", handler);
+    };
+  }, [refreshNavbarAccount]);
+
+  function handleNavbarLogout() {
+    clearTebexSession();
+    setAccountName("");
+    if (window.location.pathname === "/account") {
+      window.location.href = "/";
+    }
+  }
+
 
   const links = [
     { label: "Início", id: "hero" },
@@ -900,15 +982,37 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={onLogin}
-            className="inline-flex h-9 items-center gap-2 px-3 rounded-full text-xs font-semibold
-              text-foreground/60 hover:text-primary hover:bg-primary/5 transition-all"
-          >
-            <LogIn size={14} />
-            Login
-          </button>
+          {accountName ? (
+            <div className="inline-flex h-9 items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2">
+              <a
+                href="/account"
+                className="inline-flex items-center gap-2 px-2 text-xs font-semibold text-primary transition-colors hover:text-primary/80"
+                title="Abrir conta"
+              >
+                <User size={14} />
+                <span className="max-w-[120px] truncate">{accountName}</span>
+              </a>
+              <button
+                type="button"
+                onClick={handleNavbarLogout}
+                className="inline-flex h-7 items-center gap-1 rounded-full px-2 text-[11px] font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
+                title="Sair"
+              >
+                <LogOut size={12} />
+                Sair
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={onLogin}
+              className="inline-flex h-9 items-center gap-2 px-3 rounded-full text-xs font-semibold
+                text-foreground/60 hover:text-primary hover:bg-primary/5 transition-all"
+            >
+              <LogIn size={14} />
+              Login
+            </button>
+          )}
           <button
             type="button"
             onClick={onCart}
@@ -992,16 +1096,39 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
                 </div>
               </div>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => { onLogin(); setMobileOpen(false); }}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
-                    border border-primary/15 text-sm font-semibold text-foreground/70 hover:text-primary
-                    hover:bg-primary/5 transition-all"
-                >
-                  <LogIn size={14} />
-                  Login
-                </button>
+                {accountName ? (
+                  <div className="flex-1 flex gap-2">
+                    <a
+                      href="/account"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
+                        border border-primary/20 bg-primary/5 text-sm font-semibold text-primary"
+                    >
+                      <User size={14} />
+                      <span className="max-w-[120px] truncate">{accountName}</span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => { handleNavbarLogout(); setMobileOpen(false); }}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
+                        border border-red-500/20 text-sm font-semibold text-red-500 hover:bg-red-500/5 transition-all"
+                    >
+                      <LogOut size={14} />
+                      Sair
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => { onLogin(); setMobileOpen(false); }}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
+                      border border-primary/15 text-sm font-semibold text-foreground/70 hover:text-primary
+                      hover:bg-primary/5 transition-all"
+                  >
+                    <LogIn size={14} />
+                    Login
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => { onCart(); setMobileOpen(false); }}
@@ -1632,13 +1759,38 @@ function ProductMediaGallery({ product }: { product: Product }) {
   );
 }
 
+
 function ProductDetail({ product, onClose }: { product: Product; onClose: () => void }) {
   const status = STATUS_CONFIG[product.status];
+  const [cartBusy, setCartBusy] = useState(false);
+  const [buyBusy, setBuyBusy] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
   }, []);
+
+  async function handleAddToCart() {
+    try {
+      setCartBusy(true);
+      await addProductToTebexCart(product);
+      window.location.href = "/account";
+    } catch (error) {
+      console.error(error);
+      window.alert(error instanceof Error ? error.message : "Nao foi possivel adicionar o produto ao carrinho.");
+    } finally {
+      setCartBusy(false);
+    }
+  }
+
+  async function handleBuyNow() {
+    try {
+      setBuyBusy(true);
+      await launchTebexCheckout(product);
+    } finally {
+      setBuyBusy(false);
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -1663,9 +1815,9 @@ function ProductDetail({ product, onClose }: { product: Product; onClose: () => 
           <ProductMediaGallery product={product} />
         </div>
 
-        <div className="flex w-full flex-col overflow-y-auto bg-card lg:w-[560px] xl:w-[620px]">
+        <div className="flex w-full flex-col bg-card lg:w-[560px] xl:w-[620px]">
           {/* Close */}
-          <div className="sticky top-0 z-10 flex items-center justify-between px-8 py-4
+          <div className="sticky top-0 z-20 flex items-center justify-between px-8 py-4
             bg-card/95 backdrop-blur-sm border-b border-border">
             <span className="text-xs tracking-widest uppercase text-muted-foreground"
               style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -1680,147 +1832,136 @@ function ProductDetail({ product, onClose }: { product: Product; onClose: () => 
             </button>
           </div>
 
-          <div className="lg:hidden">
-            <ProductMediaGallery product={product} />
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 px-8 py-8 space-y-8">
-          {/* Title block */}
-          <div>
-            <div className="flex items-center gap-2 mb-3 flex-wrap">
-              <span className={`px-2 py-0.5 rounded-sm text-[10px] font-semibold tracking-wider uppercase ${status.cls}`}>
-                {status.label}
-              </span>
-              <span className="px-2 py-0.5 rounded-sm text-[10px] tracking-wider uppercase
-                border border-border text-muted-foreground">
-                {product.category}
-              </span>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="lg:hidden">
+              <ProductMediaGallery product={product} />
             </div>
-            <h2
-              className="text-2xl font-bold text-foreground/90 mb-3"
-              style={{ fontFamily: "'Raleway', sans-serif" }}
-            >
-              {product.name}
-            </h2>
-            <p
-              className="max-w-3xl text-base text-muted-foreground leading-8"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              {product.fullDescription}
-            </p>
-          </div>
 
-          {/* Price + CTA */}
-          <div className="flex flex-col gap-4 rounded-sm border border-primary/20 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                Preço
-              </div>
-              <div
-                className="text-2xl font-bold"
-                style={{ color: product.price === 0 ? "#5d8a5d" : "#8b714b", fontFamily: "'Cinzel', serif" }}
-              >
-                {formatPrice(product.price)}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              {product.docsUrl && (
-                <GhostButton href={product.docsUrl} external>
-                  <BookOpen size={13} />
-                  Docs
-                </GhostButton>
-              )}
-              <GoldButton onClick={() => launchTebexCheckout(product)}>
-                {product.price === 0 ? "Download" : "Comprar"}
-                <ArrowRight size={13} />
-              </GoldButton>
-            </div>
-          </div>
-
-          {/* Features */}
-          <div>
-            <h3
-              className="text-xs font-semibold tracking-widest uppercase text-primary/70 mb-4"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              Recursos Principais
-            </h3>
-            <ul className="space-y-3">
-              {product.features.map((feat) => (
-                <li key={feat} className="flex items-start gap-3">
-                  <Check size={14} className="text-primary mt-1 shrink-0" />
-                  <span
-                    className="text-base text-foreground/75 leading-7"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    {feat}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Requirements */}
-          <div>
-            <h3
-              className="text-xs font-semibold tracking-widest uppercase text-primary/70 mb-4"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              Requisitos
-            </h3>
-            <ul className="space-y-3">
-              {product.requirements.map((req) => (
-                <li key={req} className="flex items-start gap-3">
-                  <ChevronRight size={13} className="text-muted-foreground mt-1.5 shrink-0" />
-                  <span
-                    className="text-base text-muted-foreground leading-7"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    {req}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* License notice */}
-          <div className="p-4 rounded-sm border border-border bg-muted/30">
-            <div className="flex items-start gap-3">
-              <Shield size={14} className="text-muted-foreground mt-0.5 shrink-0" />
+            {/* Content */}
+            <div className="px-8 py-8 space-y-8 pb-28">
+              {/* Title block */}
               <div>
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                  <span className={`px-2 py-0.5 rounded-sm text-[10px] font-semibold tracking-wider uppercase ${status.cls}`}>
+                    {status.label}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-sm text-[10px] tracking-wider uppercase
+                    border border-border text-muted-foreground">
+                    {product.category}
+                  </span>
+                </div>
+                <h2
+                  className="text-2xl font-bold text-foreground/90 mb-3"
+                  style={{ fontFamily: "'Raleway', sans-serif" }}
+                >
+                  {product.name}
+                </h2>
                 <p
-                  className="text-xs font-semibold text-foreground/70 mb-1 tracking-wide"
+                  className="max-w-3xl text-base text-muted-foreground leading-8"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
-                  Licença de Uso
+                  {product.fullDescription}
                 </p>
-                <p
-                  className="text-xs text-muted-foreground leading-relaxed"
+              </div>
+
+              {/* Features */}
+              <div>
+                <h3
+                  className="text-xs font-semibold tracking-widest uppercase text-primary/70 mb-4"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
-                  A compra concede licença de uso por servidor. É proibida revenda, redistribuição,
-                  vazamento, compartilhamento ou engenharia reversa dos arquivos.
-                </p>
+                  Recursos Principais
+                </h3>
+                <ul className="space-y-3">
+                  {product.features.map((feat) => (
+                    <li key={feat} className="flex items-start gap-3">
+                      <Check size={14} className="text-primary mt-1 shrink-0" />
+                      <span
+                        className="text-base text-foreground/75 leading-7"
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      >
+                        {feat}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Requirements */}
+              <div>
+                <h3
+                  className="text-xs font-semibold tracking-widest uppercase text-primary/70 mb-4"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  Requisitos
+                </h3>
+                <ul className="space-y-3">
+                  {product.requirements.map((req) => (
+                    <li key={req} className="flex items-start gap-3">
+                      <ChevronRight size={13} className="text-muted-foreground mt-1.5 shrink-0" />
+                      <span
+                        className="text-base text-muted-foreground leading-7"
+                        style={{ fontFamily: "'DM Sans', sans-serif" }}
+                      >
+                        {req}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* License notice */}
+              <div className="p-4 rounded-sm border border-border bg-muted/30">
+                <div className="flex items-start gap-3">
+                  <Shield size={14} className="text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p
+                      className="text-xs font-semibold text-foreground/70 mb-1 tracking-wide"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      Licença de Uso
+                    </p>
+                    <p
+                      className="text-xs text-muted-foreground leading-relaxed"
+                      style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    >
+                      A compra concede licença de uso por servidor. É proibida revenda, redistribuição,
+                      vazamento, compartilhamento ou engenharia reversa dos arquivos.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Discord */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <GhostButton href="https://discord.gg/qE29trG84u" external className="flex-1 justify-center">
-              <MessageCircle size={14} />
-              Suporte via Discord
-            </GhostButton>
-            {product.docsUrl && (
-              <GhostButton href={product.docsUrl} external className="flex-1 justify-center">
-                <BookOpen size={14} />
-                Ver Documentação
-              </GhostButton>
-            )}
+          {/* Fixed purchase footer */}
+          <div className="sticky bottom-0 z-20 border-t border-primary/20 bg-card/95 px-6 py-4 backdrop-blur-md">
+            <div className="flex flex-col gap-3 rounded-sm border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                  Valor
+                </div>
+                <div
+                  className="text-2xl font-bold"
+                  style={{ color: product.price === 0 ? "#5d8a5d" : "#8b714b", fontFamily: "'Cinzel', serif" }}
+                >
+                  {formatPrice(product.price)}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <GhostButton onClick={handleAddToCart} className="justify-center">
+                  <ShoppingCart size={14} />
+                  {cartBusy ? "Adicionando..." : "Adicionar"}
+                </GhostButton>
+                <GoldButton onClick={handleBuyNow} className="justify-center">
+                  {buyBusy ? "Abrindo..." : product.price === 0 ? "Download" : "Comprar"}
+                  <ArrowRight size={13} />
+                </GoldButton>
+              </div>
+            </div>
           </div>
-        </div>
         </div>
       </motion.div>
     </AnimatePresence>
@@ -2438,6 +2579,7 @@ function AccountPage({ currency, onCurrencyChange }: { currency: CurrencyCode; o
   const [basketError, setBasketError] = useState<string | null>(null);
   const [couponCode, setCouponCode] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [removingItem, setRemovingItem] = useState<string | null>(null);
   const [summary, setSummary] = useState<any | null>(null);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
@@ -2469,7 +2611,8 @@ function AccountPage({ currency, onCurrencyChange }: { currency: CurrencyCode; o
   const basketIdent = basket?.ident ?? getStoredTebexBasket();
   const basketCurrency = (basket?.currency?.iso_4217 ?? basket?.currency ?? currency) as CurrencyCode;
   const basketTotal = basket?.total_price ?? basket?.price?.amount ?? basket?.price ?? 0;
-  const username = basket?.username ?? basket?.username_id ?? "Conta não conectada";
+  const username = getTebexAccountName(basket) || "Conta não conectada";
+  const isLoggedIn = !!basketIdent && !!basket;
 
 useEffect(() => {
   const usernameId = basket?.username_id ? String(basket.username_id) : null;
@@ -2540,6 +2683,37 @@ const orders = summary?.orders ?? [];
     }
   }
 
+  async function handleRemoveCartItem(row: any) {
+    if (!basketIdent) return;
+
+    const packageId = getBasketRowPackageId(row);
+
+    if (!packageId) {
+      window.alert("Nao foi possivel identificar o package_id deste item.");
+      return;
+    }
+
+    try {
+      setRemovingItem(packageId);
+      const updatedBasket = await removePackageFromTebexBasket(basketIdent, packageId);
+      setBasket(updatedBasket);
+    } catch (error) {
+      console.error(error);
+      window.alert(error instanceof Error ? error.message : "Nao foi possivel remover o item.");
+      await loadBasket();
+    } finally {
+      setRemovingItem(null);
+    }
+  }
+
+  function handleLogout() {
+    clearTebexSession();
+    setBasket(null);
+    setSummary(null);
+    setSummaryError(null);
+    window.location.href = "/";
+  }
+
   return (
     <div className="min-h-screen bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <div className="sticky top-0 z-40 border-b border-border bg-background/92 backdrop-blur-md">
@@ -2558,6 +2732,12 @@ const orders = summary?.orders ?? [];
           </nav>
 
           <div className="flex items-center gap-3">
+            {isLoggedIn && (
+              <div className="hidden md:inline-flex h-10 items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 text-xs font-semibold text-primary">
+                <User size={14} />
+                <span className="max-w-[140px] truncate">{username}</span>
+              </div>
+            )}
             <select
               value={currency}
               onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)}
@@ -2569,6 +2749,12 @@ const orders = summary?.orders ?? [];
               <ShoppingCart size={15} />
               {formatCurrencyValue(basketTotal, basketCurrency)}
             </button>
+            {isLoggedIn && (
+              <button onClick={handleLogout} className="inline-flex h-10 items-center gap-2 rounded-full border border-red-500/20 px-4 text-xs font-semibold text-red-500 hover:bg-red-500/5">
+                <LogOut size={14} />
+                Sair
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -2577,10 +2763,10 @@ const orders = summary?.orders ?? [];
         <div className="grid grid-cols-1 xl:grid-cols-[250px_minmax(0,1fr)] gap-8">
           <aside className="rounded-2xl border border-border bg-card p-4 shadow-[0_18px_50px_rgba(32,32,32,0.06)]">
             <div className="flex items-center gap-3 px-2 py-3 border-b border-border">
-              <div className="h-10 w-10 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold">V</div>
+              <div className="h-10 w-10 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold">{username.charAt(0).toUpperCase() || "U"}</div>
               <div>
-                <div className="font-semibold text-foreground/90">Valvesitor</div>
-                <div className="text-xs text-muted-foreground">Conta / Tebex</div>
+                <div className="font-semibold text-foreground/90">{username}</div>
+                <div className="text-xs text-muted-foreground">{isLoggedIn ? "Conta Tebex conectada" : "Conta / Tebex"}</div>
               </div>
             </div>
 
@@ -2598,12 +2784,18 @@ const orders = summary?.orders ?? [];
             <div className="space-y-3 pt-2">
               <button onClick={handleLogin} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">
                 <LogIn size={16} />
-                {busy === "login" ? "Conectando..." : "Login com Tebex"}
+                {busy === "login" ? "Conectando..." : isLoggedIn ? "Reconectar Tebex" : "Login com Tebex"}
               </button>
               <button onClick={loadBasket} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-semibold text-foreground/70">
                 <ArrowRight size={16} />
                 Atualizar
               </button>
+              {isLoggedIn && (
+                <button onClick={handleLogout} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/20 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-500/5">
+                  <LogOut size={16} />
+                  Sair da conta
+                </button>
+              )}
             </div>
           </aside>
 
@@ -2737,25 +2929,42 @@ const orders = summary?.orders ?? [];
               </div>
 
               <div className="overflow-hidden rounded-2xl border border-border">
-                <div className="grid grid-cols-[180px_1fr_140px] bg-gradient-to-r from-[#c7a56a] to-[#b89458] text-primary-foreground text-sm font-semibold">
+                <div className="grid grid-cols-[130px_1fr_140px_130px] bg-gradient-to-r from-[#c7a56a] to-[#b89458] text-primary-foreground text-sm font-semibold">
                   <div className="px-5 py-4">Tipo</div>
                   <div className="px-5 py-4 border-l border-white/20">Nome</div>
                   <div className="px-5 py-4 border-l border-white/20">Preço</div>
+                  <div className="px-5 py-4 border-l border-white/20">Ação</div>
                 </div>
                 <div className="bg-card">
                   {rows.length === 0 ? (
-                    <div className="grid grid-cols-[180px_1fr_140px] text-sm text-foreground/70">
+                    <div className="grid grid-cols-[130px_1fr_140px_130px] text-sm text-foreground/70">
                       <div className="px-5 py-5 border-r border-border">—</div>
                       <div className="px-5 py-5 border-r border-border">Nenhum item adicionado ainda.</div>
-                      <div className="px-5 py-5">{formatCurrencyValue(0, basketCurrency)}</div>
+                      <div className="px-5 py-5 border-r border-border">{formatCurrencyValue(0, basketCurrency)}</div>
+                      <div className="px-5 py-5">—</div>
                     </div>
-                  ) : rows.map((row: any, index: number) => (
-                    <div key={index} className="grid grid-cols-[180px_1fr_140px] text-sm text-foreground/75 border-t border-border first:border-t-0">
-                      <div className="px-5 py-4 border-r border-border">{row?.type ?? "package"}</div>
-                      <div className="px-5 py-4 border-r border-border">{row?.name ?? row?.package?.name ?? "Item Tebex"}</div>
-                      <div className="px-5 py-4">{formatCurrencyValue(row?.total_price ?? row?.price ?? 0, basketCurrency)}</div>
-                    </div>
-                  ))}
+                  ) : rows.map((row: any, index: number) => {
+                    const packageId = getBasketRowPackageId(row);
+                    const rowKey = packageId || String(index);
+                    return (
+                      <div key={rowKey} className="grid grid-cols-[130px_1fr_140px_130px] text-sm text-foreground/75 border-t border-border first:border-t-0">
+                        <div className="px-5 py-4 border-r border-border">{row?.type ?? "package"}</div>
+                        <div className="px-5 py-4 border-r border-border">{row?.name ?? row?.package?.name ?? "Item Tebex"}</div>
+                        <div className="px-5 py-4 border-r border-border">{formatCurrencyValue(row?.total_price ?? row?.price ?? 0, basketCurrency)}</div>
+                        <div className="px-5 py-3">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCartItem(row)}
+                            disabled={removingItem === packageId}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-red-500/20 px-3 py-1.5 text-xs font-semibold text-red-500 transition-all hover:bg-red-500/5 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <X size={12} />
+                            {removingItem === packageId ? "Removendo..." : "Remover"}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
