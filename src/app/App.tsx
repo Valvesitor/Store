@@ -5811,9 +5811,20 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
 
     try {
       setApplyingCreatorCode(true);
-      const updated = await applyCreatorCodeToBasket(basketIdent, typedCode);
+
+      const adminCodes = await fetchCreatorCodes().catch(() => []);
+      const normalizedTypedCode = typedCode.toLowerCase();
+      const matchedCode = adminCodes.find((code) =>
+        code.label.toLowerCase() === normalizedTypedCode ||
+        code.originalCode.toLowerCase() === normalizedTypedCode
+      );
+
+      const tebexCode = matchedCode?.originalCode ?? typedCode;
+      const displayCode = matchedCode?.label ?? typedCode;
+
+      const updated = await applyCreatorCodeToBasket(basketIdent, tebexCode);
       setBasket(updated);
-      setCreatorCodeMessage(`Coupon/Gift Card aplicado: ${typedCode}`);
+      setCreatorCodeMessage(`Coupon/Gift Card aplicado: ${displayCode}`);
       setCouponCode("");
     } catch (error) {
       console.error(error);
@@ -5831,7 +5842,17 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
 
     try {
       setRemovingCouponCode(true);
-      const updated = await removeCreatorCodeFromBasket(basketIdent, couponCode.trim());
+
+      const typedCode = couponCode.trim();
+      const adminCodes = typedCode ? await fetchCreatorCodes().catch(() => []) : [];
+      const normalizedTypedCode = typedCode.toLowerCase();
+      const matchedCode = typedCode ? adminCodes.find((code) =>
+        code.label.toLowerCase() === normalizedTypedCode ||
+        code.originalCode.toLowerCase() === normalizedTypedCode
+      ) : null;
+
+      const tebexCode = matchedCode?.originalCode ?? typedCode;
+      const updated = await removeCreatorCodeFromBasket(basketIdent, tebexCode);
       setBasket(updated);
       setCreatorCodeMessage("Coupon/Gift Card removido da cesta.");
       setCouponCode("");
@@ -5936,7 +5957,7 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
                 Aplicar coupon/gift card
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Digite o coupon/gift card exatamente como foi informado. O site aplica direto na Tebex.
+                Digite o nome público ou o código original. Se existir no admin, o site aplica automaticamente o código original da Tebex.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 lg:min-w-[560px]">
