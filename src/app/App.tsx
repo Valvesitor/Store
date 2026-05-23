@@ -3892,7 +3892,7 @@ function LegalPage({
     : (isEnglish ? termsEn : termsPt);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background px-6 py-12 lg:py-16 text-foreground">
+    <main className="relative overflow-hidden bg-background px-6 py-12 lg:py-16 text-foreground">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute left-[-14%] top-[-12%] h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
@@ -4160,7 +4160,7 @@ function AboutPage({ language }: { language: SiteLanguage }) {
   ];
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background px-6 py-12 lg:py-16 text-foreground">
+    <main className="relative overflow-hidden bg-background px-6 py-12 lg:py-16 text-foreground">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute left-[-14%] top-[-12%] h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
@@ -7293,7 +7293,7 @@ export default function App() {
     window.location.href = `/#${section}`;
   };
 
-  const renderPageWithNavbar = (content: React.ReactNode) => (
+  const renderPageWithNavbar = (content: React.ReactNode, showFooter = false) => (
     <div
       className="min-h-screen bg-background text-foreground antialiased"
       style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -7311,19 +7311,20 @@ export default function App() {
       <div className="pt-16">
         {content}
       </div>
+      {showFooter && <Footer onNavigate={navigateFromPage} />}
     </div>
   );
 
   if (pathname === "/terms" || pathname === "/terms-of-use") {
-    return renderPageWithNavbar(<TermsPage language={language} />);
+    return renderPageWithNavbar(<TermsPage language={language} />, true);
   }
 
   if (pathname === "/privacy-policy" || pathname === "/privacy") {
-    return renderPageWithNavbar(<PrivacyPolicyPage language={language} />);
+    return renderPageWithNavbar(<PrivacyPolicyPage language={language} />, true);
   }
 
   if (pathname === "/about" || pathname === "/about-us") {
-    return renderPageWithNavbar(<AboutPage language={language} />);
+    return renderPageWithNavbar(<AboutPage language={language} />, true);
   }
 
   if (pathname === "/docs" || pathname === "/documentation") {
