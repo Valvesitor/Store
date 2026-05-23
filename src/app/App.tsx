@@ -4502,6 +4502,13 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   const selected = selectedId === OVERVIEW_ID ? null : filteredPages.find((page) => page.id === selectedId) ?? null;
   const selectedContent = selected ? getDocsContent(selected, isEnglish) : "";
   const selectedTitle = selected ? getDocsTitle(selected, isEnglish) : "";
+  const docsSiteTitle = "The Wanted Sole Studio Docs";
+  const docsWelcomeTitle = "Welcome";
+  const docsPageTitle = selected ? `${selectedTitle} | ${docsSiteTitle}` : `${docsWelcomeTitle} | ${docsSiteTitle}`;
+
+  useEffect(() => {
+    document.title = docsPageTitle;
+  }, [docsPageTitle]);
 
   function handleProductChange(productId: string) {
     setSelectedProductId(productId);
@@ -4560,9 +4567,9 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                 <BookOpen size={18} />
               </span>
               <span>
-                <span className="block text-sm font-bold text-foreground/90">The Wanted Docs</span>
+                <span className="block text-sm font-bold text-foreground/90">The Wanted Sole Studio Docs</span>
                 <span className="block text-[11px] text-muted-foreground">
-                  {isEnglish ? "Knowledge base" : "Base de conhecimento"}
+                  {isEnglish ? "Knowledge base" : "Documentação oficial"}
                 </span>
               </span>
             </button>
@@ -4605,7 +4612,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
               }`}
             >
               <BookOpen size={14} />
-              {isEnglish ? "Welcome" : "Apresentação"}
+              {isEnglish ? "Welcome" : "Welcome"}
             </button>
 
             {loading && <p className="px-3 py-2 text-xs text-muted-foreground">{isEnglish ? "Loading..." : "Carregando..."}</p>}
@@ -4684,22 +4691,22 @@ function DocsPage({ language }: { language: SiteLanguage }) {
             </>
           ) : (
             <section>
-              <SectionTag>{isEnglish ? "Welcome" : "Apresentação"}</SectionTag>
+              <SectionTag>{docsSiteTitle}</SectionTag>
               <h1 className="mt-5 max-w-4xl text-4xl font-bold tracking-tight text-foreground/95 lg:text-6xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                {selectedProductName}
+                {docsWelcomeTitle}
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
                 {isEnglish
-                  ? "Welcome to the official documentation. Select a category on the left to expand the pages, or use search to find installation, configuration and usage instructions."
-                  : "Bem-vindo à documentação oficial. Selecione uma categoria à esquerda para abrir as páginas, ou use a busca para encontrar instalação, configuração e instruções de uso."}
+                  ? "Official documentation for The Wanted Sole Studio products. Select a product, open a collapsed category on the left, or use search to find installation, configuration and usage instructions."
+                  : "Documentação oficial dos produtos da The Wanted Sole Studio. Selecione um produto, abra uma categoria retraída à esquerda ou use a busca para encontrar instalação, configuração e instruções de uso."}
               </p>
 
               <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="rounded-[22px] border border-border bg-card p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Product" : "Produto"}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Selected product" : "Produto selecionado"}</p>
                   <p className="mt-2 text-xl font-bold text-foreground/90">{selectedProductName}</p>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {isEnglish ? "Documentation separated by product." : "Documentação separada por produto."}
+                    {isEnglish ? "This is only the current documentation filter." : "Este é apenas o filtro atual da documentação."}
                   </p>
                 </div>
                 <div className="rounded-[22px] border border-border bg-card p-5">
@@ -4772,7 +4779,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
           ) : (
             <div className="space-y-2">
               <p className="rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground/75">
-                {isEnglish ? "Welcome" : "Apresentação"}
+                {docsWelcomeTitle}
               </p>
               <p className="text-xs leading-6 text-muted-foreground">
                 {isEnglish
