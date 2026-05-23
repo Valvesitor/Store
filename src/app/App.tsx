@@ -2441,6 +2441,7 @@ function ProductsSection({
 function ProductMediaGallery({ product }: { product: Product }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [failedMedia, setFailedMedia] = useState<Record<string, boolean>>({});
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const Icon = ICON_MAP[product.iconName] ?? Package;
   const media = (product.media ?? []).map((item) => {
     const normalizedType = item.type === "youtube" || isYouTubeUrl(item.src)
@@ -2469,162 +2470,281 @@ function ProductMediaGallery({ product }: { product: Product }) {
     });
   }
 
-  return (
-    <div
-      className="relative flex h-[560px] flex-col overflow-hidden bg-background"
-      style={{ background: `linear-gradient(135deg, ${product.gradientFrom}, ${product.gradientTo})` }}
-    >
-      <div className="relative min-h-0 flex-1 overflow-visible px-14 sm:px-16 lg:px-[72px]">
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: "radial-gradient(circle at 1px 1px, rgba(201,168,76,0.12) 1px, transparent 0)",
-            backgroundSize: "24px 24px"
-          }}
+  useEffect(() => {
+    if (!lightboxOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setLightboxOpen(false);
+      if (event.key === "ArrowLeft") goToMedia("prev");
+      if (event.key === "ArrowRight") goToMedia("next");
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [lightboxOpen, media.length]);
+
+  const renderMainMedia = (isLightbox = false) => {
+    if (!hasActiveMedia || !activeMedia) {
+      return (
+        <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+          <div className="p-4 rounded-sm border border-primary/25 bg-primary/10">
+            <Icon size={28} className="text-primary" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold tracking-widest uppercase text-primary/80">
+              Galeria do Produto
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Adicione imagens e vídeos no painel admin.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeMedia.type === "image") {
+      return (
+        <img
+          src={activeMedia.src}
+          alt={activeMedia.alt}
+          onClick={() => setLightboxOpen(true)}
+          onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
+          className={isLightbox
+            ? "max-h-[82vh] max-w-[86vw] rounded-xl object-contain shadow-[0_35px_120px_rgba(0,0,0,0.55)]"
+            : "max-h-full max-w-full cursor-zoom-in object-contain"
+          }
         />
+      );
+    }
 
-        <div className="relative z-10 flex h-full min-h-0 items-center justify-center p-4 lg:p-5">
-          {hasActiveMedia && activeMedia.type === "image" && (
-            <img
-              src={activeMedia.src}
-              alt={activeMedia.alt}
-              onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
-              className="max-h-full max-w-full object-contain"
-            />
-          )}
+    if (activeMedia.type === "video" && !activeIsYouTube) {
+      return (
+        <video
+          src={activeMedia.src}
+          poster={activeMedia.poster}
+          controls
+          playsInline
+          onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
+          className={isLightbox
+            ? "max-h-[82vh] max-w-[86vw] rounded-xl bg-black object-contain shadow-[0_35px_120px_rgba(0,0,0,0.55)]"
+            : "max-h-full max-w-full rounded-xl bg-black object-contain shadow-[0_18px_55px_rgba(32,32,32,0.14)]"
+          }
+        />
+      );
+    }
 
-          {hasActiveMedia && activeMedia.type === "video" && !activeIsYouTube && (
-            <video
-              src={activeMedia.src}
-              poster={activeMedia.poster}
-              controls
-              playsInline
-              onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
-              className="max-h-full max-w-full rounded-xl bg-black object-contain shadow-[0_18px_55px_rgba(32,32,32,0.14)]"
-            />
-          )}
-
-          {hasActiveMedia && activeIsYouTube && (
-            <div className="aspect-video w-full max-w-5xl overflow-hidden rounded-xl bg-black shadow-[0_18px_55px_rgba(32,32,32,0.14)]">
-              <iframe
-                src={activeYouTubeEmbedUrl}
-                title={activeMedia.alt}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                className="h-full w-full"
-              />
-            </div>
-          )}
-
-          {!hasActiveMedia && (
-            <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-              <div className="p-4 rounded-sm border border-primary/25 bg-primary/10">
-                <Icon size={28} className="text-primary" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold tracking-widest uppercase text-primary/80">
-                  Galeria do Produto
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Adicione imagens e vídeos no painel admin.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {canNavigate && (
-          <>
-            <button
-              type="button"
-              onClick={() => goToMedia("prev")}
-              className="absolute left-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/95 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground sm:left-3 lg:left-4"
-              aria-label="Imagem anterior"
-            >
-              <ChevronRight size={19} className="rotate-180" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => goToMedia("next")}
-              className="absolute right-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/95 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground sm:right-3 lg:right-4"
-              aria-label="Próxima imagem"
-            >
-              <ChevronRight size={19} />
-            </button>
-
-            <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-primary/20 bg-card/90 px-3 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur-sm">
-              <span>{activeIndex + 1}</span>
-              <span>/</span>
-              <span>{media.length}</span>
-            </div>
-          </>
-        )}
+    return (
+      <div className={isLightbox
+        ? "aspect-video w-[86vw] max-w-6xl overflow-hidden rounded-xl bg-black shadow-[0_35px_120px_rgba(0,0,0,0.55)]"
+        : "aspect-video w-full max-w-5xl overflow-hidden rounded-xl bg-black shadow-[0_18px_55px_rgba(32,32,32,0.14)]"
+      }>
+        <iframe
+          src={activeYouTubeEmbedUrl}
+          title={activeMedia.alt}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          className="h-full w-full"
+        />
       </div>
+    );
+  };
 
-      <div className="relative z-20 h-[92px] shrink-0 border-t border-border bg-card/90 px-4 py-3 backdrop-blur-sm">
-        <div className="flex h-full gap-2.5 overflow-hidden pb-1">
-          {media.length > 0 ? media.map((item, index) => {
-            const isActive = index === activeIndex;
-            const isFailed = failedMedia[item.src];
-            const itemIsYouTube = item.type === "youtube" || isYouTubeUrl(item.src);
-            const thumbSrc = item.poster || (itemIsYouTube ? getYouTubeThumbnail(item.src) : "");
+  return (
+    <>
+      <div
+        className="relative flex h-[560px] flex-col overflow-hidden bg-background"
+        style={{ background: `linear-gradient(135deg, ${product.gradientFrom}, ${product.gradientTo})` }}
+      >
+        <div className="relative min-h-0 flex-1 overflow-visible px-14 sm:px-16 lg:px-[72px]">
+          <div
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage: "radial-gradient(circle at 1px 1px, rgba(201,168,76,0.12) 1px, transparent 0)",
+              backgroundSize: "24px 24px"
+            }}
+          />
 
-            return (
+          <div className="relative z-10 flex h-full min-h-0 items-center justify-center p-4 lg:p-5">
+            {renderMainMedia(false)}
+
+            {hasActiveMedia && (
               <button
-                key={`${item.src}-${index}`}
                 type="button"
-                onClick={() => setActiveIndex(index)}
-                title={item.alt}
-                className={`relative h-[68px] w-28 shrink-0 overflow-hidden rounded-lg border bg-background transition-all ${
-                  isActive
-                    ? "border-primary shadow-[0_0_14px_rgba(201,168,76,0.22)]"
-                    : "border-border hover:border-primary/40"
-                }`}
+                onClick={() => setLightboxOpen(true)}
+                className="absolute right-5 top-5 z-30 inline-flex h-9 items-center gap-2 rounded-full border border-primary/20 bg-card/90 px-3 text-[11px] font-semibold text-primary shadow-[0_10px_25px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground"
+                title="Abrir galeria ampliada"
               >
-                {!isFailed && item.type === "image" && (
-                  <img
-                    src={item.src}
-                    alt={item.alt}
-                    onError={() => setFailedMedia((prev) => ({ ...prev, [item.src]: true }))}
-                    className="h-full w-full object-cover"
-                  />
-                )}
-
-                {!isFailed && (item.type === "video" || itemIsYouTube) && (
-                  <div className="relative h-full w-full">
-                    {thumbSrc && !failedMedia[thumbSrc] ? (
-                      <img
-                        src={thumbSrc}
-                        alt=""
-                        onError={() => setFailedMedia((prev) => ({ ...prev, [thumbSrc]: true }))}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-primary/10" />
-                    )}
-                    <div className="absolute inset-0 flex items-center justify-center bg-background/35">
-                      <Play size={18} className="text-primary" />
-                    </div>
-                  </div>
-                )}
-
-                {isFailed && (
-                  <div className="flex h-full w-full items-center justify-center bg-primary/5 text-primary/70">
-                    {item.type === "video" || itemIsYouTube ? <Play size={18} /> : <ImageIcon size={18} />}
-                  </div>
-                )}
+                <ExternalLink size={13} />
+                Ampliar
               </button>
-            );
-          }) : (
-            <div className="flex h-full items-center gap-2 text-xs text-muted-foreground">
-              <ImageIcon size={14} />
-              Galeria pronta para receber imagens e vídeos deste produto.
-            </div>
+            )}
+          </div>
+
+          {canNavigate && (
+            <>
+              <button
+                type="button"
+                onClick={() => goToMedia("prev")}
+                className="absolute left-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/95 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground sm:left-3 lg:left-4"
+                aria-label="Imagem anterior"
+              >
+                <ChevronRight size={19} className="rotate-180" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => goToMedia("next")}
+                className="absolute right-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/95 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground sm:right-3 lg:right-4"
+                aria-label="Próxima imagem"
+              >
+                <ChevronRight size={19} />
+              </button>
+
+              <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-primary/20 bg-card/90 px-3 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur-sm">
+                <span>{activeIndex + 1}</span>
+                <span>/</span>
+                <span>{media.length}</span>
+              </div>
+            </>
           )}
         </div>
+
+        <div className="relative z-20 h-[92px] shrink-0 border-t border-border bg-card/90 px-4 py-3 backdrop-blur-sm">
+          <div className="flex h-full gap-2.5 overflow-hidden pb-1">
+            {media.length > 0 ? media.map((item, index) => {
+              const isActive = index === activeIndex;
+              const isFailed = failedMedia[item.src];
+              const itemIsYouTube = item.type === "youtube" || isYouTubeUrl(item.src);
+              const thumbSrc = item.poster || (itemIsYouTube ? getYouTubeThumbnail(item.src) : "");
+
+              return (
+                <button
+                  key={`${item.src}-${index}`}
+                  type="button"
+                  onClick={() => setActiveIndex(index)}
+                  onDoubleClick={() => setLightboxOpen(true)}
+                  title={item.alt}
+                  className={`relative h-[68px] w-28 shrink-0 overflow-hidden rounded-lg border bg-background transition-all ${
+                    isActive
+                      ? "border-primary shadow-[0_0_14px_rgba(201,168,76,0.22)]"
+                      : "border-border hover:border-primary/40"
+                  }`}
+                >
+                  {!isFailed && item.type === "image" && (
+                    <img
+                      src={item.src}
+                      alt={item.alt}
+                      onError={() => setFailedMedia((prev) => ({ ...prev, [item.src]: true }))}
+                      className="h-full w-full object-cover"
+                    />
+                  )}
+
+                  {!isFailed && (item.type === "video" || itemIsYouTube) && (
+                    <div className="relative h-full w-full">
+                      {thumbSrc && !failedMedia[thumbSrc] ? (
+                        <img
+                          src={thumbSrc}
+                          alt=""
+                          onError={() => setFailedMedia((prev) => ({ ...prev, [thumbSrc]: true }))}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-primary/10" />
+                      )}
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/35">
+                        <Play size={18} className="text-primary" />
+                      </div>
+                    </div>
+                  )}
+
+                  {isFailed && (
+                    <div className="flex h-full w-full items-center justify-center bg-primary/5 text-primary/70">
+                      {item.type === "video" || itemIsYouTube ? <Play size={18} /> : <ImageIcon size={18} />}
+                    </div>
+                  )}
+                </button>
+              );
+            }) : (
+              <div className="flex h-full items-center gap-2 text-xs text-muted-foreground">
+                <ImageIcon size={14} />
+                Galeria pronta para receber imagens e vídeos deste produto.
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+
+      {lightboxOpen && activeMedia && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 px-6 py-10 backdrop-blur-md"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setLightboxOpen(false)}
+        >
+          {activeMedia.type === "image" && (
+            <div
+              className="absolute inset-0 opacity-20 blur-2xl"
+              style={{
+                backgroundImage: `url('${activeMedia.src}')`,
+                backgroundSize: "cover",
+                backgroundPosition: "center"
+              }}
+            />
+          )}
+
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(false)}
+            className="absolute right-6 top-6 z-[130] flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition-all hover:bg-white/20"
+            aria-label="Fechar galeria"
+          >
+            <X size={22} />
+          </button>
+
+          <div
+            className="relative z-[125] flex max-h-[90vh] w-full flex-col items-center gap-5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex min-h-0 w-full flex-1 items-center justify-center">
+              {renderMainMedia(true)}
+            </div>
+
+            <div className="flex items-center justify-center gap-4">
+              <button
+                type="button"
+                onClick={() => goToMedia("prev")}
+                disabled={!canNavigate}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition-all hover:bg-white/20 disabled:opacity-30"
+                aria-label="Imagem anterior"
+              >
+                <ChevronRight size={22} className="rotate-180" />
+              </button>
+
+              <div className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
+                {activeIndex + 1} / {media.length}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => goToMedia("next")}
+                disabled={!canNavigate}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition-all hover:bg-white/20 disabled:opacity-30"
+                aria-label="Próxima imagem"
+              >
+                <ChevronRight size={22} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
