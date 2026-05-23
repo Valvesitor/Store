@@ -689,6 +689,89 @@ async function applyCouponToTebexBasket(basketIdent: string, couponCode: string)
 }
 
 
+function getBasketItems(basket: any) {
+  if (!basket) return [];
+
+  const source =
+    basket?.rows ??
+    basket?.packages ??
+    basket?.data?.rows ??
+    basket?.data?.packages ??
+    basket?.basket?.rows ??
+    basket?.basket?.packages ??
+    [];
+
+  return Array.isArray(source) ? source : [];
+}
+
+function getBasketRowPackageId(row: any) {
+  const packageId =
+    row?.package_id ??
+    row?.packageId ??
+    row?.package?.id ??
+    row?.package?.package_id ??
+    row?.package?.packageId ??
+    row?.id;
+
+  return packageId ? String(packageId) : "";
+}
+
+function getBasketRowName(row: any) {
+  return (
+    row?.name ??
+    row?.package?.name ??
+    row?.package_name ??
+    row?.package?.title ??
+    row?.title ??
+    "Item Tebex"
+  );
+}
+
+function getBasketRowPrice(row: any) {
+  const price =
+    row?.total_price ??
+    row?.totalPrice ??
+    row?.price?.amount ??
+    row?.price ??
+    row?.package?.price?.amount ??
+    row?.package?.price ??
+    row?.base_price ??
+    0;
+
+  return typeof price === "number" ? price : Number(price) || 0;
+}
+
+function getBasketTotal(basket: any) {
+  const total =
+    basket?.total_price ??
+    basket?.totalPrice ??
+    basket?.price?.amount ??
+    basket?.price ??
+    basket?.data?.total_price ??
+    basket?.data?.price?.amount ??
+    0;
+
+  return typeof total === "number" ? total : Number(total) || 0;
+}
+
+async function removePackageFromTebexBasket(basketIdent: string, packageId: string) {
+  const response = await fetch(`https://headless.tebex.io/api/baskets/${basketIdent}/packages/remove`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ package_id: packageId })
+  });
+
+  if (!response.ok) {
+    const errorPayload = await response.json().catch(() => null);
+    throw new Error(errorPayload?.message ?? errorPayload?.detail ?? "Nao foi possivel remover o item do carrinho.");
+  }
+
+  const payload = await response.json().catch(() => null);
+  return payload?.data ?? payload ?? fetchTebexBasket(basketIdent);
+}
+
+
+
 function getApiBaseUrl() {
   return (import.meta.env.VITE_ACCOUNT_API_BASE_URL ?? "").replace(/\/$/, "");
 }
@@ -1816,7 +1899,7 @@ function ProductDetail({ product, currency, onClose }: { product: Product; curre
 
       const basket = await addProductToTebexCart(product);
 
-      if (basket && Array.isArray((basket as any).rows) && (basket as any).rows.length === 0) {
+      if (basket && getBasketItems(basket).length === 0) {
         window.alert("A cesta foi criada, mas a Tebex nao retornou o item no basket. Verifique se o Package ID do produto esta correto no admin.");
         return;
       }
@@ -2729,9 +2812,9 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
   const [busy, setBusy] = useState(false);
 
   const basketIdent = basket?.ident ?? getStoredTebexBasket();
-  const rows = basket?.rows ?? [];
+  const rows = getBasketItems(basket);
   const basketCurrency = (basket?.currency?.iso_4217 ?? basket?.currency ?? currency) as CurrencyCode;
-  const basketTotal = basket?.total_price ?? basket?.price?.amount ?? basket?.price ?? 0;
+  const basketTotal = getBasketTotal(basket);
 
   const loadBasket = useCallback(async () => {
     try {
@@ -2839,8 +2922,8 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
             const rowKey = packageId || String(index);
             return (
               <div key={rowKey} className="grid grid-cols-[1fr_160px_140px] text-sm text-foreground/75 border-t border-border first:border-t-0">
-                <div className="px-5 py-4 border-r border-border">{row?.name ?? row?.package?.name ?? "Item Tebex"}</div>
-                <div className="px-5 py-4 border-r border-border">{formatCurrencyValue(row?.total_price ?? row?.price ?? 0, basketCurrency)}</div>
+                <div className="px-5 py-4 border-r border-border">{getBasketRowName(row)}</div>
+                <div className="px-5 py-4 border-r border-border">{formatCurrencyValue(getBasketRowPrice(row), basketCurrency)}</div>
                 <div className="px-5 py-3">
                   <button
                     type="button"
@@ -2918,10 +3001,10 @@ function AccountPage({ currency, onCurrencyChange }: { currency: CurrencyCode; o
     loadBasket();
   }, [loadBasket]);
 
-  const rows = basket?.rows ?? [];
+  const rows = getBasketItems(basket);
   const basketIdent = basket?.ident ?? getStoredTebexBasket();
   const basketCurrency = (basket?.currency?.iso_4217 ?? basket?.currency ?? currency) as CurrencyCode;
-  const basketTotal = basket?.total_price ?? basket?.price?.amount ?? basket?.price ?? 0;
+  const basketTotal = getBasketTotal(basket);
   const username = getTebexAccountName(basket) || "Conta não conectada";
   const isLoggedIn = !!basketIdent && !!basket;
 
@@ -3260,8 +3343,8 @@ const orders = summary?.orders ?? [];
                     return (
                       <div key={rowKey} className="grid grid-cols-[130px_1fr_140px_130px] text-sm text-foreground/75 border-t border-border first:border-t-0">
                         <div className="px-5 py-4 border-r border-border">{row?.type ?? "package"}</div>
-                        <div className="px-5 py-4 border-r border-border">{row?.name ?? row?.package?.name ?? "Item Tebex"}</div>
-                        <div className="px-5 py-4 border-r border-border">{formatCurrencyValue(row?.total_price ?? row?.price ?? 0, basketCurrency)}</div>
+                        <div className="px-5 py-4 border-r border-border">{getBasketRowName(row)}</div>
+                        <div className="px-5 py-4 border-r border-border">{formatCurrencyValue(getBasketRowPrice(row), basketCurrency)}</div>
                         <div className="px-5 py-3">
                           <button
                             type="button"
