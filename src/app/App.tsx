@@ -4931,15 +4931,20 @@ function DocsAdminPage() {
   }
 
   async function handleDelete() {
-    if (!selected.id || selected.id.startsWith("new-")) return;
-    if (!window.confirm("Apagar esta página da documentação?")) return;
+    if (!selected.id) return;
+    if (!window.confirm(`Apagar a página "${selected.title || selected.id}" da documentação?`)) return;
 
     setSaving(true);
     setMessage(null);
     try {
       await deleteAdminDocsPage(token, selected.id);
-      setSelected(emptyDocsPage(selectedProductId));
-      setMessage("Página apagada.");
+
+      const remainingPages = pages.filter((page) => page.id !== selected.id);
+      const firstPageForProduct = remainingPages.find((page) => getDocsProductId(page) === selectedProductId);
+
+      setPages(remainingPages);
+      setSelected(firstPageForProduct ?? emptyDocsPage(selectedProductId));
+      setMessage("Página apagada com sucesso.");
       await load();
     } catch (error) {
       console.error(error);
@@ -5154,7 +5159,7 @@ function DocsAdminPage() {
                 </button>
                 <button
                   onClick={handleDelete}
-                  disabled={saving || selected.id.startsWith("new-")}
+                  disabled={saving || !selected.id}
                   className="inline-flex h-9 items-center rounded-xl border border-red-500/25 px-3 text-xs font-bold text-red-500 hover:bg-red-500/5 disabled:opacity-40"
                 >
                   Apagar
