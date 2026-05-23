@@ -4327,48 +4327,51 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   const selectedTitle = selected ? (isEnglish ? selected.titleEn || selected.title : selected.title) : "";
 
   return (
-    <main className="min-h-screen bg-background px-6 py-10 lg:py-14">
+    <main className="h-[calc(100vh-4rem)] overflow-hidden bg-background px-4 py-4 lg:px-6 lg:py-5">
       <style>{`
-        .docs-markdown h1 { font-size: clamp(2rem, 4vw, 3.7rem); line-height: .95; letter-spacing: -.055em; margin: 0 0 1.4rem; color: hsl(var(--foreground)); }
-        .docs-markdown h2 { margin-top: 2.2rem; padding-top: 1.6rem; border-top: 1px solid hsl(var(--border)); color: hsl(var(--primary)); font-size: 1.45rem; font-weight: 800; }
-        .docs-markdown h3 { margin-top: 1.7rem; color: hsl(var(--foreground)); font-size: 1.1rem; font-weight: 800; }
-        .docs-markdown p { margin: .85rem 0; color: hsl(var(--muted-foreground)); line-height: 1.8; }
-        .docs-markdown ul { list-style: none; padding: 0; display: grid; gap: .55rem; margin: 1rem 0; }
-        .docs-markdown li { position: relative; padding-left: 1.45rem; color: hsl(var(--muted-foreground)); }
+        .docs-markdown h1 { font-size: clamp(1.9rem, 3.2vw, 3.05rem); line-height: .98; letter-spacing: -.055em; margin: 0 0 1.15rem; color: hsl(var(--foreground)); }
+        .docs-markdown h2 { margin-top: 1.7rem; padding-top: 1.25rem; border-top: 1px solid hsl(var(--border)); color: hsl(var(--primary)); font-size: 1.2rem; font-weight: 800; }
+        .docs-markdown h3 { margin-top: 1.3rem; color: hsl(var(--foreground)); font-size: 1rem; font-weight: 800; }
+        .docs-markdown p { margin: .65rem 0; color: hsl(var(--muted-foreground)); line-height: 1.7; font-size: .94rem; }
+        .docs-markdown ul { list-style: none; padding: 0; display: grid; gap: .45rem; margin: .85rem 0; }
+        .docs-markdown li { position: relative; padding-left: 1.35rem; color: hsl(var(--muted-foreground)); font-size: .94rem; line-height: 1.65; }
         .docs-markdown li::before { content: "✦"; position: absolute; left: 0; color: hsl(var(--primary)); }
-        .docs-markdown pre { overflow: auto; border-radius: 1rem; background: #15120f; color: #f6ecd8; padding: 1rem; border: 1px solid rgba(255,255,255,.08); }
+        .docs-markdown pre { overflow: auto; border-radius: .9rem; background: #15120f; color: #f6ecd8; padding: .9rem; border: 1px solid rgba(255,255,255,.08); font-size: .86rem; }
         .docs-markdown code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: .9em; }
         .docs-markdown p code, .docs-markdown li code { background: hsl(var(--primary) / .12); color: hsl(var(--primary)); border-radius: .45rem; padding: .12rem .35rem; }
+        .docs-scroll-area::-webkit-scrollbar { width: 8px; height: 8px; }
+        .docs-scroll-area::-webkit-scrollbar-thumb { background: hsl(var(--primary) / .35); border-radius: 999px; }
+        .docs-scroll-area::-webkit-scrollbar-track { background: transparent; }
       `}</style>
 
-      <div className="mx-auto max-w-7xl">
-        <section className="mb-6 rounded-[30px] border border-border bg-card p-7 lg:p-10 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+      <div className="mx-auto flex h-full max-w-[1500px] flex-col gap-4 overflow-hidden">
+        <section className="shrink-0 rounded-[26px] border border-border bg-card px-6 py-5 lg:px-8 lg:py-6 shadow-[0_16px_55px_rgba(32,32,32,0.07)]">
           <SectionTag>{isEnglish ? "Documentation" : "Documentação"}</SectionTag>
-          <h1 className="mt-5 text-4xl lg:text-6xl font-bold tracking-tight text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+          <h1 className="mt-4 text-3xl lg:text-5xl font-bold tracking-tight text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
             TWS Identity Forge
           </h1>
-          <p className="mt-4 max-w-3xl text-sm lg:text-base leading-7 text-muted-foreground">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
             {isEnglish
               ? "Customer documentation for installation, configuration, usage, and support."
               : "Documentação para cliente com instalação, configuração, uso e suporte."}
           </p>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[310px_minmax(0,1fr)] gap-6 items-start">
-          <aside className="lg:sticky lg:top-24 rounded-[26px] border border-border bg-card p-4 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+          <aside className="flex min-h-0 flex-col rounded-[24px] border border-border bg-card p-4 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={isEnglish ? "Search documentation..." : "Buscar na documentação..."}
-              className="mb-4 h-11 w-full rounded-full border border-border bg-background px-4 text-sm outline-none focus:border-primary/40"
+              className="mb-3 h-10 w-full shrink-0 rounded-full border border-border bg-background px-4 text-sm outline-none focus:border-primary/40"
             />
 
             {loading && <p className="px-2 py-2 text-xs text-muted-foreground">{isEnglish ? "Loading..." : "Carregando..."}</p>}
 
-            <nav className="max-h-[calc(100vh-210px)] overflow-y-auto pr-1">
+            <nav className="docs-scroll-area min-h-0 flex-1 overflow-y-auto pr-1">
               {Object.entries(grouped).map(([category, rows]) => (
-                <div key={category} className="mb-5">
-                  <p className="mb-2 px-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{category}</p>
+                <div key={category} className="mb-4">
+                  <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{category}</p>
                   <div className="space-y-1">
                     {rows.map((page) => {
                       const title = isEnglish ? page.titleEn || page.title : page.title;
@@ -4377,7 +4380,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                         <button
                           key={page.id}
                           onClick={() => setSelectedId(page.id)}
-                          className={`w-full rounded-2xl px-3 py-2 text-left text-sm font-semibold transition-all ${active ? "bg-primary/10 text-primary border border-primary/20" : "text-foreground/65 hover:bg-primary/5 hover:text-foreground border border-transparent"}`}
+                          className={`w-full rounded-xl px-3 py-2 text-left text-[13px] font-semibold transition-all ${active ? "bg-primary/10 text-primary border border-primary/20" : "text-foreground/65 hover:bg-primary/5 hover:text-foreground border border-transparent"}`}
                         >
                           {title}
                         </button>
@@ -4389,11 +4392,11 @@ function DocsPage({ language }: { language: SiteLanguage }) {
             </nav>
           </aside>
 
-          <article className="min-h-[640px] rounded-[30px] border border-border bg-card p-6 lg:p-10 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+          <article className="docs-scroll-area min-h-0 overflow-y-auto rounded-[26px] border border-border bg-card p-5 lg:p-8 shadow-[0_16px_55px_rgba(32,32,32,0.07)]">
             {selected ? (
               <>
-                <div className="mb-6 flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-primary">
+                <div className="mb-5 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
                     {selected.category}
                   </span>
                   <span className="text-xs text-muted-foreground">{selectedTitle}</span>
