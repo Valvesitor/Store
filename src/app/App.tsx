@@ -3631,12 +3631,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
       }
     } catch (error) {
       console.error(error);
-      const message = error instanceof Error ? error.message : "Erro ao carregar painel admin.";
-      setMessage(message);
-      if (message.toLowerCase().includes("token") || message.toLowerCase().includes("401") || message.toLowerCase().includes("inválido")) {
-        storeAdminToken("");
-        setToken("");
-      }
+      setMessage(error instanceof Error ? error.message : "Erro ao carregar painel admin.");
     } finally {
       setLoading(false);
     }
@@ -3721,7 +3716,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
 
   return (
     <div className="min-h-screen bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      <div className="sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur-xl">
+      <div className="hidden">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
             <span className="text-base font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
@@ -4807,7 +4802,7 @@ export default function App() {
   }
 
   if (pathname === "/admin") {
-    return <AdminPage currency={currency} onCurrencyChange={setCurrency} />;
+    return renderPageWithNavbar(<AdminPage currency={currency} onCurrencyChange={setCurrency} />);
   }
 
   return (
