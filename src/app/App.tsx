@@ -4767,8 +4767,8 @@ function DocsAdminPage() {
           </div>
         </section>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-6 items-start">
-          <aside className="xl:sticky xl:top-24 rounded-[26px] border border-border bg-card p-5 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
+        <div className="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-4 items-start">
+          <aside className="xl:sticky xl:top-20 rounded-[22px] border border-border bg-card p-4 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
             <div className="mb-5">
               <h2 className="font-bold text-foreground/90">Produtos</h2>
               <p className="mt-1 text-xs text-muted-foreground">Escolha o produto para ver ou criar páginas.</p>
@@ -4823,7 +4823,7 @@ function DocsAdminPage() {
             </div>
           </aside>
 
-          <section className="rounded-[26px] border border-border bg-card p-5 lg:p-6 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
+          <section className="rounded-[22px] border border-border bg-card p-4 lg:p-5 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
             <div className="mb-5 rounded-2xl border border-primary/15 bg-primary/5 p-4">
               <p className="text-sm font-semibold text-foreground/85">Produto selecionado</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -5166,7 +5166,7 @@ function ProductAdminForm({
       </div>
 
       <div className="grid grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
-        <div className="min-h-[520px] min-w-0">
+        <div className="min-w-0">
           {activeSection === "product" && (
             <section className={panelClass}>
               {renderPanelTitle("01", "Produto", "Nome, categoria, etiqueta e documentação")}
@@ -5700,7 +5700,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] overflow-hidden bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-[calc(100vh-4rem)] bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <div className="hidden">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
@@ -5733,8 +5733,8 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
         </div>
       </div>
 
-      <main className="mx-auto flex h-full max-w-[1500px] flex-col overflow-hidden px-4 py-4 lg:px-6 lg:py-5">
-        <div className="mb-3 shrink-0 rounded-[24px] border border-border bg-card px-5 py-4 shadow-[0_12px_38px_rgba(32,32,32,0.05)] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <main className="mx-auto max-w-[1500px] px-4 py-4 lg:px-6 lg:py-5">
+        <div className="mb-3 rounded-[22px] border border-border bg-card px-4 py-3 shadow-[0_12px_38px_rgba(32,32,32,0.05)] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
           <div>
             <SectionTag>Admin Dashboard</SectionTag>
             <h1 className="mt-2 text-2xl lg:text-3xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
@@ -5761,7 +5761,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
                   setSelected(emptyAdminProduct());
                   setMessage("Novo produto pronto para cadastro.");
                 }}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground hover:brightness-105"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground hover:brightness-105"
               >
                 <Plus size={15} />
                 Novo produto
@@ -5771,7 +5771,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             {activeAdminSection === "docs" && (
               <a
                 href="/docs"
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-primary/25 px-4 text-sm font-semibold text-primary hover:bg-primary/5"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-primary/25 px-4 text-xs font-semibold text-primary hover:bg-primary/5"
               >
                 <BookOpen size={15} />
                 Ver docs
@@ -5779,7 +5779,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             )}
 
             {activeAdminSection === "coupons" && (
-              <span className="inline-flex h-10 items-center rounded-full border border-primary/20 bg-primary/5 px-4 text-sm font-semibold text-primary">
+              <span className="inline-flex h-9 items-center rounded-full border border-primary/20 bg-primary/5 px-4 text-xs font-semibold text-primary">
                 Coupon/Gift Card
               </span>
             )}
@@ -5795,7 +5795,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
           </div>
         </div>
 
-        <div className="mb-3 shrink-0 rounded-[22px] border border-border bg-card p-3 shadow-[0_12px_38px_rgba(32,32,32,0.05)]">
+        <div className="mb-4 rounded-[20px] border border-border bg-card p-3 shadow-[0_12px_38px_rgba(32,32,32,0.05)]">
           <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-primary/70">Categoria</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
             {[
@@ -5830,10 +5830,10 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <div>
         {activeAdminSection === "products" && (
-        <div className="grid h-full min-h-0 grid-cols-1 2xl:grid-cols-[340px_minmax(0,1fr)] gap-4 lg:gap-5 items-start">
-          <aside className="flex h-full min-h-0 flex-col rounded-[24px] border border-border bg-card p-4 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
+        <div className="grid grid-cols-1 2xl:grid-cols-[340px_minmax(0,1fr)] gap-4 lg:gap-5 items-start">
+          <aside className="rounded-[22px] border border-border bg-card p-4 shadow-[0_14px_42px_rgba(32,32,32,0.06)] 2xl:sticky 2xl:top-20">
             <div className="flex items-center justify-between gap-3 mb-5">
               <div>
                 <h2 className="font-bold text-foreground/90">Produtos</h2>
@@ -5862,7 +5862,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
               </div>
             </div>
 
-            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-[calc(100vh-330px)] overflow-y-auto pr-1">
               {products.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Nenhum produto salvo ainda.</p>
               ) : products.map((product) => (
@@ -5895,7 +5895,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             </div>
           </aside>
 
-          <div className="h-full min-h-0 overflow-y-auto pr-1">
+          <div>
             <ProductAdminForm
               product={selected}
               onChange={setSelected}
@@ -5907,13 +5907,13 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
         )}
 
         {activeAdminSection === "docs" && (
-          <div className="h-full min-h-0 overflow-y-auto rounded-[24px] border border-border bg-card/40 p-0 shadow-[0_14px_42px_rgba(32,32,32,0.04)]">
+          <div className="rounded-[22px] border border-border bg-card/40 p-0 shadow-[0_14px_42px_rgba(32,32,32,0.04)]">
             <DocsAdminPage />
           </div>
         )}
 
         {activeAdminSection === "coupons" && (
-          <div className="h-full min-h-0 overflow-y-auto pr-1">
+          <div>
             <CreatorCodeAdminPanel token={token} />
           </div>
         )}
