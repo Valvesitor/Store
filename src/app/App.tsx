@@ -4456,8 +4456,8 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     return param || getDocsProductId(DOCS_FALLBACK_PAGES[0] ?? emptyDocsPage());
   });
   const [selectedId, setSelectedId] = useState(OVERVIEW_ID);
-  const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [expandedProducts, setExpandedProducts] = useState<string[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   const isEnglish = language === "en_US";
@@ -4471,6 +4471,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
         const param = new URLSearchParams(window.location.search).get("product");
         const initialProduct = param || getDocsProductId(rows[0] ?? emptyDocsPage());
         setSelectedProductId((current) => current || initialProduct);
+        setExpandedProducts(param ? [initialProduct] : []);
         setSelectedId(OVERVIEW_ID);
       })
       .catch((error) => console.error(error))
@@ -4483,23 +4484,24 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   const selectedProductPages = pages.filter((page) => getDocsProductId(page) === selectedProductId);
   const selectedProductName = getDocsProductLabel(selectedProductId);
 
-  const filteredPages = selectedProductPages.filter((page) => {
-    const title = getDocsTitle(page, isEnglish);
-    const content = getDocsContent(page, isEnglish);
-    const category = translateDocsCategory(page.category, isEnglish);
-    const haystack = `${title} ${category} ${content}`.toLowerCase();
-    return !query.trim() || haystack.includes(query.trim().toLowerCase());
-  });
+  function getProductPages(productId: string) {
+    return pages.filter((page) => getDocsProductId(page) === productId);
+  }
 
-  const grouped = filteredPages.reduce<Record<string, DocsPageRecord[]>>((acc, page) => {
-    const category = translateDocsCategory(page.category, isEnglish);
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(page);
-    return acc;
-  }, {});
+  function getProductCategoryEntries(productId: string) {
+    const productPages = getProductPages(productId);
+    const grouped = productPages.reduce<Record<string, DocsPageRecord[]>>((acc, page) => {
+      const category = translateDocsCategory(page.category, isEnglish);
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(page);
+      return acc;
+    }, {});
 
-  const categoryEntries = Object.entries(grouped);
-  const selected = selectedId === OVERVIEW_ID ? null : filteredPages.find((page) => page.id === selectedId) ?? null;
+    return Object.entries(grouped);
+  }
+
+  const categoryEntries = getProductCategoryEntries(selectedProductId);
+  const selected = selectedId === OVERVIEW_ID ? null : selectedProductPages.find((page) => page.id === selectedId) ?? null;
   const selectedContent = selected ? getDocsContent(selected, isEnglish) : "";
   const selectedTitle = selected ? getDocsTitle(selected, isEnglish) : "";
   const docsSiteTitle = "The Wanted Sole Studio Docs";
@@ -4510,31 +4512,48 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     document.title = docsPageTitle;
   }, [docsPageTitle]);
 
-  function handleProductChange(productId: string) {
-    setSelectedProductId(productId);
-    setSelectedId(OVERVIEW_ID);
-    setExpandedCategories([]);
-    setQuery("");
-
+  function setProductUrl(productId: string) {
     const url = new URL(window.location.href);
     url.searchParams.set("product", productId);
     window.history.replaceState(null, "", url.toString());
   }
 
-  function toggleCategory(category: string) {
-    setExpandedCategories((current) =>
-      current.includes(category)
-        ? current.filter((item) => item !== category)
-        : [...current, category]
+  function toggleProduct(productId: string) {
+    setSelectedProductId(productId);
+    setSelectedId(OVERVIEW_ID);
+    setProductUrl(productId);
+
+    setExpandedProducts((current) =>
+      current.includes(productId)
+        ? current.filter((item) => item !== productId)
+        : [...current, productId]
     );
   }
 
-  function openCategory(category: string) {
-    setExpandedCategories((current) => current.includes(category) ? current : [...current, category]);
+  function toggleCategory(productId: string, category: string) {
+    const key = `${productId}:${category}`;
+    setExpandedCategories((current) =>
+      current.includes(key)
+        ? current.filter((item) => item !== key)
+        : [...current, key]
+    );
+  }
+
+  function openProduct(productId: string) {
+    setExpandedProducts((current) => current.includes(productId) ? current : [...current, productId]);
+  }
+
+  function openCategory(productId: string, category: string) {
+    const key = `${productId}:${category}`;
+    setExpandedCategories((current) => current.includes(key) ? current : [...current, key]);
   }
 
   function handleSelectPage(page: DocsPageRecord, category: string) {
-    openCategory(category);
+    const productId = getDocsProductId(page);
+    setSelectedProductId(productId);
+    setProductUrl(productId);
+    openProduct(productId);
+    openCategory(productId, category);
     setSelectedId(page.id);
   }
 
@@ -4561,7 +4580,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
           <div className="shrink-0 border-b border-border p-4">
             <button
               onClick={() => setSelectedId(OVERVIEW_ID)}
-              className="mb-4 flex w-full items-center gap-3 rounded-2xl border border-border bg-background px-3 py-3 text-left transition-all hover:border-primary/25 hover:bg-primary/5"
+              className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-border bg-background px-3 py-3 text-left transition-all hover:border-primary/25 hover:bg-primary/5"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <BookOpen size={18} />
@@ -4574,100 +4593,106 @@ function DocsPage({ language }: { language: SiteLanguage }) {
               </span>
             </button>
 
-            <label className="mb-3 block">
-              <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                {isEnglish ? "Product" : "Produto"}
-              </span>
-              <select
-                value={selectedProductId}
-                onChange={(e) => handleProductChange(e.target.value)}
-                className="h-10 w-full rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground/80 outline-none focus:border-primary/40"
-              >
-                {productOptions.map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.label} {product.count ? `(${product.count})` : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <div className="relative">
-              <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={isEnglish ? "Search in the documentation..." : "Buscar na documentação..."}
-                className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-xs outline-none focus:border-primary/40"
-              />
-            </div>
-          </div>
-
-          <nav className="docs-scroll-area min-h-0 flex-1 overflow-y-auto p-3">
             <button
               onClick={() => setSelectedId(OVERVIEW_ID)}
-              className={`mb-2 flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition-all ${
+              className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition-all ${
                 selectedId === OVERVIEW_ID
                   ? "bg-primary/10 text-primary border border-primary/20"
                   : "border border-transparent text-foreground/70 hover:bg-primary/5 hover:text-foreground"
               }`}
             >
               <BookOpen size={14} />
-              {isEnglish ? "Welcome" : "Welcome"}
+              Welcome
             </button>
+          </div>
 
+          <nav className="docs-scroll-area min-h-0 flex-1 overflow-y-auto p-3">
             {loading && <p className="px-3 py-2 text-xs text-muted-foreground">{isEnglish ? "Loading..." : "Carregando..."}</p>}
 
-            {Object.keys(grouped).length === 0 && !loading && (
-              <p className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-                {isEnglish ? "No documentation pages for this product yet." : "Ainda não existem páginas para este produto."}
-              </p>
-            )}
-
-            {categoryEntries.map(([category, rows]) => {
-              const expanded = expandedCategories.includes(category);
-              const selectedInCategory = selected ? rows.some((page) => page.id === selected.id) : false;
+            {productOptions.map((product) => {
+              const productPages = getProductPages(product.id);
+              const productCategoryEntries = getProductCategoryEntries(product.id);
+              const productExpanded = expandedProducts.includes(product.id);
+              const selectedProductActive = selectedProductId === product.id;
 
               return (
-                <div key={category} className="mb-1.5">
+                <div key={product.id} className="mb-2">
                   <button
-                    onClick={() => toggleCategory(category)}
+                    onClick={() => toggleProduct(product.id)}
                     className={`group flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left transition-all ${
-                      selectedInCategory
+                      selectedProductActive && selectedId !== OVERVIEW_ID
                         ? "bg-primary/10 text-primary"
                         : "text-foreground/70 hover:bg-primary/5 hover:text-foreground"
                     }`}
                   >
                     <span className="min-w-0">
-                      <span className="block truncate text-[11px] font-bold uppercase tracking-[0.14em]">{category}</span>
+                      <span className="block truncate text-[11px] font-bold uppercase tracking-[0.14em]">{product.label}</span>
                       <span className="block text-[10px] text-muted-foreground">
-                        {rows.length} {isEnglish ? "pages" : rows.length === 1 ? "página" : "páginas"}
+                        {productPages.length} {isEnglish ? "pages" : productPages.length === 1 ? "página" : "páginas"}
                       </span>
                     </span>
-                    <ChevronDown size={14} className={`shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
+                    <ChevronDown size={14} className={`shrink-0 transition-transform ${productExpanded ? "rotate-180" : ""}`} />
                   </button>
 
-                  {expanded && (
-                    <div className="mt-1 space-y-0.5 pl-3">
-                      {rows.map((page) => {
-                        const title = getDocsTitle(page, isEnglish);
-                        const active = selected?.id === page.id;
+                  {productExpanded && (
+                    <div className="mt-1 space-y-1 pl-2">
+                      {productCategoryEntries.length === 0 && (
+                        <p className="rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
+                          {isEnglish ? "No pages yet." : "Ainda não existem páginas."}
+                        </p>
+                      )}
+
+                      {productCategoryEntries.map(([category, rows]) => {
+                        const categoryKey = `${product.id}:${category}`;
+                        const expanded = expandedCategories.includes(categoryKey);
+                        const selectedInCategory = selected ? rows.some((page) => page.id === selected.id) : false;
 
                         return (
-                          <button
-                            key={page.id}
-                            onClick={() => handleSelectPage(page, category)}
-                            className={`flex w-full items-start gap-2 rounded-lg border px-3 py-2 text-left text-[13px] transition-all ${
-                              active
-                                ? "border-primary/20 bg-primary/10 font-semibold text-primary"
-                                : "border-transparent text-foreground/60 hover:border-border hover:bg-background hover:text-foreground"
-                            }`}
-                          >
-                            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-45" />
-                            <span className="min-w-0">
-                              <span className="block truncate">{title}</span>
-                              <span className="block truncate text-[10px] text-muted-foreground">/{page.slug}</span>
-                            </span>
-                          </button>
+                          <div key={category} className="mb-1">
+                            <button
+                              onClick={() => toggleCategory(product.id, category)}
+                              className={`group flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left transition-all ${
+                                selectedInCategory
+                                  ? "bg-primary/10 text-primary"
+                                  : "text-foreground/65 hover:bg-background hover:text-foreground"
+                              }`}
+                            >
+                              <span className="min-w-0">
+                                <span className="block truncate text-[10px] font-bold uppercase tracking-[0.16em]">{category}</span>
+                                <span className="block text-[10px] text-muted-foreground">
+                                  {rows.length} {isEnglish ? "pages" : rows.length === 1 ? "página" : "páginas"}
+                                </span>
+                              </span>
+                              <ChevronDown size={13} className={`shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
+                            </button>
+
+                            {expanded && (
+                              <div className="mt-1 space-y-0.5 pl-3">
+                                {rows.map((page) => {
+                                  const title = getDocsTitle(page, isEnglish);
+                                  const active = selected?.id === page.id;
+
+                                  return (
+                                    <button
+                                      key={page.id}
+                                      onClick={() => handleSelectPage(page, category)}
+                                      className={`flex w-full items-start gap-2 rounded-lg border px-3 py-2 text-left text-[13px] transition-all ${
+                                        active
+                                          ? "border-primary/20 bg-primary/10 font-semibold text-primary"
+                                          : "border-transparent text-foreground/60 hover:border-border hover:bg-background hover:text-foreground"
+                                      }`}
+                                    >
+                                      <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-45" />
+                                      <span className="min-w-0">
+                                        <span className="block truncate">{title}</span>
+                                        <span className="block truncate text-[10px] text-muted-foreground">/{page.slug}</span>
+                                      </span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
@@ -4697,63 +4722,62 @@ function DocsPage({ language }: { language: SiteLanguage }) {
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
                 {isEnglish
-                  ? "Official documentation for The Wanted Sole Studio products. Select a product, open a collapsed category on the left, or use search to find installation, configuration and usage instructions."
-                  : "Documentação oficial dos produtos da The Wanted Sole Studio. Selecione um produto, abra uma categoria retraída à esquerda ou use a busca para encontrar instalação, configuração e instruções de uso."}
+                  ? "Official documentation for The Wanted Sole Studio products. Select a product category on the left to expand its pages."
+                  : "Documentação oficial dos produtos da The Wanted Sole Studio. Clique no nome de um produto à esquerda para abrir o conteúdo dele."}
               </p>
 
               <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="rounded-[22px] border border-border bg-card p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Selected product" : "Produto selecionado"}</p>
-                  <p className="mt-2 text-xl font-bold text-foreground/90">{selectedProductName}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Products" : "Produtos"}</p>
+                  <p className="mt-2 text-xl font-bold text-foreground/90">{productOptions.length}</p>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {isEnglish ? "This is only the current documentation filter." : "Este é apenas o filtro atual da documentação."}
+                    {isEnglish ? "Each product works like a collapsed section." : "Cada produto funciona como uma seção retraída."}
                   </p>
                 </div>
                 <div className="rounded-[22px] border border-border bg-card p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Pages" : "Páginas"}</p>
-                  <p className="mt-2 text-xl font-bold text-foreground/90">{selectedProductPages.length}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Selected product" : "Produto selecionado"}</p>
+                  <p className="mt-2 text-xl font-bold text-foreground/90">{selectedProductName}</p>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {isEnglish ? "Published articles for this product." : "Artigos publicados para este produto."}
+                    {isEnglish ? "Click a product name on the left to switch." : "Clique no nome do produto à esquerda para trocar."}
                   </p>
                 </div>
                 <div className="rounded-[22px] border border-border bg-card p-5">
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Categories" : "Categorias"}</p>
                   <p className="mt-2 text-xl font-bold text-foreground/90">{categoryEntries.length}</p>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {isEnglish ? "Collapsed sections in the sidebar." : "Seções retraídas no menu lateral."}
+                    {isEnglish ? "Categories open under each product." : "As categorias abrem dentro de cada produto."}
                   </p>
                 </div>
               </div>
 
               <div className="mt-8 rounded-[26px] border border-border bg-card p-5 lg:p-6">
-                <div className="mb-5 flex items-center justify-between gap-3">
-                  <div>
-                    <h2 className="text-xl font-bold text-foreground/90">{isEnglish ? "Browse categories" : "Categorias da documentação"}</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {isEnglish ? "Click a category to expand it in the sidebar." : "Clique em uma categoria para abrir no menu lateral."}
-                    </p>
-                  </div>
+                <div className="mb-5">
+                  <h2 className="text-xl font-bold text-foreground/90">{isEnglish ? "Browse products" : "Produtos da documentação"}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {isEnglish ? "Click a product to expand its documentation." : "Clique em um produto para expandir a documentação dele."}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  {categoryEntries.map(([category, rows]) => (
-                    <button
-                      key={category}
-                      onClick={() => {
-                        openCategory(category);
-                        setSelectedId(rows[0]?.id ?? OVERVIEW_ID);
-                      }}
-                      className="rounded-2xl border border-border bg-background p-4 text-left transition-all hover:border-primary/30 hover:bg-primary/5"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-sm font-bold uppercase tracking-[0.14em] text-primary">{category}</span>
-                        <ChevronRight size={16} className="text-primary" />
-                      </div>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {rows.length} {isEnglish ? "pages available" : rows.length === 1 ? "página disponível" : "páginas disponíveis"}
-                      </p>
-                    </button>
-                  ))}
+                  {productOptions.map((product) => {
+                    const productPages = getProductPages(product.id);
+
+                    return (
+                      <button
+                        key={product.id}
+                        onClick={() => toggleProduct(product.id)}
+                        className="rounded-2xl border border-border bg-background p-4 text-left transition-all hover:border-primary/30 hover:bg-primary/5"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-sm font-bold uppercase tracking-[0.14em] text-primary">{product.label}</span>
+                          <ChevronRight size={16} className="text-primary" />
+                        </div>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          {productPages.length} {isEnglish ? "pages available" : productPages.length === 1 ? "página disponível" : "páginas disponíveis"}
+                        </p>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </section>
@@ -4772,8 +4796,8 @@ function DocsPage({ language }: { language: SiteLanguage }) {
               </p>
               <p className="text-xs leading-6 text-muted-foreground">
                 {isEnglish
-                  ? "Use the left navigation to switch pages. Categories stay collapsed until selected."
-                  : "Use o menu esquerdo para trocar de página. As categorias ficam retraídas até serem selecionadas."}
+                  ? "Products and categories stay collapsed until selected."
+                  : "Produtos e categorias ficam retraídos até serem selecionados."}
               </p>
             </div>
           ) : (
@@ -4783,8 +4807,8 @@ function DocsPage({ language }: { language: SiteLanguage }) {
               </p>
               <p className="text-xs leading-6 text-muted-foreground">
                 {isEnglish
-                  ? "This landing page introduces the documentation before the customer opens a specific article."
-                  : "Esta página inicial apresenta a documentação antes do cliente abrir um artigo específico."}
+                  ? "Welcome stays at the top. Products are listed below it as collapsible sections."
+                  : "O Welcome fica no topo. Os produtos aparecem abaixo como seções retraídas."}
               </p>
             </div>
           )}
