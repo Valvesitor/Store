@@ -3892,15 +3892,15 @@ function LegalPage({
     : (isEnglish ? termsEn : termsPt);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#07080c] px-6 py-16 lg:py-20 text-[#f4f4f5]">
+    <main className="relative min-h-screen overflow-hidden bg-background px-6 py-12 lg:py-16 text-foreground">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute left-[-14%] top-[-12%] h-80 w-80 rounded-full bg-[#d6a84f]/15 blur-3xl" />
-        <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute left-[-14%] top-[-12%] h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-5xl">
         <header className="mb-10 text-center">
-          <div className="mb-5 inline-flex items-center rounded-full border border-[#d6a84f]/35 bg-[#d6a84f]/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#d6a84f]">
+          <div className="mb-5 inline-flex items-center rounded-full border border-primary/30 bg-primary/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-primary">
             The Wanted Sole Studio
           </div>
           <h1 className="text-4xl font-bold tracking-tight lg:text-6xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
@@ -3908,7 +3908,7 @@ function LegalPage({
               ? (isEnglish ? "Privacy Policy" : "Política de Privacidade")
               : (isEnglish ? "Terms of Use" : "Termos de Uso")}
           </h1>
-          <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-zinc-400 lg:text-base">
+          <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-muted-foreground lg:text-base">
             {isPrivacy
               ? (isEnglish
                 ? "Learn how The Wanted Sole Studio handles information related to browsing, accounts, purchases, support, Tebex integrations, and digital products."
@@ -3917,22 +3917,22 @@ function LegalPage({
                 ? "Read the conditions for use, purchase, licensing, support, and access to digital products provided by The Wanted Sole Studio."
                 : "Leia atentamente as condições de uso, compra, licença, suporte e acesso aos produtos digitais disponibilizados pela The Wanted Sole Studio.")}
           </p>
-          <div className="mt-6 inline-flex rounded-full border border-[#d6a84f]/25 bg-[#d6a84f]/10 px-4 py-2 text-xs font-semibold text-[#d6a84f]">
+          <div className="mt-6 inline-flex rounded-full border border-primary/25 bg-primary/5 px-4 py-2 text-xs font-semibold text-primary">
             {isEnglish ? "Language: English" : "Idioma: Português"}
           </div>
         </header>
 
-        <section className="rounded-[30px] border border-white/10 bg-white/[0.045] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:p-8">
+        <section className="rounded-[30px] border border-border bg-card p-5 shadow-[0_24px_80px_rgba(32,32,32,0.08)] lg:p-8">
           <div className="space-y-5">
             {sections.map((section) => (
-              <article key={section.title} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 lg:p-6">
-                <h2 className="mb-3 text-lg font-bold text-[#d6a84f] lg:text-xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              <article key={section.title} className="rounded-2xl border border-border bg-background/70 p-5 lg:p-6">
+                <h2 className="mb-3 text-lg font-bold text-primary lg:text-xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
                   {section.title}
                 </h2>
 
                 <div className="space-y-3">
                   {section.paragraphs.map((paragraph: string) => (
-                    <p key={paragraph} className="text-sm leading-7 text-zinc-300">
+                    <p key={paragraph} className="text-sm leading-7 text-muted-foreground">
                       {paragraph}
                     </p>
                   ))}
@@ -3940,8 +3940,8 @@ function LegalPage({
                   {section.list && (
                     <ul className="grid gap-2 pt-1">
                       {section.list.map((item: string) => (
-                        <li key={item} className="flex gap-3 text-sm leading-6 text-zinc-300">
-                          <span className="mt-0.5 text-[#d6a84f]">✦</span>
+                        <li key={item} className="flex gap-3 text-sm leading-6 text-muted-foreground">
+                          <span className="mt-0.5 text-primary">✦</span>
                           <span>{item}</span>
                         </li>
                       ))}
@@ -3949,13 +3949,13 @@ function LegalPage({
                   )}
 
                   {section.highlight && (
-                    <div className="rounded-2xl border border-[#d6a84f]/25 bg-[#d6a84f]/10 px-4 py-3 text-sm leading-6 text-[#f5e7c6]">
+                    <div className="rounded-2xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm font-semibold leading-6 text-primary">
                       {section.highlight}
                     </div>
                   )}
 
                   {section.danger && (
-                    <div className="rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm leading-6 text-red-200">
+                    <div className="rounded-2xl border border-red-500/25 bg-red-500/5 px-4 py-3 text-sm leading-6 text-red-600">
                       {section.danger}
                     </div>
                   )}
@@ -3965,7 +3965,7 @@ function LegalPage({
                       {section.contacts.map((contact: { label: string; href: string }) => (
                         <p key={contact.href} className="text-sm text-zinc-300">
                           <strong>{contact.label}:</strong>{" "}
-                          <a href={contact.href} target="_blank" rel="noopener noreferrer" className="font-bold text-[#d6a84f] hover:underline">
+                          <a href={contact.href} target="_blank" rel="noopener noreferrer" className="font-bold text-primary hover:underline">
                             {contact.href}
                           </a>
                         </p>
@@ -3978,7 +3978,7 @@ function LegalPage({
           </div>
         </section>
 
-        <p className="mt-8 text-center text-xs text-zinc-500">
+        <p className="mt-8 text-center text-xs text-muted-foreground">
           © 2026 The Wanted Sole Studio. {isEnglish ? "All rights reserved." : "Todos os direitos reservados."}
         </p>
       </div>
@@ -4160,41 +4160,41 @@ function AboutPage({ language }: { language: SiteLanguage }) {
   ];
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#07080c] px-6 py-16 lg:py-20 text-[#f4f4f5]">
+    <main className="relative min-h-screen overflow-hidden bg-background px-6 py-12 lg:py-16 text-foreground">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute left-[-14%] top-[-12%] h-80 w-80 rounded-full bg-[#d6a84f]/15 blur-3xl" />
-        <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute left-[-14%] top-[-12%] h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-5xl">
         <header className="mb-10 text-center">
-          <div className="mb-5 inline-flex items-center rounded-full border border-[#d6a84f]/35 bg-[#d6a84f]/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#d6a84f]">
+          <div className="mb-5 inline-flex items-center rounded-full border border-primary/30 bg-primary/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-primary">
             The Wanted Sole Studio
           </div>
           <h1 className="text-4xl font-bold tracking-tight lg:text-6xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
             {isEnglish ? "About Us" : "Sobre Nós"}
           </h1>
-          <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-zinc-400 lg:text-base">
+          <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-muted-foreground lg:text-base">
             {isEnglish
               ? "Discover the essence of The Wanted Sole Studio: a brand created to transform ideas into digital experiences with identity, style, and technology."
               : "Conheça a essência da The Wanted Sole Studio: uma marca criada para transformar ideias em experiências digitais com identidade, estilo e tecnologia."}
           </p>
-          <div className="mt-6 inline-flex rounded-full border border-[#d6a84f]/25 bg-[#d6a84f]/10 px-4 py-2 text-xs font-semibold text-[#d6a84f]">
+          <div className="mt-6 inline-flex rounded-full border border-primary/25 bg-primary/5 px-4 py-2 text-xs font-semibold text-primary">
             {isEnglish ? "Language: English" : "Idioma: Português"}
           </div>
         </header>
 
-        <section className="rounded-[30px] border border-white/10 bg-white/[0.045] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:p-8">
+        <section className="rounded-[30px] border border-border bg-card p-5 shadow-[0_24px_80px_rgba(32,32,32,0.08)] lg:p-8">
           <div className="space-y-5">
             {sections.map((section) => (
-              <article key={section.title} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 lg:p-6">
-                <h2 className="mb-3 text-lg font-bold text-[#d6a84f] lg:text-xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              <article key={section.title} className="rounded-2xl border border-border bg-background/70 p-5 lg:p-6">
+                <h2 className="mb-3 text-lg font-bold text-primary lg:text-xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
                   {section.title}
                 </h2>
 
                 <div className="space-y-3">
                   {section.paragraphs?.map((paragraph: string) => (
-                    <p key={paragraph} className="text-sm leading-7 text-zinc-300">
+                    <p key={paragraph} className="text-sm leading-7 text-muted-foreground">
                       {paragraph}
                     </p>
                   ))}
@@ -4202,8 +4202,8 @@ function AboutPage({ language }: { language: SiteLanguage }) {
                   {section.list && (
                     <ul className="grid gap-2 pt-1">
                       {section.list.map((item: string) => (
-                        <li key={item} className="flex gap-3 text-sm leading-6 text-zinc-300">
-                          <span className="mt-0.5 text-[#d6a84f]">✦</span>
+                        <li key={item} className="flex gap-3 text-sm leading-6 text-muted-foreground">
+                          <span className="mt-0.5 text-primary">✦</span>
                           <span>{item}</span>
                         </li>
                       ))}
@@ -4211,7 +4211,7 @@ function AboutPage({ language }: { language: SiteLanguage }) {
                   )}
 
                   {section.highlight && (
-                    <div className="rounded-2xl border border-[#d6a84f]/25 bg-[#d6a84f]/10 px-4 py-3 text-sm leading-6 text-[#f5e7c6]">
+                    <div className="rounded-2xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm font-semibold leading-6 text-primary">
                       {section.highlight}
                     </div>
                   )}
@@ -4221,7 +4221,7 @@ function AboutPage({ language }: { language: SiteLanguage }) {
                       {section.contacts.map((contact: { label: string; href: string }) => (
                         <p key={contact.href} className="text-sm text-zinc-300">
                           <strong>{contact.label}:</strong>{" "}
-                          <a href={contact.href} target="_blank" rel="noopener noreferrer" className="font-bold text-[#d6a84f] hover:underline">
+                          <a href={contact.href} target="_blank" rel="noopener noreferrer" className="font-bold text-primary hover:underline">
                             {contact.href}
                           </a>
                         </p>
@@ -4234,7 +4234,7 @@ function AboutPage({ language }: { language: SiteLanguage }) {
           </div>
         </section>
 
-        <p className="mt-8 text-center text-xs text-zinc-500">
+        <p className="mt-8 text-center text-xs text-muted-foreground">
           © 2026 The Wanted Sole Studio. {isEnglish ? "All rights reserved." : "Todos os direitos reservados."}
         </p>
       </div>
@@ -5446,7 +5446,7 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
               Company
             </p>
             <nav className="flex flex-col items-start gap-2">
-              {companyLinks.map((link) => renderLink(link, "text-sm font-semibold text-foreground/85 hover:text-primary transition-colors text-left"))}
+              {companyLinks.map((link) => renderLink(link, "text-sm font-semibold text-muted-foreground hover:text-primary transition-colors text-left"))}
             </nav>
           </div>
 
@@ -5455,7 +5455,7 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
               Tebex
             </p>
             <nav className="flex flex-col items-start gap-2">
-              {tebexLinks.map((link) => renderLink(link, "text-sm font-semibold text-foreground/85 hover:text-primary transition-colors text-left"))}
+              {tebexLinks.map((link) => renderLink(link, "text-sm font-semibold text-muted-foreground hover:text-primary transition-colors text-left"))}
             </nav>
           </div>
         </div>
