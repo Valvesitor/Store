@@ -30,6 +30,8 @@ interface Product {
   description: string;
   fullDescription: string;
   price: number;
+  priceCurrency?: CurrencyCode;
+  priceSource?: "tebex" | "fallback";
   status: ProductStatus;
   tebexUrl: string;
   packageId?: string;
@@ -235,6 +237,8 @@ const PRODUCTS: Product[] = [
     description: "Pack gratuito com recursos essenciais para quem está iniciando um servidor RedM.",
     fullDescription: "Pack gratuito com recursos essenciais para quem está começando um servidor RedM. Inclui scripts básicos, documentação completa e suporte inicial via Discord. A melhor forma de começar com qualidade.",
     price: 0,
+    priceCurrency: PRODUCT_BASE_CURRENCY,
+    priceSource: "fallback",
     status: "novo",
     tebexUrl: "#",
     features: [
@@ -320,19 +324,19 @@ const STATUS_CONFIG: Record<ProductStatus, { label: string; cls: string }> = {
   "em-breve": { label: "Em Breve", cls: "bg-zinc-900 text-zinc-400 border border-zinc-700/50" }
 };
 
-const PRODUCT_BASE_CURRENCY: CurrencyCode = "BRL";
+const PRODUCT_BASE_CURRENCY: CurrencyCode = "USD";
 const PRODUCT_CURRENCY_RATES: Record<CurrencyCode, number> = {
-  BRL: 1,
-  USD: 0.18,
-  EUR: 0.16,
-  GBP: 0.14,
-  AUD: 0.28,
-  CAD: 0.25,
-  DKK: 1.20,
-  NOK: 1.85,
-  NZD: 0.31,
-  SEK: 1.80,
-  PLN: 0.68
+  USD: 1,
+  BRL: 5.05,
+  EUR: 0.92,
+  GBP: 0.78,
+  AUD: 1.52,
+  CAD: 1.36,
+  DKK: 6.86,
+  NOK: 10.60,
+  NZD: 1.66,
+  SEK: 10.40,
+  PLN: 3.95
 };
 
 function getCurrencyLocale(currency: CurrencyCode | string) {
@@ -342,13 +346,20 @@ function getCurrencyLocale(currency: CurrencyCode | string) {
   return "en-US";
 }
 
-function convertProductPrice(price: number, currency: CurrencyCode) {
-  if (price === 0) return 0;
-  if (currency === PRODUCT_BASE_CURRENCY) return price;
-  return price * PRODUCT_CURRENCY_RATES[currency];
+function normalizeCurrencyCode(value?: string | null): CurrencyCode {
+  const upper = String(value ?? PRODUCT_BASE_CURRENCY).toUpperCase();
+  return CURRENCIES.includes(upper as CurrencyCode) ? (upper as CurrencyCode) : PRODUCT_BASE_CURRENCY;
 }
 
-function formatPrice(price: number, currency: CurrencyCode = "BRL") {
+function convertProductPrice(price: number, targetCurrency: CurrencyCode, sourceCurrency: CurrencyCode = PRODUCT_BASE_CURRENCY) {
+  if (price === 0) return 0;
+  if (sourceCurrency === targetCurrency) return price;
+
+  const priceInUsd = price / PRODUCT_CURRENCY_RATES[sourceCurrency];
+  return priceInUsd * PRODUCT_CURRENCY_RATES[targetCurrency];
+}
+
+function formatPrice(price: number, currency: CurrencyCode = PRODUCT_BASE_CURRENCY) {
   if (price === 0) return "Grátis";
   return new Intl.NumberFormat(getCurrencyLocale(currency), {
     style: "currency",
@@ -356,8 +367,8 @@ function formatPrice(price: number, currency: CurrencyCode = "BRL") {
   }).format(price);
 }
 
-function formatProductPrice(price: number, currency: CurrencyCode) {
-  return formatPrice(convertProductPrice(price, currency), currency);
+function formatProductPrice(price: number, currency: CurrencyCode, sourceCurrency: CurrencyCode = PRODUCT_BASE_CURRENCY) {
+  return formatPrice(convertProductPrice(price, currency, sourceCurrency), currency);
 }
 
 function getStoredCurrency(): CurrencyCode {
@@ -375,6 +386,108 @@ function formatCurrencyValue(amount?: number, currency: CurrencyCode | string = 
     style: "currency",
     currency
   }).format(amount);
+}
+
+function parseTebexMoney(value: any) {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value === "string") {
+    const normalized = value.replace(/[^\d.,-]/g, "").replace(",", ".");
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  if (value && typeof value === "object") {
+    return parseTebexMoney(value.amount ?? value.total ?? value.value ?? value.price);
+  }
+  return 0;
+}
+
+function getTebexPackagePrice(pkg: any) {
+  const candidates = [
+    pkg?.total_price,
+    pkg?.totalPrice,
+    pkg?.price,
+    pkg?.price?.amount,
+    pkg?.base_price,
+    pkg?.basePrice,
+    pkg?.pricing?.price,
+    pkg?.pricing?.amount,
+    pkg?.prices?.price,
+    pkg?.prices?.amount
+  ];
+
+  for (const candidate of candidates) {
+    const parsed = parseTebexMoney(candidate);
+    if (parsed > 0) return parsed;
+  }
+
+  return 0;
+}
+
+function getTebexPackageCurrency(pkg: any) {
+  return normalizeCurrencyCode(
+    pkg?.currency?.iso_4217 ??
+    pkg?.currency ??
+    pkg?.price?.currency ??
+    pkg?.pricing?.currency ??
+    pkg?.prices?.currency ??
+    PRODUCT_BASE_CURRENCY
+  );
+}
+
+async function fetchTebexPackagesForPricing() {
+  const webstoreToken = getTebexWebstoreToken();
+  const response = await fetch(`https://headless.tebex.io/api/accounts/${webstoreToken}/packages`, {
+    headers: { "Accept": "application/json" }
+  });
+
+  if (!response.ok) {
+    throw new Error("Nao foi possivel carregar preços da Tebex.");
+  }
+
+  const payload = await response.json();
+  const packages = Array.isArray(payload) ? payload : payload?.data ?? payload?.packages ?? [];
+
+  return Array.isArray(packages) ? packages : [];
+}
+
+async function applyTebexPricesToProducts(products: Product[]) {
+  try {
+    const packages = await fetchTebexPackagesForPricing();
+    const packagesById = new Map<string, any>();
+
+    for (const pkg of packages) {
+      const id = String(pkg?.id ?? pkg?.package_id ?? pkg?.packageId ?? "");
+      if (id) packagesById.set(id, pkg);
+    }
+
+    return products.map((product) => {
+      const packageId = String(product.packageId ?? "");
+      const tebexPackage = packageId ? packagesById.get(packageId) : null;
+      const tebexPrice = tebexPackage ? getTebexPackagePrice(tebexPackage) : 0;
+
+      if (!tebexPackage || tebexPrice <= 0) {
+        return {
+          ...product,
+          priceCurrency: product.priceCurrency ?? PRODUCT_BASE_CURRENCY,
+          priceSource: "fallback" as const
+        };
+      }
+
+      return {
+        ...product,
+        price: tebexPrice,
+        priceCurrency: getTebexPackageCurrency(tebexPackage),
+        priceSource: "tebex" as const
+      };
+    });
+  } catch (error) {
+    console.error(error);
+    return products.map((product) => ({
+      ...product,
+      priceCurrency: product.priceCurrency ?? PRODUCT_BASE_CURRENCY,
+      priceSource: "fallback" as const
+    }));
+  }
 }
 
 // ─── Shared UI ────────────────────────────────────────────────────────────────
@@ -1094,6 +1207,8 @@ function normalizeProductFromApi(item: any): Product {
     description: item.description ?? "",
     fullDescription: item.fullDescription ?? item.full_description ?? item.description ?? "",
     price: Number(item.price ?? 0),
+    priceCurrency: normalizeCurrencyCode(item.priceCurrency ?? item.price_currency ?? PRODUCT_BASE_CURRENCY),
+    priceSource: item.priceSource ?? item.price_source ?? "fallback",
     status: item.status ?? "novo",
     tebexUrl: item.tebexUrl ?? item.tebex_url ?? "#",
     packageId: item.packageId ?? item.package_id ?? "",
@@ -1116,7 +1231,7 @@ async function fetchPublicProducts() {
   if (!response.ok) throw new Error("Nao foi possivel carregar os produtos.");
   const payload = await response.json();
   const rows = Array.isArray(payload) ? payload : payload.products ?? [];
-  return rows.map(normalizeProductFromApi);
+  return applyTebexPricesToProducts(rows.map(normalizeProductFromApi));
 }
 
 async function fetchAdminProducts(token: string) {
@@ -1134,7 +1249,7 @@ async function fetchAdminProducts(token: string) {
 
   const payload = await response.json();
   const rows = Array.isArray(payload) ? payload : payload.products ?? [];
-  return rows.map(normalizeProductFromApi);
+  return applyTebexPricesToProducts(rows.map(normalizeProductFromApi));
 }
 
 async function saveAdminProduct(token: string, product: Product) {
@@ -1842,7 +1957,7 @@ function ProductCard({ product, currency, onSelect }: { product: Product; curren
             className="text-base font-bold"
             style={{ color: product.price === 0 ? "#5d8a5d" : "#8b714b", fontFamily: "'Cinzel', serif" }}
           >
-            {formatProductPrice(product.price, currency)}
+            {formatProductPrice(product.price, currency, product.priceCurrency)}
           </span>
           <div className="flex items-center gap-1.5">
             {product.docsUrl && (
@@ -2352,7 +2467,7 @@ function ProductDetail({ product, currency, onClose }: { product: Product; curre
                   className="text-2xl font-bold"
                   style={{ color: product.price === 0 ? "#5d8a5d" : "#8b714b", fontFamily: "'Cinzel', serif" }}
                 >
-                  {formatProductPrice(product.price, currency)}
+                  {formatProductPrice(product.price, currency, product.priceCurrency)}
                 </div>
               </div>
 
@@ -2705,8 +2820,9 @@ function ProductAdminForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Preço</span>
-          <input type="number" step="0.01" value={product.price} onChange={(e) => update({ price: Number(e.target.value) })} className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary/40" />
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Preço fallback</span>
+          <input type="number" step="0.01" value={product.price} onChange={(e) => update({ price: Number(e.target.value), priceSource: "fallback" })} className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary/40" />
+          <span className="block text-[11px] leading-5 text-muted-foreground">Opcional. Se o Package ID Tebex estiver correto, o site puxa o preço automaticamente da Tebex.</span>
         </label>
 
         <label className="space-y-2">
@@ -2955,7 +3071,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
                     </div>
                     <span className={`h-2 w-2 mt-2 rounded-full ${product.visible === false ? "bg-red-400" : "bg-emerald-400"}`} />
                   </div>
-                  <p className="mt-2 text-sm text-primary font-semibold">{formatCurrencyValue(product.price, currency)}</p>
+                  <p className="mt-2 text-sm text-primary font-semibold">{formatProductPrice(product.price, currency, product.priceCurrency)}</p>
                   <button
                     onClick={(event) => {
                       event.stopPropagation();
