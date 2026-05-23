@@ -732,6 +732,7 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Cupom / Gift Card": "Coupon / Gift Card",
   "Digite seu cupom": "Enter your coupon",
   "Digite seu coupon/gift card": "Enter your coupon/gift card",
+  "Coupon/Gift Card removido da cesta.": "Coupon/Gift Card removed from cart.",
   "Aplicar cupom": "Apply coupon",
   "Histórico de compras": "Purchase history",
   "Pedidos reais chegam aqui pelo webhook da Tebex no Worker.": "Real orders arrive here through the Tebex webhook in the Worker.",
@@ -1542,6 +1543,37 @@ async function applyCreatorCodeToBasket(basketIdent: string, originalCode: strin
   }
 
   throw new Error(errors.find(Boolean) ?? "Nao foi possivel aplicar o coupon/gift card.");
+}
+
+async function removeCreatorCodeFromBasket(basketIdent: string, codeToRemove = "") {
+  const webstoreToken = getTebexWebstoreToken();
+  const encodedCode = encodeURIComponent(codeToRemove.trim());
+
+  const endpoints = [
+    `/accounts/${webstoreToken}/baskets/${basketIdent}/coupons`,
+    `/accounts/${webstoreToken}/baskets/${basketIdent}/giftcards`,
+    `/accounts/${webstoreToken}/baskets/${basketIdent}/creator-codes`,
+    ...(encodedCode ? [
+      `/accounts/${webstoreToken}/baskets/${basketIdent}/coupons/${encodedCode}`,
+      `/accounts/${webstoreToken}/baskets/${basketIdent}/giftcards/${encodedCode}`,
+      `/accounts/${webstoreToken}/baskets/${basketIdent}/creator-codes/${encodedCode}`
+    ] : [])
+  ];
+
+  const errors: string[] = [];
+
+  for (const endpoint of endpoints) {
+    const response = await tebexFetch(endpoint, { method: "DELETE" });
+
+    if (response.ok || response.status === 204 || response.status === 404) {
+      return fetchTebexBasket(basketIdent);
+    }
+
+    const payload = await response.json().catch(() => null);
+    errors.push(payload?.message ?? payload?.detail ?? endpoint);
+  }
+
+  throw new Error(errors.find(Boolean) ?? "Nao foi possivel remover o coupon/gift card.");
 }
 
 async function fetchAccountSummary(basketIdent?: string | null, usernameId?: string | null) {
@@ -5719,6 +5751,7 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
   const [couponCode, setCouponCode] = useState("");
   const [creatorCodeMessage, setCreatorCodeMessage] = useState<string | null>(null);
   const [applyingCreatorCode, setApplyingCreatorCode] = useState(false);
+  const [removingCouponCode, setRemovingCouponCode] = useState(false);
 
   const basketIdent = basket?.ident ?? getStoredTebexBasket();
   const rows = getBasketItems(basket);
@@ -5787,6 +5820,26 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
       setCreatorCodeMessage(error instanceof Error ? error.message : "Nao foi possivel aplicar o coupon/gift card.");
     } finally {
       setApplyingCreatorCode(false);
+    }
+  }
+
+  async function handleRemoveCreatorCode() {
+    if (!basketIdent) {
+      setCreatorCodeMessage("Faça login ou adicione um produto antes de remover o coupon/gift card.");
+      return;
+    }
+
+    try {
+      setRemovingCouponCode(true);
+      const updated = await removeCreatorCodeFromBasket(basketIdent, couponCode.trim());
+      setBasket(updated);
+      setCreatorCodeMessage("Coupon/Gift Card removido da cesta.");
+      setCouponCode("");
+    } catch (error) {
+      console.error(error);
+      setCreatorCodeMessage(error instanceof Error ? error.message : "Nao foi possivel remover o coupon/gift card.");
+    } finally {
+      setRemovingCouponCode(false);
     }
   }
 
@@ -5886,7 +5939,7 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
                 Digite o coupon/gift card exatamente como foi informado. O site aplica direto na Tebex.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 lg:min-w-[420px]">
+            <div className="flex flex-col sm:flex-row gap-3 lg:min-w-[560px]">
               <input
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
@@ -5898,10 +5951,17 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
               />
               <button
                 onClick={handleApplyCreatorCode}
-                disabled={!couponCode.trim() || applyingCreatorCode}
+                disabled={!couponCode.trim() || applyingCreatorCode || removingCouponCode}
                 className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {applyingCreatorCode ? "Aplicando..." : "Aplicar"}
+              </button>
+              <button
+                onClick={handleRemoveCreatorCode}
+                disabled={!basketIdent || applyingCreatorCode || removingCouponCode}
+                className="h-11 rounded-xl border border-red-500/25 px-5 text-sm font-semibold text-red-500 transition-all hover:bg-red-500/5 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {removingCouponCode ? "Removendo..." : "Remover"}
               </button>
             </div>
           </div>
