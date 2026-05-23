@@ -971,6 +971,12 @@ async function addProductToTebexCart(product: Product) {
 
 
 async function startTebexLogin(returnPath = "/account") {
+  if (getAdminToken()) {
+    window.alert("Você está logado como admin. Saia do admin antes de acessar a conta de cliente.");
+    window.location.href = "/admin";
+    return;
+  }
+
   try {
     const basketIdent = getStoredTebexBasket() ?? await createTebexBasket();
     storeTebexBasket(basketIdent);
@@ -1646,6 +1652,14 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
     }
   }
 
+  function handleNavbarAdminLogout() {
+    storeAdminToken("");
+    setAdminLoggedIn(false);
+    if (window.location.pathname === "/admin") {
+      window.location.href = "/";
+    }
+  }
+
 
   const links = [
     { label: "Início", id: "hero" },
@@ -1727,7 +1741,27 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
               <option key={item} value={item}>{item}</option>
             ))}
           </select>
-          {accountName ? (
+          {adminLoggedIn ? (
+            <div className="inline-flex h-9 items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2">
+              <a
+                href="/admin"
+                className="inline-flex items-center gap-2 px-2 text-xs font-semibold text-primary transition-colors hover:text-primary/80"
+                title="Abrir painel admin"
+              >
+                <User size={14} />
+                <span className="max-w-[120px] truncate">Admin</span>
+              </a>
+              <button
+                type="button"
+                onClick={handleNavbarAdminLogout}
+                className="inline-flex h-7 items-center gap-1 rounded-full px-2 text-[11px] font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
+                title="Sair"
+              >
+                <LogOut size={12} />
+                Sair
+              </button>
+            </div>
+          ) : accountName ? (
             <div className="inline-flex h-9 items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2">
               <a
                 href="/account"
@@ -1747,16 +1781,6 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
                 Sair
               </button>
             </div>
-          ) : adminLoggedIn ? (
-            <a
-              href="/admin"
-              className="inline-flex h-9 items-center gap-2 px-3 rounded-full text-xs font-semibold
-                border border-primary/20 bg-primary/5 text-primary hover:border-primary/35 hover:bg-primary/10 transition-all"
-              title="Abrir painel admin"
-            >
-              <Shield size={14} />
-              Admin
-            </a>
           ) : (
             <button
               type="button"
@@ -1854,7 +1878,28 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
                 </select>
               </div>
               <div className="flex gap-2">
-                {accountName ? (
+                {adminLoggedIn ? (
+                  <div className="flex-1 flex gap-2">
+                    <a
+                      href="/admin"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
+                        border border-primary/20 bg-primary/5 text-sm font-semibold text-primary"
+                    >
+                      <User size={14} />
+                      Admin
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => { handleNavbarAdminLogout(); setMobileOpen(false); }}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
+                        border border-red-500/20 text-sm font-semibold text-red-500 hover:bg-red-500/5 transition-all"
+                    >
+                      <LogOut size={14} />
+                      Sair
+                    </button>
+                  </div>
+                ) : accountName ? (
                   <div className="flex-1 flex gap-2">
                     <a
                       href="/account"
@@ -1875,16 +1920,6 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
                       Sair
                     </button>
                   </div>
-                ) : adminLoggedIn ? (
-                  <a
-                    href="/admin"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
-                      border border-primary/20 bg-primary/5 text-sm font-semibold text-primary"
-                  >
-                    <Shield size={14} />
-                    Admin
-                  </a>
                 ) : (
                   <button
                     type="button"
@@ -3621,6 +3656,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
   }, [load]);
 
   function handleAdminLogin() {
+    clearTebexSession();
     storeAdminToken(tokenInput);
     setToken(tokenInput.trim());
     setTokenInput("");
@@ -3715,7 +3751,12 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             <button onClick={() => setSelected(emptyAdminProduct())} className="rounded-full border border-primary/30 px-4 h-10 text-sm font-semibold text-primary">
               Novo produto
             </button>
-            <button onClick={handleLogout} className="rounded-full bg-primary px-4 h-10 text-sm font-semibold text-primary-foreground">
+            <button
+              onClick={handleLogout}
+              className="inline-flex h-7 items-center gap-1 rounded-full px-2 text-[11px] font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
+              title="Sair"
+            >
+              <LogOut size={12} />
               Sair
             </button>
           </div>
@@ -3752,12 +3793,13 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             </button>
 
             <button
-              onClick={handleLogout}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-red-500/20 px-4 text-sm font-semibold text-red-500 hover:bg-red-500/5"
-            >
-              <LogOut size={15} />
-              Sair do admin
-            </button>
+            onClick={handleLogout}
+            className="inline-flex h-7 items-center gap-1 rounded-full px-2 text-[11px] font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
+            title="Sair"
+          >
+            <LogOut size={12} />
+            Sair
+          </button>
           </div>
         </div>
 
@@ -3835,6 +3877,7 @@ function LoginPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
   const [adminToken, setAdminToken] = useState("");
 
   function handleAdminLogin() {
+    clearTebexSession();
     storeAdminToken(adminToken);
     window.location.href = "/admin";
   }
@@ -3888,7 +3931,14 @@ function LoginPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
               Acesse sua conta para ver cesta, checkout, pedidos comprados e suporte. O login usa a autorização da Tebex.
             </p>
             <button
-              onClick={() => startTebexLogin("/account")}
+              onClick={() => {
+                if (getAdminToken()) {
+                  window.alert("Você está logado como admin. Saia do admin antes de acessar a conta de cliente.");
+                  window.location.href = "/admin";
+                  return;
+                }
+                startTebexLogin("/account");
+              }}
               className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
             >
               <LogIn size={16} />
@@ -4771,6 +4821,10 @@ export default function App() {
   }
 
   if (pathname === "/account") {
+    if (getAdminToken()) {
+      window.location.href = "/admin";
+      return null;
+    }
     return renderPageWithNavbar(<AccountPage currency={currency} onCurrencyChange={setCurrency} />);
   }
 
