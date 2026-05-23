@@ -2501,8 +2501,8 @@ function ProductPage({ product, currency }: { product: Product; currency: Curren
           <ProductMediaGallery product={product} />
         </div>
 
-        <aside className="rounded-[28px] border border-border bg-card shadow-[0_22px_80px_rgba(32,32,32,0.08)] overflow-hidden xl:sticky xl:top-24">
-          <div className="p-8 pb-6">
+        <aside className="flex max-h-none flex-col overflow-hidden rounded-[28px] border border-border bg-card shadow-[0_22px_80px_rgba(32,32,32,0.08)] xl:sticky xl:top-24 xl:max-h-[calc(100vh-120px)]">
+          <div className="min-h-0 flex-1 overflow-y-auto p-8 pb-6 pr-6">
             <div className="flex items-center gap-2 mb-4 flex-wrap">
               <span className={`px-2 py-0.5 rounded-sm text-[10px] font-semibold tracking-wider uppercase ${status.cls}`}>
                 {status.label}
@@ -2516,9 +2516,9 @@ function ProductPage({ product, currency }: { product: Product; currency: Curren
               {product.name}
             </h1>
 
-            <p className="text-base text-muted-foreground leading-8 mb-7">
-              {product.fullDescription || product.description}
-            </p>
+            <div className="mb-7 max-h-44 overflow-y-auto pr-3 text-base text-muted-foreground leading-8">
+              <p>{product.fullDescription || product.description}</p>
+            </div>
 
             <div className="space-y-7">
               <div>
@@ -2560,7 +2560,7 @@ function ProductPage({ product, currency }: { product: Product; currency: Curren
             </div>
           </div>
 
-          <div className="border-t border-primary/20 bg-card/95 p-5">
+          <div className="shrink-0 border-t border-primary/20 bg-card/95 p-5">
             <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 mb-4">
               <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1">Preço</p>
               <p className="text-3xl font-bold text-primary" style={{ fontFamily: "'Cinzel', serif" }}>
