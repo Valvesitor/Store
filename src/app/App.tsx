@@ -4638,10 +4638,36 @@ function DocsAdminPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [pageSearch, setPageSearch] = useState("");
+  const [editorLanguage, setEditorLanguage] = useState<"pt" | "en">("pt");
 
   const isLogged = !!token;
   const productOptions = getDocsProductOptions(pages);
   const selectedProductPages = pages.filter((page) => getDocsProductId(page) === selectedProductId);
+  const filteredProductPages = selectedProductPages.filter((page) => {
+    const haystack = [
+      page.title,
+      page.titleEn,
+      page.category,
+      page.slug,
+      page.contentPt,
+      page.contentEn
+    ].join(" ").toLowerCase();
+
+    return !pageSearch.trim() || haystack.includes(pageSearch.trim().toLowerCase());
+  });
+
+  const pagesByCategory = filteredProductPages.reduce<Record<string, DocsPageRecord[]>>((acc, page) => {
+    const category = page.category || "Sem categoria";
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(page);
+    return acc;
+  }, {});
+
+  const visibleCount = selectedProductPages.filter((page) => page.visible).length;
+  const hiddenCount = Math.max(selectedProductPages.length - visibleCount, 0);
+  const activeContent = editorLanguage === "pt" ? selected.contentPt : selected.contentEn ?? "";
+  const activeTitle = editorLanguage === "pt" ? selected.title : selected.titleEn || selected.title;
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -4675,12 +4701,23 @@ function DocsAdminPage() {
     setSelectedProductId(productId);
     const firstPage = pages.find((page) => getDocsProductId(page) === productId);
     setSelected(firstPage ?? emptyDocsPage(productId));
+    setPageSearch("");
   }
 
   function handleNewPage(productId = selectedProductId) {
     const next = emptyDocsPage(productId);
     setSelectedProductId(productId);
     setSelected(next);
+    setEditorLanguage("pt");
+  }
+
+  function updateSelectedContent(value: string) {
+    if (editorLanguage === "pt") {
+      setSelected({ ...selected, contentPt: value });
+      return;
+    }
+
+    setSelected({ ...selected, contentEn: value });
   }
 
   async function handleSave() {
@@ -4721,7 +4758,8 @@ function DocsAdminPage() {
   }
 
   const fieldClass = "w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary/50 focus:ring-2 focus:ring-primary/10";
-  const labelClass = "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
+  const labelClass = "text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground";
+  const panelClass = "rounded-[22px] border border-border bg-card shadow-[0_14px_42px_rgba(32,32,32,0.05)]";
 
   if (!isLogged) {
     return (
@@ -4747,170 +4785,321 @@ function DocsAdminPage() {
   }
 
   return (
-    <main className="bg-transparent px-5 py-5 lg:px-7 lg:py-6">
-      <div className="mx-auto">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-foreground/90">Editor da documentação</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Separe a documentação por produto. Cada produto pode ter suas próprias páginas, categorias, PT e EN.</p>
+    <main className="bg-transparent p-0">
+      <div className="grid min-h-[calc(100vh-245px)] grid-cols-1 overflow-hidden rounded-[26px] border border-border bg-background shadow-[0_18px_55px_rgba(32,32,32,0.06)] xl:grid-cols-[250px_310px_minmax(0,1fr)]">
+        {/* GitBook-style left rail */}
+        <aside className="border-b border-border bg-card/80 p-4 xl:border-b-0 xl:border-r">
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <BookOpen size={18} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground/90">Docs Studio</p>
+              <p className="text-[11px] text-muted-foreground">GitBook style</p>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <a href={`/docs?product=${selectedProductId}`} className="rounded-xl border border-border px-3 py-2 text-sm font-semibold text-foreground/70 hover:bg-primary/5">
-              Ver documentação
-            </a>
-            <button onClick={() => handleNewPage()} className="rounded-xl border border-primary/25 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5">
-              Nova página
+
+          <div className="mb-4">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Spaces</p>
+            <div className="space-y-1.5">
+              {productOptions.map((product) => {
+                const active = selectedProductId === product.id;
+
+                return (
+                  <button
+                    key={product.id}
+                    onClick={() => handleSelectProduct(product.id)}
+                    className={`group flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-left transition-all ${
+                      active
+                        ? "border-primary/30 bg-primary/10 text-primary"
+                        : "border-transparent text-foreground/65 hover:border-border hover:bg-background hover:text-foreground"
+                    }`}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-semibold">{product.label}</span>
+                      <span className="block truncate text-[10px] text-muted-foreground">{product.count} páginas</span>
+                    </span>
+                    <ChevronRight size={14} className={active ? "opacity-100" : "opacity-0 group-hover:opacity-60"} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              const customId = window.prompt("Digite o ID do novo produto. Ex: tws-camera-kit");
+              if (!customId) return;
+              handleNewPage(slugifyClient(customId));
+            }}
+            className="mb-5 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary/35 bg-primary/5 px-3 py-2.5 text-xs font-bold text-primary transition-all hover:bg-primary/10"
+          >
+            <Plus size={14} />
+            Novo space
+          </button>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-xl border border-border bg-background px-3 py-2">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Visíveis</p>
+              <p className="text-lg font-bold text-primary">{visibleCount}</p>
+            </div>
+            <div className="rounded-xl border border-border bg-background px-3 py-2">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Ocultas</p>
+              <p className="text-lg font-bold text-foreground/70">{hiddenCount}</p>
+            </div>
+          </div>
+        </aside>
+
+        {/* Page tree */}
+        <aside className="flex min-h-0 flex-col border-b border-border bg-card/45 p-4 xl:border-b-0 xl:border-r">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-bold text-foreground/90">Páginas</p>
+              <p className="text-[11px] text-muted-foreground">{getDocsProductLabel(selectedProductId)}</p>
+            </div>
+            <button
+              onClick={() => handleNewPage()}
+              className="inline-flex h-8 items-center gap-1 rounded-lg bg-primary px-2.5 text-[11px] font-bold text-primary-foreground hover:brightness-105"
+            >
+              <Plus size={13} />
+              Nova
             </button>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-5 items-start">
-          <aside className="xl:sticky xl:top-6 rounded-[22px] border border-border bg-background p-4 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
-            <div className="mb-4">
-              <h2 className="font-bold text-foreground/90">Produtos</h2>
-              <p className="mt-1 text-xs text-muted-foreground">Escolha o produto para ver ou criar páginas.</p>
-            </div>
+          <div className="relative mb-3">
+            <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={pageSearch}
+              onChange={(e) => setPageSearch(e.target.value)}
+              placeholder="Buscar páginas..."
+              className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-sm outline-none focus:border-primary/40"
+            />
+          </div>
 
-            <div className="mb-5 grid gap-2">
-              {productOptions.map((product) => (
-                <button
-                  key={product.id}
-                  onClick={() => handleSelectProduct(product.id)}
-                  className={`rounded-2xl border p-3 text-left transition-all ${selectedProductId === product.id ? "border-primary/35 bg-primary/10" : "border-border bg-background/60 hover:border-primary/20"}`}
-                >
-                  <p className="font-semibold text-foreground/85">{product.label}</p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">{product.id} · {product.count} páginas</p>
-                </button>
-              ))}
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+            {loading && <p className="rounded-xl border border-border bg-background p-3 text-xs text-muted-foreground">Carregando...</p>}
 
-              <button
-                onClick={() => {
-                  const customId = window.prompt("Digite o ID do novo produto. Ex: tws-camera-kit");
-                  if (!customId) return;
-                  handleNewPage(slugifyClient(customId));
-                }}
-                className="rounded-2xl border border-dashed border-primary/30 p-3 text-left text-sm font-semibold text-primary hover:bg-primary/5"
-              >
-                + Criar documentação para outro produto
-              </button>
-            </div>
-
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-bold text-foreground/90">Páginas</h2>
-              {loading && <span className="text-xs text-muted-foreground">Carregando...</span>}
-            </div>
-
-            <div className="max-h-[calc(100vh-470px)] overflow-y-auto space-y-2 pr-1">
-              {selectedProductPages.length === 0 && (
-                <p className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-                  Este produto ainda não tem páginas. Clique em “Nova página neste produto”.
-                </p>
-              )}
-
-              {selectedProductPages.map((page) => (
-                <button
-                  key={page.id}
-                  onClick={() => setSelected(page)}
-                  className={`w-full rounded-2xl border p-3 text-left transition-all ${selected.id === page.id ? "border-primary/35 bg-primary/10" : "border-border bg-background/60 hover:border-primary/20"}`}
-                >
-                  <p className="font-semibold text-foreground/85">{page.title}</p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">{page.category} · {page.slug} · {page.visible ? "visível" : "oculto"}</p>
-                </button>
-              ))}
-            </div>
-          </aside>
-
-          <section className="rounded-[22px] border border-border bg-card p-5 lg:p-6 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
-            {/* Metadata row */}
-            <div className="mb-5 grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="col-span-2 md:col-span-1 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Produto</p>
-                <p className="mt-1 text-sm font-semibold text-foreground/85 truncate">{getDocsProductLabel(selected.productId || selectedProductId)}</p>
+            {selectedProductPages.length === 0 && !loading && (
+              <div className="rounded-2xl border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">
+                Este produto ainda não tem páginas.
               </div>
-              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
-                <span className={labelClass + " mb-1"}>Produto ID</span>
-                <input
-                  value={selected.productId ?? selectedProductId}
-                  onChange={(e) => {
-                    const productId = slugifyClient(e.target.value);
-                    setSelectedProductId(productId);
-                    setSelected({ ...selected, productId });
-                  }}
-                  placeholder="tws-identity-forge"
-                  className="w-full bg-transparent text-sm outline-none text-foreground/80"
-                />
-              </label>
-              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
-                <span className={labelClass + " mb-1"}>Slug</span>
-                <input value={selected.slug} onChange={(e) => setSelected({ ...selected, slug: e.target.value })} className="w-full bg-transparent text-sm outline-none text-foreground/80" />
-              </label>
-              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
-                <span className={labelClass + " mb-1"}>Categoria</span>
-                <input value={selected.category} onChange={(e) => setSelected({ ...selected, category: e.target.value })} className="w-full bg-transparent text-sm outline-none text-foreground/80" />
-              </label>
+            )}
+
+            {Object.entries(pagesByCategory).map(([category, rows]) => (
+              <div key={category} className="mb-4">
+                <p className="mb-2 flex items-center gap-2 px-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                  <ChevronDown size={12} />
+                  {category}
+                </p>
+                <div className="space-y-1">
+                  {rows.map((page) => {
+                    const active = selected.id === page.id;
+                    return (
+                      <button
+                        key={page.id}
+                        onClick={() => setSelected(page)}
+                        className={`group flex w-full items-start gap-2 rounded-xl border px-3 py-2.5 text-left transition-all ${
+                          active
+                            ? "border-primary/30 bg-primary/10 text-primary"
+                            : "border-transparent text-foreground/70 hover:border-border hover:bg-background"
+                        }`}
+                      >
+                        <BookOpen size={14} className="mt-0.5 shrink-0" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold">{page.title}</span>
+                          <span className="mt-0.5 block truncate text-[10px] text-muted-foreground">
+                            /{page.slug} · {page.visible ? "Publicado" : "Oculto"}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        {/* Editor and preview */}
+        <section className="flex min-h-0 flex-col bg-background">
+          <div className="border-b border-border bg-card px-4 py-3 lg:px-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/75">Editor GitBook</p>
+                <h2 className="mt-1 truncate text-xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                  {activeTitle || "Nova página"}
+                </h2>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <a
+                  href={`/docs?product=${selectedProductId}`}
+                  className="inline-flex h-9 items-center gap-2 rounded-xl border border-border px-3 text-xs font-bold text-foreground/70 hover:bg-primary/5"
+                >
+                  <ExternalLink size={13} />
+                  Ver docs
+                </a>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="inline-flex h-9 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground hover:brightness-105 disabled:opacity-60"
+                >
+                  <Check size={14} />
+                  {saving ? "Salvando..." : "Publicar"}
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={saving || selected.id.startsWith("new-")}
+                  className="inline-flex h-9 items-center rounded-xl border border-red-500/25 px-3 text-xs font-bold text-red-500 hover:bg-red-500/5 disabled:opacity-40"
+                >
+                  Apagar
+                </button>
+              </div>
             </div>
 
-            <div className="mb-5 grid grid-cols-2 md:grid-cols-4 gap-3">
-              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
-                <span className={labelClass + " mb-1"}>Ordem</span>
-                <input type="number" value={selected.orderIndex} onChange={(e) => setSelected({ ...selected, orderIndex: Number(e.target.value) })} className="w-full bg-transparent text-sm outline-none text-foreground/80" />
-              </label>
-              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
-                <span className={labelClass + " mb-1"}>Visível</span>
-                <select value={selected.visible ? "1" : "0"} onChange={(e) => setSelected({ ...selected, visible: e.target.value === "1" })} className="w-full bg-transparent text-sm outline-none text-foreground/80">
-                  <option value="1">Sim</option>
-                  <option value="0">Não</option>
-                </select>
-              </label>
-              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
-                <span className={labelClass + " mb-1"}>Título PT</span>
-                <input value={selected.title} onChange={(e) => setSelected({ ...selected, title: e.target.value })} className="w-full bg-transparent text-sm outline-none text-foreground/80" />
-              </label>
-              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
-                <span className={labelClass + " mb-1"}>Título EN</span>
-                <input value={selected.titleEn ?? ""} onChange={(e) => setSelected({ ...selected, titleEn: e.target.value })} className="w-full bg-transparent text-sm outline-none text-foreground/80" />
-              </label>
-            </div>
+            {message && (
+              <div className="mt-3 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-xs font-semibold text-primary">
+                {message}
+              </div>
+            )}
+          </div>
 
-            {/* Content editors side by side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <label>
-                <span className={labelClass + " mb-2 flex items-center gap-2"}>
-                  <span className="inline-block w-2 h-2 rounded-full bg-green-400"></span>
-                  Conteúdo PT
-                </span>
+          <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden 2xl:grid-cols-[minmax(0,1fr)_420px]">
+            <div className="min-h-0 overflow-y-auto p-4 lg:p-5">
+              <div className="mb-4 grid grid-cols-1 gap-3 lg:grid-cols-12">
+                <label className={`${panelClass} block p-3 lg:col-span-4`}>
+                  <span className={labelClass}>Produto ID</span>
+                  <input
+                    value={selected.productId ?? selectedProductId}
+                    onChange={(e) => {
+                      const productId = slugifyClient(e.target.value);
+                      setSelectedProductId(productId);
+                      setSelected({ ...selected, productId });
+                    }}
+                    placeholder="tws-identity-forge"
+                    className="mt-1 w-full bg-transparent text-sm font-semibold outline-none text-foreground/85"
+                  />
+                </label>
+
+                <label className={`${panelClass} block p-3 lg:col-span-3`}>
+                  <span className={labelClass}>Slug</span>
+                  <input
+                    value={selected.slug}
+                    onChange={(e) => setSelected({ ...selected, slug: e.target.value })}
+                    className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
+                  />
+                </label>
+
+                <label className={`${panelClass} block p-3 lg:col-span-3`}>
+                  <span className={labelClass}>Categoria</span>
+                  <input
+                    value={selected.category}
+                    onChange={(e) => setSelected({ ...selected, category: e.target.value })}
+                    className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
+                  />
+                </label>
+
+                <div className="grid grid-cols-2 gap-3 lg:col-span-2">
+                  <label className={`${panelClass} block p-3`}>
+                    <span className={labelClass}>Ordem</span>
+                    <input
+                      type="number"
+                      value={selected.orderIndex}
+                      onChange={(e) => setSelected({ ...selected, orderIndex: Number(e.target.value) })}
+                      className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
+                    />
+                  </label>
+                  <label className={`${panelClass} block p-3`}>
+                    <span className={labelClass}>Status</span>
+                    <select
+                      value={selected.visible ? "1" : "0"}
+                      onChange={(e) => setSelected({ ...selected, visible: e.target.value === "1" })}
+                      className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
+                    >
+                      <option value="1">Publicado</option>
+                      <option value="0">Oculto</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <div className={`${panelClass} overflow-hidden`}>
+                <div className="flex flex-col gap-3 border-b border-border bg-card px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-foreground/90">Conteúdo da página</p>
+                    <p className="text-[11px] text-muted-foreground">Edite em Markdown, com preview ao lado.</p>
+                  </div>
+
+                  <div className="flex rounded-xl border border-border bg-background p-1">
+                    <button
+                      onClick={() => setEditorLanguage("pt")}
+                      className={`h-8 rounded-lg px-3 text-xs font-bold transition-all ${editorLanguage === "pt" ? "bg-primary text-primary-foreground" : "text-foreground/60 hover:text-foreground"}`}
+                    >
+                      PT-BR
+                    </button>
+                    <button
+                      onClick={() => setEditorLanguage("en")}
+                      className={`h-8 rounded-lg px-3 text-xs font-bold transition-all ${editorLanguage === "en" ? "bg-primary text-primary-foreground" : "text-foreground/60 hover:text-foreground"}`}
+                    >
+                      EN-US
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-0 border-b border-border lg:grid-cols-2">
+                  <label className="border-b border-border p-4 lg:border-b-0 lg:border-r">
+                    <span className={labelClass}>{editorLanguage === "pt" ? "Título PT" : "Título EN"}</span>
+                    <input
+                      value={editorLanguage === "pt" ? selected.title : selected.titleEn ?? ""}
+                      onChange={(e) => {
+                        if (editorLanguage === "pt") {
+                          setSelected({ ...selected, title: e.target.value });
+                        } else {
+                          setSelected({ ...selected, titleEn: e.target.value });
+                        }
+                      }}
+                      placeholder={editorLanguage === "pt" ? "Título da página" : "Page title"}
+                      className="mt-2 w-full bg-transparent text-xl font-bold outline-none text-foreground/95"
+                    />
+                  </label>
+                  <div className="p-4">
+                    <span className={labelClass}>Caminho público</span>
+                    <p className="mt-2 truncate rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground">
+                      /docs?product={selected.productId || selectedProductId} · /{selected.slug || "slug"}
+                    </p>
+                  </div>
+                </div>
+
                 <textarea
-                  value={selected.contentPt}
-                  onChange={(e) => setSelected({ ...selected, contentPt: e.target.value })}
-                  rows={22}
-                  className={fieldClass + " font-mono text-xs resize-y"}
+                  value={activeContent}
+                  onChange={(e) => updateSelectedContent(e.target.value)}
+                  rows={24}
+                  spellCheck={false}
+                  className="min-h-[520px] w-full resize-y border-0 bg-[#16130f] p-5 font-mono text-[13px] leading-6 text-[#f6ecd8] outline-none"
+                  placeholder="# Título&#10;&#10;Escreva a documentação aqui..."
                 />
-              </label>
-              <label>
-                <span className={labelClass + " mb-2 flex items-center gap-2"}>
-                  <span className="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
-                  Conteúdo EN
-                </span>
-                <textarea
-                  value={selected.contentEn ?? ""}
-                  onChange={(e) => setSelected({ ...selected, contentEn: e.target.value })}
-                  rows={22}
-                  className={fieldClass + " font-mono text-xs resize-y"}
-                />
-              </label>
+              </div>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <button onClick={handleSave} disabled={saving} className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:brightness-105 disabled:opacity-60 transition-all">
-                {saving ? "Salvando..." : "Salvar / publicar"}
-              </button>
-              <button onClick={handleDelete} disabled={saving} className="rounded-xl border border-red-500/25 px-5 py-3 text-sm font-semibold text-red-500 hover:bg-red-500/5 disabled:opacity-60 transition-colors">
-                Apagar página
-              </button>
-              {message && <p className="text-sm text-muted-foreground">{message}</p>}
-            </div>
-          </section>
-        </div>
+            <aside className="hidden min-h-0 border-l border-border bg-card/55 2xl:flex 2xl:flex-col">
+              <div className="border-b border-border px-4 py-3">
+                <p className="text-sm font-bold text-foreground/90">Preview</p>
+                <p className="text-[11px] text-muted-foreground">Visualização estilo cliente</p>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto p-5">
+                <article className="rounded-[22px] border border-border bg-background p-5">
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                      {selected.category || "Categoria"}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">{editorLanguage === "pt" ? "PT-BR" : "EN-US"}</span>
+                  </div>
+                  <DocsContent content={activeContent || "# Preview\n\nComece a escrever para visualizar."} />
+                </article>
+              </div>
+            </aside>
+          </div>
+        </section>
       </div>
     </main>
   );
