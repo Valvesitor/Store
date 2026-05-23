@@ -1748,15 +1748,25 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
               </button>
             </div>
           ) : adminLoggedIn ? (
-            <a
-              href="/admin"
-              className="inline-flex h-9 items-center gap-2 px-3 rounded-full text-xs font-semibold
-                border border-primary/20 bg-primary/5 text-primary hover:border-primary/35 hover:bg-primary/10 transition-all"
-              title="Abrir painel admin"
-            >
-              <Shield size={14} />
-              Admin
-            </a>
+            <div className="inline-flex h-9 items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2">
+              <a
+                href="/admin"
+                className="inline-flex items-center gap-2 px-2 text-xs font-semibold text-primary transition-colors hover:text-primary/80"
+                title="Abrir painel admin"
+              >
+                <Shield size={14} />
+                <span className="max-w-[120px] truncate">Admin</span>
+              </a>
+              <button
+                type="button"
+                onClick={handleNavbarAdminLogout}
+                className="inline-flex h-7 items-center gap-1 rounded-full px-2 text-[11px] font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
+                title="Sair"
+              >
+                <LogOut size={12} />
+                Sair
+              </button>
+            </div>
           ) : (
             <button
               type="button"
@@ -1876,15 +1886,26 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
                     </button>
                   </div>
                 ) : adminLoggedIn ? (
-                  <a
-                    href="/admin"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
-                      border border-primary/20 bg-primary/5 text-sm font-semibold text-primary"
-                  >
-                    <Shield size={14} />
-                    Admin
-                  </a>
+                  <div className="flex-1 flex gap-2">
+                    <a
+                      href="/admin"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
+                        border border-primary/20 bg-primary/5 text-sm font-semibold text-primary"
+                    >
+                      <Shield size={14} />
+                      Admin
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => { handleNavbarAdminLogout(); setMobileOpen(false); }}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
+                        border border-red-500/20 text-sm font-semibold text-red-500 hover:bg-red-500/5 transition-all"
+                    >
+                      <LogOut size={14} />
+                      Sair
+                    </button>
+                  </div>
                 ) : (
                   <button
                     type="button"
@@ -3717,7 +3738,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             </button>
             <button
               onClick={handleLogout}
-              className="inline-flex h-9 items-center gap-1 rounded-full px-3 text-xs font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
+              className="inline-flex h-9 items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-3 text-xs font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
               title="Sair"
             >
               <LogOut size={12} />
