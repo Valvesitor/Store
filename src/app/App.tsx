@@ -4786,20 +4786,20 @@ function DocsAdminPage() {
 
   return (
     <main className="bg-transparent p-0">
-      <div className="grid min-h-[calc(100vh-245px)] grid-cols-1 overflow-hidden rounded-[26px] border border-border bg-background shadow-[0_18px_55px_rgba(32,32,32,0.06)] xl:grid-cols-[250px_310px_minmax(0,1fr)]">
+      <div className="grid h-[calc(100vh-335px)] min-h-[430px] grid-cols-1 overflow-hidden rounded-[22px] border border-border bg-background shadow-[0_14px_42px_rgba(32,32,32,0.05)] xl:grid-cols-[210px_260px_minmax(0,1fr)]">
         {/* GitBook-style left rail */}
-        <aside className="border-b border-border bg-card/80 p-4 xl:border-b-0 xl:border-r">
-          <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <BookOpen size={18} />
+        <aside className="border-b border-border bg-card/80 p-3 xl:border-b-0 xl:border-r">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <BookOpen size={15} />
             </div>
             <div>
-              <p className="text-sm font-bold text-foreground/90">Docs Studio</p>
-              <p className="text-[11px] text-muted-foreground">GitBook style</p>
+              <p className="text-xs font-bold text-foreground/90">Docs Studio</p>
+              <p className="text-[10px] text-muted-foreground">GitBook style</p>
             </div>
           </div>
 
-          <div className="mb-4">
+          <div className="mb-3">
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Spaces</p>
             <div className="space-y-1.5">
               {productOptions.map((product) => {
@@ -4809,15 +4809,15 @@ function DocsAdminPage() {
                   <button
                     key={product.id}
                     onClick={() => handleSelectProduct(product.id)}
-                    className={`group flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-left transition-all ${
+                    className={`group flex w-full items-center justify-between gap-2 rounded-xl border px-2.5 py-2 text-left transition-all ${
                       active
                         ? "border-primary/30 bg-primary/10 text-primary"
                         : "border-transparent text-foreground/65 hover:border-border hover:bg-background hover:text-foreground"
                     }`}
                   >
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold">{product.label}</span>
-                      <span className="block truncate text-[10px] text-muted-foreground">{product.count} páginas</span>
+                      <span className="block truncate text-xs font-semibold">{product.label}</span>
+                      <span className="block truncate text-[9px] text-muted-foreground">{product.count} páginas</span>
                     </span>
                     <ChevronRight size={14} className={active ? "opacity-100" : "opacity-0 group-hover:opacity-60"} />
                   </button>
@@ -4832,27 +4832,27 @@ function DocsAdminPage() {
               if (!customId) return;
               handleNewPage(slugifyClient(customId));
             }}
-            className="mb-5 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary/35 bg-primary/5 px-3 py-2.5 text-xs font-bold text-primary transition-all hover:bg-primary/10"
+            className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary/35 bg-primary/5 px-3 py-2 text-[11px] font-bold text-primary transition-all hover:bg-primary/10"
           >
             <Plus size={14} />
             Novo space
           </button>
 
-          <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl border border-border bg-background px-3 py-2">
+          <div className="grid grid-cols-2 gap-1.5">
+            <div className="rounded-xl border border-border bg-background px-2.5 py-1.5">
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Visíveis</p>
-              <p className="text-lg font-bold text-primary">{visibleCount}</p>
+              <p className="text-base font-bold text-primary">{visibleCount}</p>
             </div>
             <div className="rounded-xl border border-border bg-background px-3 py-2">
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Ocultas</p>
-              <p className="text-lg font-bold text-foreground/70">{hiddenCount}</p>
+              <p className="text-base font-bold text-foreground/70">{hiddenCount}</p>
             </div>
           </div>
         </aside>
 
         {/* Page tree */}
-        <aside className="flex min-h-0 flex-col border-b border-border bg-card/45 p-4 xl:border-b-0 xl:border-r">
-          <div className="mb-3 flex items-center justify-between gap-2">
+        <aside className="flex min-h-0 flex-col border-b border-border bg-card/45 p-3 xl:border-b-0 xl:border-r">
+          <div className="mb-2 flex items-center justify-between gap-2">
             <div>
               <p className="text-sm font-bold text-foreground/90">Páginas</p>
               <p className="text-[11px] text-muted-foreground">{getDocsProductLabel(selectedProductId)}</p>
@@ -4872,7 +4872,7 @@ function DocsAdminPage() {
               value={pageSearch}
               onChange={(e) => setPageSearch(e.target.value)}
               placeholder="Buscar páginas..."
-              className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-sm outline-none focus:border-primary/40"
+              className="h-9 w-full rounded-xl border border-border bg-background pl-8 pr-3 text-xs outline-none focus:border-primary/40"
             />
           </div>
 
@@ -4898,7 +4898,7 @@ function DocsAdminPage() {
                       <button
                         key={page.id}
                         onClick={() => setSelected(page)}
-                        className={`group flex w-full items-start gap-2 rounded-xl border px-3 py-2.5 text-left transition-all ${
+                        className={`group flex w-full items-start gap-2 rounded-xl border px-2.5 py-2 text-left transition-all ${
                           active
                             ? "border-primary/30 bg-primary/10 text-primary"
                             : "border-transparent text-foreground/70 hover:border-border hover:bg-background"
@@ -4906,8 +4906,8 @@ function DocsAdminPage() {
                       >
                         <BookOpen size={14} className="mt-0.5 shrink-0" />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-semibold">{page.title}</span>
-                          <span className="mt-0.5 block truncate text-[10px] text-muted-foreground">
+                          <span className="block truncate text-xs font-semibold">{page.title}</span>
+                          <span className="mt-0.5 block truncate text-[9px] text-muted-foreground">
                             /{page.slug} · {page.visible ? "Publicado" : "Oculto"}
                           </span>
                         </span>
@@ -4922,11 +4922,11 @@ function DocsAdminPage() {
 
         {/* Editor and preview */}
         <section className="flex min-h-0 flex-col bg-background">
-          <div className="border-b border-border bg-card px-4 py-3 lg:px-5">
+          <div className="border-b border-border bg-card px-3 py-2.5 lg:px-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/75">Editor GitBook</p>
-                <h2 className="mt-1 truncate text-xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                <h2 className="mt-0.5 truncate text-base font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
                   {activeTitle || "Nova página"}
                 </h2>
               </div>
@@ -4934,7 +4934,7 @@ function DocsAdminPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <a
                   href={`/docs?product=${selectedProductId}`}
-                  className="inline-flex h-9 items-center gap-2 rounded-xl border border-border px-3 text-xs font-bold text-foreground/70 hover:bg-primary/5"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-[11px] font-bold text-foreground/70 hover:bg-primary/5"
                 >
                   <ExternalLink size={13} />
                   Ver docs
@@ -4942,7 +4942,7 @@ function DocsAdminPage() {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="inline-flex h-9 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground hover:brightness-105 disabled:opacity-60"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-[11px] font-bold text-primary-foreground hover:brightness-105 disabled:opacity-60"
                 >
                   <Check size={14} />
                   {saving ? "Salvando..." : "Publicar"}
@@ -4950,7 +4950,7 @@ function DocsAdminPage() {
                 <button
                   onClick={handleDelete}
                   disabled={saving || selected.id.startsWith("new-")}
-                  className="inline-flex h-9 items-center rounded-xl border border-red-500/25 px-3 text-xs font-bold text-red-500 hover:bg-red-500/5 disabled:opacity-40"
+                  className="inline-flex h-8 items-center rounded-lg border border-red-500/25 px-2.5 text-[11px] font-bold text-red-500 hover:bg-red-500/5 disabled:opacity-40"
                 >
                   Apagar
                 </button>
@@ -4964,10 +4964,10 @@ function DocsAdminPage() {
             )}
           </div>
 
-          <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden 2xl:grid-cols-[minmax(0,1fr)_420px]">
-            <div className="min-h-0 overflow-y-auto p-4 lg:p-5">
-              <div className="mb-4 grid grid-cols-1 gap-3 lg:grid-cols-12">
-                <label className={`${panelClass} block p-3 lg:col-span-4`}>
+          <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden 2xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="min-h-0 overflow-y-auto p-3 lg:p-4">
+              <div className="mb-3 grid grid-cols-1 gap-2 lg:grid-cols-12">
+                <label className={`${panelClass} block p-2.5 lg:col-span-4`}>
                   <span className={labelClass}>Produto ID</span>
                   <input
                     value={selected.productId ?? selectedProductId}
@@ -4981,7 +4981,7 @@ function DocsAdminPage() {
                   />
                 </label>
 
-                <label className={`${panelClass} block p-3 lg:col-span-3`}>
+                <label className={`${panelClass} block p-2.5 lg:col-span-3`}>
                   <span className={labelClass}>Slug</span>
                   <input
                     value={selected.slug}
@@ -4999,8 +4999,8 @@ function DocsAdminPage() {
                   />
                 </label>
 
-                <div className="grid grid-cols-2 gap-3 lg:col-span-2">
-                  <label className={`${panelClass} block p-3`}>
+                <div className="grid grid-cols-2 gap-2 lg:col-span-2">
+                  <label className={`${panelClass} block p-2.5`}>
                     <span className={labelClass}>Ordem</span>
                     <input
                       type="number"
@@ -5024,10 +5024,10 @@ function DocsAdminPage() {
               </div>
 
               <div className={`${panelClass} overflow-hidden`}>
-                <div className="flex flex-col gap-3 border-b border-border bg-card px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-col gap-2 border-b border-border bg-card px-3 py-2.5 lg:flex-row lg:items-center lg:justify-between">
                   <div>
-                    <p className="text-sm font-bold text-foreground/90">Conteúdo da página</p>
-                    <p className="text-[11px] text-muted-foreground">Edite em Markdown, com preview ao lado.</p>
+                    <p className="text-xs font-bold text-foreground/90">Conteúdo da página</p>
+                    <p className="text-[10px] text-muted-foreground">Edite em Markdown. Preview aparece em telas grandes.</p>
                   </div>
 
                   <div className="flex rounded-xl border border-border bg-background p-1">
@@ -5047,7 +5047,7 @@ function DocsAdminPage() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-0 border-b border-border lg:grid-cols-2">
-                  <label className="border-b border-border p-4 lg:border-b-0 lg:border-r">
+                  <label className="border-b border-border p-3 lg:border-b-0 lg:border-r">
                     <span className={labelClass}>{editorLanguage === "pt" ? "Título PT" : "Título EN"}</span>
                     <input
                       value={editorLanguage === "pt" ? selected.title : selected.titleEn ?? ""}
@@ -5059,12 +5059,12 @@ function DocsAdminPage() {
                         }
                       }}
                       placeholder={editorLanguage === "pt" ? "Título da página" : "Page title"}
-                      className="mt-2 w-full bg-transparent text-xl font-bold outline-none text-foreground/95"
+                      className="mt-1 w-full bg-transparent text-base font-bold outline-none text-foreground/95"
                     />
                   </label>
-                  <div className="p-4">
+                  <div className="p-3">
                     <span className={labelClass}>Caminho público</span>
-                    <p className="mt-2 truncate rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground">
+                    <p className="mt-1 truncate rounded-lg border border-border bg-background px-2.5 py-1.5 text-[11px] font-semibold text-muted-foreground">
                       /docs?product={selected.productId || selectedProductId} · /{selected.slug || "slug"}
                     </p>
                   </div>
@@ -5073,9 +5073,9 @@ function DocsAdminPage() {
                 <textarea
                   value={activeContent}
                   onChange={(e) => updateSelectedContent(e.target.value)}
-                  rows={24}
+                  rows={12}
                   spellCheck={false}
-                  className="min-h-[520px] w-full resize-y border-0 bg-[#16130f] p-5 font-mono text-[13px] leading-6 text-[#f6ecd8] outline-none"
+                  className="h-[calc(100vh-610px)] min-h-[190px] w-full resize-none border-0 bg-[#16130f] p-4 font-mono text-[12px] leading-5 text-[#f6ecd8] outline-none"
                   placeholder="# Título&#10;&#10;Escreva a documentação aqui..."
                 />
               </div>
@@ -5086,8 +5086,8 @@ function DocsAdminPage() {
                 <p className="text-sm font-bold text-foreground/90">Preview</p>
                 <p className="text-[11px] text-muted-foreground">Visualização estilo cliente</p>
               </div>
-              <div className="min-h-0 flex-1 overflow-y-auto p-5">
-                <article className="rounded-[22px] border border-border bg-background p-5">
+              <div className="min-h-0 flex-1 overflow-y-auto p-3">
+                <article className="rounded-[18px] border border-border bg-background p-4">
                   <div className="mb-4 flex flex-wrap items-center gap-2">
                     <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
                       {selected.category || "Categoria"}
@@ -5925,15 +5925,15 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
         </div>
 
         {/* Page header */}
-        <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <SectionTag>Admin Dashboard</SectionTag>
-            <h1 className="mt-3 text-2xl lg:text-3xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            <h1 className="mt-2 text-xl lg:text-2xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
               {activeAdminSection === "products" && "Produtos"}
               {activeAdminSection === "docs" && "Documentação"}
               {activeAdminSection === "coupons" && "Cupom / Gift Card"}
             </h1>
-            <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+            <p className="mt-1 text-xs text-muted-foreground max-w-xl">
               {activeAdminSection === "products" && "Cadastre, edite e publique os produtos da vitrine."}
               {activeAdminSection === "docs" && "Crie e edite páginas de documentação separadas por produto."}
               {activeAdminSection === "coupons" && "Cadastre o nome público e o código original da Tebex para cupons e gift cards."}
