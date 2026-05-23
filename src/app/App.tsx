@@ -731,6 +731,7 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Total atual": "Current total",
   "Cupom / Gift Card": "Coupon / Gift Card",
   "Digite seu cupom": "Enter your coupon",
+  "Digite seu coupon/gift card": "Enter your coupon/gift card",
   "Aplicar cupom": "Apply coupon",
   "Histórico de compras": "Purchase history",
   "Pedidos reais chegam aqui pelo webhook da Tebex no Worker.": "Real orders arrive here through the Tebex webhook in the Worker.",
@@ -5715,8 +5716,7 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
   const [loading, setLoading] = useState(true);
   const [removingItem, setRemovingItem] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [creatorCodes, setCreatorCodes] = useState<CreatorCode[]>([]);
-  const [selectedCreatorCode, setSelectedCreatorCode] = useState("");
+  const [couponCode, setCouponCode] = useState("");
   const [creatorCodeMessage, setCreatorCodeMessage] = useState<string | null>(null);
   const [applyingCreatorCode, setApplyingCreatorCode] = useState(false);
 
@@ -5746,20 +5746,6 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
     loadBasket();
   }, [loadBasket]);
 
-  useEffect(() => {
-    fetchCreatorCodes()
-      .then((codes) => {
-        setCreatorCodes(codes);
-        if (codes.length > 0) {
-          setSelectedCreatorCode((current) => current || codes[0].id);
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        setCreatorCodes([]);
-      });
-  }, []);
-
   async function handleRemoveCartItem(row: any) {
     if (!basketIdent) return;
     const packageId = getBasketRowPackageId(row);
@@ -5784,17 +5770,18 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
       return;
     }
 
-    const selected = creatorCodes.find((code) => code.id === selectedCreatorCode);
-    if (!selected) {
-      setCreatorCodeMessage("Selecione um coupon/gift card válido.");
+    const typedCode = couponCode.trim();
+    if (!typedCode) {
+      setCreatorCodeMessage("Digite um coupon/gift card válido.");
       return;
     }
 
     try {
       setApplyingCreatorCode(true);
-      const updated = await applyCreatorCodeToBasket(basketIdent, selected.originalCode);
+      const updated = await applyCreatorCodeToBasket(basketIdent, typedCode);
       setBasket(updated);
-      setCreatorCodeMessage(`Coupon/Gift Card aplicado: ${selected.label}`);
+      setCreatorCodeMessage(`Coupon/Gift Card aplicado: ${typedCode}`);
+      setCouponCode("");
     } catch (error) {
       console.error(error);
       setCreatorCodeMessage(error instanceof Error ? error.message : "Nao foi possivel aplicar o coupon/gift card.");
@@ -5896,25 +5883,22 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
                 Aplicar coupon/gift card
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Selecione o nome público. O site aplica na Tebex o cupom/gift card original configurado no admin.
+                Digite o coupon/gift card exatamente como foi informado. O site aplica direto na Tebex.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 lg:min-w-[420px]">
-              <select
-                value={selectedCreatorCode}
-                onChange={(e) => setSelectedCreatorCode(e.target.value)}
-                disabled={creatorCodes.length === 0}
+              <input
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleApplyCreatorCode();
+                }}
+                placeholder="Digite seu coupon/gift card"
                 className="h-11 flex-1 rounded-xl border border-border bg-background px-4 text-sm outline-none focus:border-primary/40"
-              >
-                {creatorCodes.length === 0 ? (
-                  <option value="">Nenhum coupon/gift card configurado</option>
-                ) : creatorCodes.map((code) => (
-                  <option key={code.id} value={code.id}>{code.label}</option>
-                ))}
-              </select>
+              />
               <button
                 onClick={handleApplyCreatorCode}
-                disabled={creatorCodes.length === 0 || applyingCreatorCode}
+                disabled={!couponCode.trim() || applyingCreatorCode}
                 className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {applyingCreatorCode ? "Aplicando..." : "Aplicar"}
