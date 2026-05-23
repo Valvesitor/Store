@@ -4638,6 +4638,7 @@ function DocsAdminPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [activeAdminSection, setActiveAdminSection] = useState<"products" | "docs" | "coupons">("products");
 
   const isLogged = !!token;
   const productOptions = getDocsProductOptions(pages);
@@ -5737,10 +5738,14 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
           <div>
             <SectionTag>Admin Dashboard</SectionTag>
             <h1 className="mt-4 text-4xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
-              Publicação de produtos
+              {activeAdminSection === "products" && "Produtos"}
+              {activeAdminSection === "docs" && "Documentação"}
+              {activeAdminSection === "coupons" && "Cupom / Gift Card"}
             </h1>
             <p className="mt-3 text-muted-foreground max-w-2xl">
-              Cadastre produtos uma vez no admin. Eles aparecem automaticamente na vitrine pública, na categoria escolhida e com o package ID da Tebex.
+              {activeAdminSection === "products" && "Cadastre, edite e publique os produtos da vitrine."}
+              {activeAdminSection === "docs" && "Crie e edite páginas de documentação separadas por produto."}
+              {activeAdminSection === "coupons" && "Cadastre o nome público e o código original da Tebex para cupons e gift cards."}
             </p>
             {message && (
               <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
@@ -5750,28 +5755,82 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => {
-                setSelected(emptyAdminProduct());
-                setMessage("Novo produto pronto para cadastro.");
-              }}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground hover:brightness-105"
-            >
-              <Plus size={15} />
-              Novo produto
-            </button>
+            {activeAdminSection === "products" && (
+              <button
+                onClick={() => {
+                  setSelected(emptyAdminProduct());
+                  setMessage("Novo produto pronto para cadastro.");
+                }}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground hover:brightness-105"
+              >
+                <Plus size={15} />
+                Novo produto
+              </button>
+            )}
+
+            {activeAdminSection === "docs" && (
+              <a
+                href="/docs"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-primary/25 px-4 text-sm font-semibold text-primary hover:bg-primary/5"
+              >
+                <BookOpen size={15} />
+                Ver docs
+              </a>
+            )}
+
+            {activeAdminSection === "coupons" && (
+              <span className="inline-flex h-10 items-center rounded-full border border-primary/20 bg-primary/5 px-4 text-sm font-semibold text-primary">
+                Coupon/Gift Card
+              </span>
+            )}
 
             <button
-            onClick={handleLogout}
-            className="inline-flex h-7 items-center gap-1 rounded-full px-2 text-[11px] font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
-            title="Sair"
-          >
-            <LogOut size={12} />
-            Sair
-          </button>
+              onClick={handleLogout}
+              className="inline-flex h-7 items-center gap-1 rounded-full px-2 text-[11px] font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
+              title="Sair"
+            >
+              <LogOut size={12} />
+              Sair
+            </button>
           </div>
         </div>
 
+        <div className="mb-8 rounded-[28px] border border-border bg-card p-4 lg:p-5 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-primary/70">Categoria</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[
+              { id: "products" as const, label: "Produto", description: "Editor de produto", icon: Package },
+              { id: "docs" as const, label: "Documentação", description: "Editor de docs", icon: BookOpen },
+              { id: "coupons" as const, label: "Cupom", description: "Coupon / Gift Card", icon: Crown }
+            ].map((section) => {
+              const Icon = section.icon;
+              const active = activeAdminSection === section.id;
+
+              return (
+                <button
+                  key={section.id}
+                  type="button"
+                  onClick={() => setActiveAdminSection(section.id)}
+                  className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition-all ${
+                    active
+                      ? "border-primary/35 bg-primary/10 text-primary shadow-[0_12px_30px_rgba(201,168,76,0.12)]"
+                      : "border-border bg-background/60 text-foreground/70 hover:border-primary/20 hover:bg-primary/5"
+                  }`}
+                >
+                  <span className={`flex h-11 w-11 items-center justify-center rounded-2xl ${active ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"}`}>
+                    <Icon size={18} />
+                  </span>
+                  <span>
+                    <strong className="block text-sm">{section.label}</strong>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{section.description}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {activeAdminSection === "products" && (
         <div className="grid grid-cols-1 2xl:grid-cols-[360px_minmax(0,1fr)] gap-8 lg:gap-10 items-start">
           <aside className="rounded-[28px] border border-border bg-card p-5 lg:p-6 shadow-[0_22px_80px_rgba(32,32,32,0.08)] 2xl:sticky 2xl:top-6">
             <div className="flex items-center justify-between gap-3 mb-5">
@@ -5842,9 +5901,19 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
               onSave={handleSave}
               saving={saving}
             />
-            <CreatorCodeAdminPanel token={token} />
           </div>
         </div>
+        )}
+
+        {activeAdminSection === "docs" && (
+          <div className="rounded-[28px] border border-border bg-card/40 p-0 shadow-[0_18px_55px_rgba(32,32,32,0.04)]">
+            <DocsAdminPage />
+          </div>
+        )}
+
+        {activeAdminSection === "coupons" && (
+          <CreatorCodeAdminPanel token={token} />
+        )}
       </main>
     </div>
   );
