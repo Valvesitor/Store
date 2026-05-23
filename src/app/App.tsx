@@ -3287,11 +3287,582 @@ function FAQSection() {
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
+
+function LegalPage({
+  language,
+  type
+}: {
+  language: SiteLanguage;
+  type: "terms" | "privacy";
+}) {
+  const isEnglish = language === "en_US";
+
+  const termsPt: any[] = [
+    {
+      title: "1. Introdução",
+      paragraphs: [
+        "Bem-vindo à The Wanted Sole Studio. Estes Termos de Uso regulam o acesso e a utilização do nosso site, produtos digitais, scripts, custom peds, documentações, serviços e demais conteúdos disponibilizados pela The Wanted Sole Studio.",
+        "Ao acessar nosso site, realizar uma compra, baixar qualquer produto ou utilizar nossos serviços, você declara que leu, entendeu e concorda com estes Termos. Caso não concorde com alguma condição, recomendamos que não utilize o site nem adquira nossos produtos."
+      ]
+    },
+    {
+      title: "2. Sobre nossos produtos",
+      paragraphs: [
+        "A The Wanted Sole Studio trabalha com produtos digitais voltados principalmente para servidores RedM, incluindo scripts, sistemas, custom peds, interfaces, recursos visuais, documentações e arquivos relacionados.",
+        "Todos os produtos são digitais. Não há envio físico. Após a confirmação do pagamento, o acesso poderá ser liberado automaticamente pela plataforma de pagamento, painel do cliente, Discord, documentação ou outro meio informado na página do produto."
+      ]
+    },
+    {
+      title: "3. Conta, acesso e responsabilidade",
+      paragraphs: [
+        "Para acessar determinados produtos, recursos ou áreas restritas, poderá ser necessário utilizar uma conta, e-mail, Discord, Tebex ou outro método de identificação.",
+        "O usuário é responsável por manter suas informações corretas, proteger seus acessos e garantir que terceiros não utilizem sua conta sem autorização."
+      ]
+    },
+    {
+      title: "4. Licença de uso",
+      paragraphs: [
+        "Ao adquirir um produto da The Wanted Sole Studio, o usuário recebe uma licença limitada, pessoal, revogável, intransferível e não exclusiva para utilizar o produto conforme as condições descritas na página de venda, documentação ou instruções fornecidas."
+      ],
+      highlight: "A compra de um produto não transfere propriedade intelectual, código-fonte, marca, design, conceito, estrutura ou qualquer direito autoral relacionado ao produto."
+    },
+    {
+      title: "5. Restrições de uso",
+      paragraphs: ["O usuário não está autorizado a:"],
+      list: [
+        "Revender, redistribuir, compartilhar, vazar ou doar qualquer produto adquirido;",
+        "Publicar arquivos, códigos, links privados ou conteúdos protegidos em grupos, fóruns, Discords ou sites;",
+        "Remover créditos, proteções, licenças ou identificações dos produtos;",
+        "Copiar, clonar ou reproduzir nossos sistemas, interfaces, layouts, nomes, marcas ou identidade visual;",
+        "Realizar engenharia reversa, descompilação ou tentativa de extração indevida de código protegido;",
+        "Compartilhar acesso de cliente, licença ou arquivos com outras pessoas, servidores ou comunidades."
+      ],
+      danger: "O descumprimento dessas regras poderá resultar na suspensão do suporte, revogação da licença, bloqueio de acesso aos produtos e, quando necessário, medidas legais."
+    },
+    {
+      title: "6. Pagamentos",
+      paragraphs: [
+        "Os pagamentos podem ser processados por plataformas terceiras, como Tebex ou outros meios informados no momento da compra. A The Wanted Sole Studio não armazena dados completos de cartão, dados bancários ou informações financeiras sensíveis.",
+        "Preços, moedas, promoções e disponibilidade dos produtos podem ser alterados a qualquer momento, sem aviso prévio. O valor válido será aquele exibido no momento da finalização da compra."
+      ]
+    },
+    {
+      title: "7. Política de reembolso",
+      paragraphs: [
+        "Por se tratarem de produtos digitais, entregues ou disponibilizados após a confirmação da compra, não oferecemos reembolso após a liberação do acesso, download, envio dos arquivos ou ativação da licença.",
+        "Reembolsos poderão ser analisados apenas em situações excepcionais, como pagamento duplicado, erro comprovado de cobrança ou impossibilidade técnica confirmada pela equipe da The Wanted Sole Studio."
+      ],
+      danger: "A abertura de disputa, chargeback ou contestação indevida após o recebimento do produto poderá resultar na suspensão imediata da licença, bloqueio de acesso e remoção do suporte."
+    },
+    {
+      title: "8. Suporte",
+      paragraphs: [
+        "O suporte é oferecido conforme a disponibilidade da equipe e pode ocorrer por Discord, ticket, documentação, e-mail ou outro canal oficial informado pela The Wanted Sole Studio.",
+        "O suporte cobre dúvidas de instalação, configuração básica e problemas relacionados ao funcionamento original do produto. Não garantimos suporte para produtos modificados, arquivos alterados por terceiros, conflitos com outros scripts, bases muito modificadas ou uso fora das instruções fornecidas."
+      ]
+    },
+    {
+      title: "9. Atualizações",
+      paragraphs: [
+        "A The Wanted Sole Studio poderá disponibilizar atualizações, correções ou melhorias para seus produtos, mas não garante atualizações vitalícias, contínuas ou obrigatórias para todos os produtos.",
+        "Algumas atualizações poderão ser gratuitas, enquanto outras poderão fazer parte de novas versões, pacotes pagos ou produtos separados."
+      ]
+    },
+    {
+      title: "10. Compatibilidade",
+      paragraphs: [
+        "Nossos produtos são desenvolvidos para funcionar conforme as informações descritas na página do produto e na documentação oficial. O usuário é responsável por verificar requisitos, dependências, framework, versão do servidor e compatibilidade antes da compra.",
+        "Não garantimos funcionamento em ambientes alterados, bases privadas, versões desatualizadas, recursos modificados ou servidores que não sigam os requisitos informados."
+      ]
+    },
+    {
+      title: "11. Propriedade intelectual",
+      paragraphs: [
+        "Todo conteúdo disponibilizado pela The Wanted Sole Studio, incluindo códigos, designs, imagens, textos, vídeos, logotipos, nomes, interfaces, documentações, arquivos e materiais promocionais, é protegido por direitos autorais e outras leis aplicáveis.",
+        "É proibido copiar, reproduzir, distribuir, vender, sublicenciar, publicar ou explorar qualquer conteúdo da The Wanted Sole Studio sem autorização prévia e por escrito."
+      ]
+    },
+    {
+      title: "12. Suspensão ou encerramento de acesso",
+      paragraphs: [
+        "A The Wanted Sole Studio reserva-se o direito de suspender, limitar ou encerrar o acesso de qualquer usuário que viole estes Termos, pratique fraude, compartilhe produtos indevidamente, abuse do suporte ou tente prejudicar a segurança dos nossos sistemas."
+      ]
+    },
+    {
+      title: "13. Alterações no site e nos termos",
+      paragraphs: [
+        "Podemos modificar, remover ou atualizar conteúdos, produtos, preços, páginas, funcionalidades e estes Termos de Uso a qualquer momento, sem aviso prévio.",
+        "O uso contínuo do site ou dos produtos após alterações significa que o usuário concorda com a versão mais recente dos Termos."
+      ]
+    },
+    {
+      title: "14. Limitação de responsabilidade",
+      paragraphs: [
+        "A The Wanted Sole Studio não será responsável por perdas indiretas, lucros cessantes, danos ao servidor, perda de dados, conflitos com outros recursos, falhas causadas por má instalação, uso incorreto ou alterações realizadas pelo usuário ou por terceiros.",
+        "Nossos produtos são fornecidos conforme disponibilizados, sem garantia de que atenderão a todas as necessidades específicas de cada servidor."
+      ]
+    },
+    {
+      title: "15. Plataformas terceiras",
+      paragraphs: [
+        "Nosso site e produtos podem utilizar ou direcionar para serviços de terceiros, como Tebex, Discord, GitHub, YouTube, plataformas de hospedagem, sistemas de pagamento ou documentações externas.",
+        "A The Wanted Sole Studio não se responsabiliza por políticas, funcionamento, disponibilidade, cobranças ou decisões tomadas por essas plataformas terceiras."
+      ]
+    },
+    {
+      title: "16. Contato",
+      paragraphs: ["Em caso de dúvidas sobre estes Termos de Uso, produtos, licenças ou suporte, entre em contato pelos canais oficiais da The Wanted Sole Studio."],
+      contacts: [
+        { label: "Discord", href: "https://discord.gg/qE29trG84u" },
+        { label: "Site", href: "https://store-test.thewantedsolestudio.workers.dev/" }
+      ]
+    },
+    {
+      title: "17. Aceitação dos termos",
+      paragraphs: ["Ao continuar utilizando o site, comprar produtos ou acessar qualquer conteúdo da The Wanted Sole Studio, você confirma que leu, compreendeu e aceita integralmente estes Termos de Uso."]
+    }
+  ];
+
+  const termsEn: any[] = [
+    {
+      title: "1. Introduction",
+      paragraphs: [
+        "Welcome to The Wanted Sole Studio. These Terms of Use govern access to and use of our website, digital products, scripts, custom peds, documentation, services, and other content made available by The Wanted Sole Studio.",
+        "By accessing our website, making a purchase, downloading any product, or using our services, you declare that you have read, understood, and agreed to these Terms. If you do not agree with any condition, we recommend that you do not use the website or purchase our products."
+      ]
+    },
+    {
+      title: "2. About our products",
+      paragraphs: [
+        "The Wanted Sole Studio works with digital products mainly intended for RedM servers, including scripts, systems, custom peds, interfaces, visual resources, documentation, and related files.",
+        "All products are digital. There is no physical shipping. After payment confirmation, access may be released automatically through the payment platform, customer panel, Discord, documentation, or another method stated on the product page."
+      ]
+    },
+    {
+      title: "3. Account, access, and responsibility",
+      paragraphs: [
+        "To access certain products, resources, or restricted areas, it may be necessary to use an account, email, Discord, Tebex, or another identification method.",
+        "The user is responsible for keeping their information accurate, protecting their access credentials, and ensuring that third parties do not use their account without authorization."
+      ]
+    },
+    {
+      title: "4. Usage license",
+      paragraphs: [
+        "When purchasing a product from The Wanted Sole Studio, the user receives a limited, personal, revocable, non-transferable, and non-exclusive license to use the product according to the conditions described on the sales page, documentation, or provided instructions."
+      ],
+      highlight: "Purchasing a product does not transfer intellectual property, source code, brand, design, concept, structure, or any copyright related to the product."
+    },
+    {
+      title: "5. Usage restrictions",
+      paragraphs: ["The user is not authorized to:"],
+      list: [
+        "Resell, redistribute, share, leak, or donate any purchased product;",
+        "Publish files, code, private links, or protected content in groups, forums, Discord servers, or websites;",
+        "Remove credits, protections, licenses, or product identifiers;",
+        "Copy, clone, or reproduce our systems, interfaces, layouts, names, brands, or visual identity;",
+        "Perform reverse engineering, decompilation, or any attempt to improperly extract protected code;",
+        "Share customer access, licenses, or files with other people, servers, or communities."
+      ],
+      danger: "Violation of these rules may result in suspension of support, license revocation, product access blocking, and, when necessary, legal measures."
+    },
+    {
+      title: "6. Payments",
+      paragraphs: [
+        "Payments may be processed by third-party platforms such as Tebex or other methods stated at checkout. The Wanted Sole Studio does not store complete card details, banking data, or sensitive financial information.",
+        "Prices, currencies, promotions, and product availability may change at any time without prior notice. The valid amount will be the amount displayed when the purchase is completed."
+      ]
+    },
+    {
+      title: "7. Refund policy",
+      paragraphs: [
+        "Because these are digital products delivered or made available after purchase confirmation, we do not offer refunds after access is released, files are downloaded or sent, or the license is activated.",
+        "Refunds may only be reviewed in exceptional situations, such as duplicate payment, confirmed billing error, or a technical impossibility verified by The Wanted Sole Studio team."
+      ],
+      danger: "Opening a dispute, chargeback, or improper payment contest after receiving the product may result in immediate license suspension, access blocking, and removal of support."
+    },
+    {
+      title: "8. Support",
+      paragraphs: [
+        "Support is offered according to team availability and may take place through Discord, ticket, documentation, email, or another official channel stated by The Wanted Sole Studio.",
+        "Support covers installation questions, basic configuration, and issues related to the product's original functionality. We do not guarantee support for modified products, files changed by third parties, conflicts with other scripts, heavily modified bases, or use outside the provided instructions."
+      ]
+    },
+    {
+      title: "9. Updates",
+      paragraphs: [
+        "The Wanted Sole Studio may provide updates, fixes, or improvements for its products, but does not guarantee lifetime, continuous, or mandatory updates for every product.",
+        "Some updates may be free, while others may be part of new versions, paid packages, or separate products."
+      ]
+    },
+    {
+      title: "10. Compatibility",
+      paragraphs: [
+        "Our products are developed to work according to the information described on the product page and official documentation. The user is responsible for checking requirements, dependencies, framework, server version, and compatibility before purchasing.",
+        "We do not guarantee functionality in altered environments, private bases, outdated versions, modified resources, or servers that do not follow the stated requirements."
+      ]
+    },
+    {
+      title: "11. Intellectual property",
+      paragraphs: [
+        "All content made available by The Wanted Sole Studio, including code, designs, images, texts, videos, logos, names, interfaces, documentation, files, and promotional materials, is protected by copyright and other applicable laws.",
+        "It is forbidden to copy, reproduce, distribute, sell, sublicense, publish, or exploit any The Wanted Sole Studio content without prior written authorization."
+      ]
+    },
+    {
+      title: "12. Suspension or termination of access",
+      paragraphs: ["The Wanted Sole Studio reserves the right to suspend, limit, or terminate access for any user who violates these Terms, commits fraud, improperly shares products, abuses support, or attempts to harm the security of our systems."]
+    },
+    {
+      title: "13. Changes to the website and terms",
+      paragraphs: [
+        "We may modify, remove, or update content, products, prices, pages, features, and these Terms of Use at any time without prior notice.",
+        "Continued use of the website or products after changes means that the user agrees to the most recent version of the Terms."
+      ]
+    },
+    {
+      title: "14. Limitation of liability",
+      paragraphs: [
+        "The Wanted Sole Studio will not be responsible for indirect losses, lost profits, server damage, data loss, conflicts with other resources, failures caused by poor installation, incorrect use, or changes made by the user or third parties.",
+        "Our products are provided as made available, with no guarantee that they will meet every specific need of each server."
+      ]
+    },
+    {
+      title: "15. Third-party platforms",
+      paragraphs: [
+        "Our website and products may use or redirect to third-party services such as Tebex, Discord, GitHub, YouTube, hosting platforms, payment systems, or external documentation.",
+        "The Wanted Sole Studio is not responsible for the policies, operation, availability, charges, or decisions made by these third-party platforms."
+      ]
+    },
+    {
+      title: "16. Contact",
+      paragraphs: ["If you have questions about these Terms of Use, products, licenses, or support, contact The Wanted Sole Studio through the official channels."],
+      contacts: [
+        { label: "Discord", href: "https://discord.gg/qE29trG84u" },
+        { label: "Website", href: "https://store-test.thewantedsolestudio.workers.dev/" }
+      ]
+    },
+    {
+      title: "17. Acceptance of the terms",
+      paragraphs: ["By continuing to use the website, purchasing products, or accessing any The Wanted Sole Studio content, you confirm that you have read, understood, and fully accept these Terms of Use."]
+    }
+  ];
+
+  const privacyPt: any[] = [
+    {
+      title: "1. Introdução",
+      paragraphs: [
+        "A sua privacidade é importante para a The Wanted Sole Studio. Esta Política de Privacidade explica como coletamos, usamos, armazenamos, protegemos e compartilhamos informações quando você acessa nosso site, compra produtos digitais, utiliza recursos vinculados à Tebex, entra em contato pelo Discord ou usa nossos serviços.",
+        "Ao utilizar nosso site, você concorda com esta Política de Privacidade. Caso não concorde, recomendamos que não utilize o site nem realize compras."
+      ]
+    },
+    {
+      title: "2. Informações que podemos coletar",
+      paragraphs: [
+        "Podemos coletar informações fornecidas voluntariamente pelo usuário, como nome, e-mail, usuário/ID do Discord, identificador de conta Tebex, histórico de pedidos, mensagens enviadas ao suporte e informações necessárias para entrega de produtos digitais.",
+        "Também podemos coletar informações técnicas automaticamente, como endereço IP, navegador, sistema operacional, páginas acessadas, data e horário de acesso, idioma, moeda selecionada, cookies e dados de uso do site."
+      ]
+    },
+    {
+      title: "3. Dados de pagamento",
+      paragraphs: [
+        "A The Wanted Sole Studio não armazena dados completos de cartão, dados bancários ou informações financeiras sensíveis. Pagamentos são processados por plataformas terceiras, como Tebex ou outros provedores exibidos no checkout.",
+        "Podemos receber apenas informações necessárias para identificar e confirmar pedidos, como ID da transação, status do pagamento, produto comprado, valor, moeda, data da compra e dados básicos relacionados ao pedido."
+      ],
+      highlight: "Nunca solicitaremos que você envie dados completos de cartão por Discord, ticket ou mensagem privada."
+    },
+    {
+      title: "4. Como usamos suas informações",
+      paragraphs: ["Podemos usar as informações coletadas para:"],
+      list: [
+        "Processar pedidos, liberar produtos digitais e validar compras;",
+        "Exibir informações da sua conta, cesta, checkout e histórico de compras;",
+        "Prestar suporte técnico, responder dúvidas e resolver problemas;",
+        "Prevenir fraudes, chargebacks indevidos, abuso de suporte ou violação de licença;",
+        "Melhorar o site, os produtos, a documentação e a experiência do usuário;",
+        "Enviar avisos importantes relacionados a compras, suporte, atualizações ou segurança."
+      ]
+    },
+    {
+      title: "5. Compartilhamento de informações",
+      paragraphs: [
+        "Podemos compartilhar informações com serviços necessários para operação do site e entrega dos produtos, como Tebex, Cloudflare, Discord, provedores de hospedagem, ferramentas de análise, sistemas de suporte e meios de pagamento.",
+        "Também poderemos divulgar informações quando necessário para cumprir obrigação legal, proteger nossos direitos, investigar violações dos Termos de Uso, prevenir fraude ou responder a solicitações legítimas de autoridades competentes."
+      ]
+    },
+    {
+      title: "6. Cookies e tecnologias semelhantes",
+      paragraphs: [
+        "Podemos utilizar cookies, armazenamento local do navegador e tecnologias semelhantes para manter preferências do usuário, como idioma, moeda, sessão, cesta, login, experiência de navegação e funcionalidades do site.",
+        "Você pode configurar seu navegador para bloquear cookies, mas algumas partes do site, checkout, login ou cesta podem não funcionar corretamente."
+      ]
+    },
+    {
+      title: "7. Segurança",
+      paragraphs: [
+        "Adotamos medidas técnicas e organizacionais razoáveis para proteger informações contra acesso não autorizado, alteração, perda, uso indevido ou divulgação indevida.",
+        "Apesar dos esforços de segurança, nenhum sistema online é totalmente imune a falhas, ataques ou interceptações. Por isso, recomendamos que o usuário também proteja suas contas, tokens, e-mails e acessos."
+      ]
+    },
+    {
+      title: "8. Retenção de dados",
+      paragraphs: [
+        "Podemos manter informações pelo tempo necessário para cumprir finalidades operacionais, suporte, prevenção de fraude, obrigações legais, registros de compra, auditoria, segurança e defesa de direitos.",
+        "Quando os dados não forem mais necessários, poderemos removê-los, anonimizá-los ou mantê-los apenas quando exigido por lei ou por interesse legítimo."
+      ]
+    },
+    {
+      title: "9. Direitos do usuário",
+      paragraphs: [
+        "Dependendo da legislação aplicável, você poderá solicitar acesso, correção, atualização ou exclusão de determinadas informações pessoais mantidas pela The Wanted Sole Studio.",
+        "Alguns dados podem precisar ser mantidos por razões legais, fiscais, antifraude, segurança, comprovação de compra ou cumprimento dos Termos de Uso."
+      ]
+    },
+    {
+      title: "10. Menores de idade",
+      paragraphs: [
+        "Nossos produtos e serviços não são direcionados a crianças. Não coletamos intencionalmente informações de menores de idade sem consentimento apropriado do responsável legal.",
+        "Se identificarmos coleta inadequada de dados de menor, poderemos remover as informações assim que razoavelmente possível."
+      ]
+    },
+    {
+      title: "11. Links e plataformas terceiras",
+      paragraphs: [
+        "Nosso site pode conter links ou integrações com plataformas de terceiros, como Tebex, Discord, GitHub, YouTube, Cloudflare e páginas externas.",
+        "A The Wanted Sole Studio não controla as políticas de privacidade dessas plataformas. Recomendamos que você leia as políticas de cada serviço antes de fornecer informações."
+      ]
+    },
+    {
+      title: "12. Alterações nesta política",
+      paragraphs: [
+        "Podemos atualizar esta Política de Privacidade periodicamente para refletir mudanças no site, produtos, integrações, obrigações legais ou práticas de segurança.",
+        "A versão mais recente será publicada nesta página. O uso contínuo do site após alterações significa que você concorda com a política atualizada."
+      ]
+    },
+    {
+      title: "13. Contato",
+      paragraphs: ["Em caso de dúvidas sobre esta Política de Privacidade ou sobre o tratamento de informações, entre em contato pelos canais oficiais da The Wanted Sole Studio."],
+      contacts: [
+        { label: "Discord", href: "https://discord.gg/qE29trG84u" },
+        { label: "Site", href: "https://store-test.thewantedsolestudio.workers.dev/" }
+      ]
+    }
+  ];
+
+  const privacyEn: any[] = [
+    {
+      title: "1. Introduction",
+      paragraphs: [
+        "Your privacy is important to The Wanted Sole Studio. This Privacy Policy explains how we collect, use, store, protect, and share information when you access our website, purchase digital products, use Tebex-related features, contact us through Discord, or use our services.",
+        "By using our website, you agree to this Privacy Policy. If you do not agree, we recommend that you do not use the website or make purchases."
+      ]
+    },
+    {
+      title: "2. Information we may collect",
+      paragraphs: [
+        "We may collect information voluntarily provided by the user, such as name, email address, Discord username/ID, Tebex account identifier, order history, support messages, and information required to deliver digital products.",
+        "We may also automatically collect technical information such as IP address, browser, operating system, visited pages, access date and time, language, selected currency, cookies, and website usage data."
+      ]
+    },
+    {
+      title: "3. Payment data",
+      paragraphs: [
+        "The Wanted Sole Studio does not store complete card details, banking data, or sensitive financial information. Payments are processed by third-party platforms, such as Tebex or other providers shown at checkout.",
+        "We may only receive information required to identify and confirm orders, such as transaction ID, payment status, purchased product, amount, currency, purchase date, and basic order-related data."
+      ],
+      highlight: "We will never ask you to send complete card details through Discord, support tickets, or private messages."
+    },
+    {
+      title: "4. How we use your information",
+      paragraphs: ["We may use collected information to:"],
+      list: [
+        "Process orders, release digital products, and validate purchases;",
+        "Display account, basket, checkout, and purchase history information;",
+        "Provide technical support, answer questions, and resolve issues;",
+        "Prevent fraud, improper chargebacks, support abuse, or license violations;",
+        "Improve the website, products, documentation, and user experience;",
+        "Send important notices related to purchases, support, updates, or security."
+      ]
+    },
+    {
+      title: "5. Sharing of information",
+      paragraphs: [
+        "We may share information with services required to operate the website and deliver products, such as Tebex, Cloudflare, Discord, hosting providers, analytics tools, support systems, and payment providers.",
+        "We may also disclose information when necessary to comply with legal obligations, protect our rights, investigate Terms of Use violations, prevent fraud, or respond to legitimate requests from competent authorities."
+      ]
+    },
+    {
+      title: "6. Cookies and similar technologies",
+      paragraphs: [
+        "We may use cookies, browser local storage, and similar technologies to maintain user preferences such as language, currency, session, basket, login, browsing experience, and website features.",
+        "You can configure your browser to block cookies, but some parts of the website, checkout, login, or basket may not work correctly."
+      ]
+    },
+    {
+      title: "7. Security",
+      paragraphs: [
+        "We adopt reasonable technical and organizational measures to protect information against unauthorized access, alteration, loss, misuse, or improper disclosure.",
+        "Despite security efforts, no online system is completely immune to failures, attacks, or interception. We also recommend that users protect their accounts, tokens, emails, and access credentials."
+      ]
+    },
+    {
+      title: "8. Data retention",
+      paragraphs: [
+        "We may retain information for as long as necessary to fulfill operational purposes, support, fraud prevention, legal obligations, purchase records, auditing, security, and defense of rights.",
+        "When data is no longer necessary, we may remove it, anonymize it, or retain it only when required by law or legitimate interest."
+      ]
+    },
+    {
+      title: "9. User rights",
+      paragraphs: [
+        "Depending on applicable law, you may request access, correction, update, or deletion of certain personal information held by The Wanted Sole Studio.",
+        "Some data may need to be retained for legal, tax, anti-fraud, security, proof of purchase, or Terms of Use compliance purposes."
+      ]
+    },
+    {
+      title: "10. Minors",
+      paragraphs: [
+        "Our products and services are not directed to children. We do not knowingly collect information from minors without appropriate consent from a legal guardian.",
+        "If we identify improper collection of a minor's data, we may remove the information as soon as reasonably possible."
+      ]
+    },
+    {
+      title: "11. Third-party links and platforms",
+      paragraphs: [
+        "Our website may contain links or integrations with third-party platforms, such as Tebex, Discord, GitHub, YouTube, Cloudflare, and external pages.",
+        "The Wanted Sole Studio does not control the privacy policies of these platforms. We recommend that you read each service's policy before providing information."
+      ]
+    },
+    {
+      title: "12. Changes to this policy",
+      paragraphs: [
+        "We may update this Privacy Policy periodically to reflect changes to the website, products, integrations, legal obligations, or security practices.",
+        "The most recent version will be published on this page. Continued use of the website after changes means that you agree to the updated policy."
+      ]
+    },
+    {
+      title: "13. Contact",
+      paragraphs: ["If you have questions about this Privacy Policy or how information is handled, contact The Wanted Sole Studio through the official channels."],
+      contacts: [
+        { label: "Discord", href: "https://discord.gg/qE29trG84u" },
+        { label: "Website", href: "https://store-test.thewantedsolestudio.workers.dev/" }
+      ]
+    }
+  ];
+
+  const isPrivacy = type === "privacy";
+  const sections = isPrivacy
+    ? (isEnglish ? privacyEn : privacyPt)
+    : (isEnglish ? termsEn : termsPt);
+
+  return (
+    <main className="relative min-h-screen overflow-hidden bg-[#07080c] px-6 py-16 lg:py-20 text-[#f4f4f5]">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute left-[-14%] top-[-12%] h-80 w-80 rounded-full bg-[#d6a84f]/15 blur-3xl" />
+        <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-white/5 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-5xl">
+        <header className="mb-10 text-center">
+          <div className="mb-5 inline-flex items-center rounded-full border border-[#d6a84f]/35 bg-[#d6a84f]/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#d6a84f]">
+            The Wanted Sole Studio
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight lg:text-6xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            {isPrivacy
+              ? (isEnglish ? "Privacy Policy" : "Política de Privacidade")
+              : (isEnglish ? "Terms of Use" : "Termos de Uso")}
+          </h1>
+          <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-zinc-400 lg:text-base">
+            {isPrivacy
+              ? (isEnglish
+                ? "Learn how The Wanted Sole Studio handles information related to browsing, accounts, purchases, support, Tebex integrations, and digital products."
+                : "Entenda como a The Wanted Sole Studio trata informações relacionadas à navegação, contas, compras, suporte, integrações Tebex e produtos digitais.")
+              : (isEnglish
+                ? "Read the conditions for use, purchase, licensing, support, and access to digital products provided by The Wanted Sole Studio."
+                : "Leia atentamente as condições de uso, compra, licença, suporte e acesso aos produtos digitais disponibilizados pela The Wanted Sole Studio.")}
+          </p>
+          <div className="mt-6 inline-flex rounded-full border border-[#d6a84f]/25 bg-[#d6a84f]/10 px-4 py-2 text-xs font-semibold text-[#d6a84f]">
+            {isEnglish ? "Language: English" : "Idioma: Português"}
+          </div>
+        </header>
+
+        <section className="rounded-[30px] border border-white/10 bg-white/[0.045] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:p-8">
+          <div className="space-y-5">
+            {sections.map((section) => (
+              <article key={section.title} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 lg:p-6">
+                <h2 className="mb-3 text-lg font-bold text-[#d6a84f] lg:text-xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                  {section.title}
+                </h2>
+
+                <div className="space-y-3">
+                  {section.paragraphs.map((paragraph: string) => (
+                    <p key={paragraph} className="text-sm leading-7 text-zinc-300">
+                      {paragraph}
+                    </p>
+                  ))}
+
+                  {section.list && (
+                    <ul className="grid gap-2 pt-1">
+                      {section.list.map((item: string) => (
+                        <li key={item} className="flex gap-3 text-sm leading-6 text-zinc-300">
+                          <span className="mt-0.5 text-[#d6a84f]">✦</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {section.highlight && (
+                    <div className="rounded-2xl border border-[#d6a84f]/25 bg-[#d6a84f]/10 px-4 py-3 text-sm leading-6 text-[#f5e7c6]">
+                      {section.highlight}
+                    </div>
+                  )}
+
+                  {section.danger && (
+                    <div className="rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm leading-6 text-red-200">
+                      {section.danger}
+                    </div>
+                  )}
+
+                  {section.contacts && (
+                    <div className="grid gap-2 pt-2">
+                      {section.contacts.map((contact: { label: string; href: string }) => (
+                        <p key={contact.href} className="text-sm text-zinc-300">
+                          <strong>{contact.label}:</strong>{" "}
+                          <a href={contact.href} target="_blank" rel="noopener noreferrer" className="font-bold text-[#d6a84f] hover:underline">
+                            {contact.href}
+                          </a>
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <p className="mt-8 text-center text-xs text-zinc-500">
+          © 2026 The Wanted Sole Studio. {isEnglish ? "All rights reserved." : "Todos os direitos reservados."}
+        </p>
+      </div>
+    </main>
+  );
+}
+
+function TermsPage({ language }: { language: SiteLanguage }) {
+  return <LegalPage language={language} type="terms" />;
+}
+
+function PrivacyPolicyPage({ language }: { language: SiteLanguage }) {
+  return <LegalPage language={language} type="privacy" />;
+}
+
+
 function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
   const companyLinks = [
     { label: "About", action: () => onNavigate("why") },
-    { label: "Terms of use", action: () => onNavigate("faq") },
-    { label: "Privacy Policy", href: "https://checkout.tebex.io/privacy" },
+    { label: "Terms of use", href: "/terms" },
+    { label: "Privacy Policy", href: "/privacy-policy" },
   ];
 
   const quickLinks = [
@@ -3312,8 +3883,8 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
       <a
         key={link.label}
         href={link.href}
-        target="_blank"
-        rel="noopener noreferrer"
+        target={link.href.startsWith("/") ? undefined : "_blank"}
+        rel={link.href.startsWith("/") ? undefined : "noopener noreferrer"}
         className={className}
         style={{ fontFamily: "'DM Sans', sans-serif" }}
       >
@@ -5173,6 +5744,14 @@ export default function App() {
       </div>
     </div>
   );
+
+  if (pathname === "/terms" || pathname === "/terms-of-use") {
+    return renderPageWithNavbar(<TermsPage language={language} />);
+  }
+
+  if (pathname === "/privacy-policy" || pathname === "/privacy") {
+    return renderPageWithNavbar(<PrivacyPolicyPage language={language} />);
+  }
 
   const productRouteMatch = pathname.match(/^\/(script|scripts|custom-peds|systems|outfit-creator|add-ons)\/(.+)$/);
   if (productRouteMatch) {
