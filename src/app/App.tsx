@@ -614,6 +614,9 @@ function normalizeTranslationText(value: string) {
 
 const EN_TRANSLATIONS: Record<string, string> = {
   "Início": "Home",
+  "Docs": "Docs",
+  "Script": "Script",
+  "Home": "Home",
   "Scripts": "Scripts",
   "Custom Peds": "Custom Peds",
   "Documentação": "Documentation",
@@ -1816,11 +1819,10 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
 
 
   const links = [
-    { label: "Início", id: "hero" },
-    { label: "Scripts", id: "products" },
-    { label: "Custom Peds", id: "custom-peds" },
-    { label: "Documentação", id: "docs", external: true, url: "/docs" },
+    { label: "Home", id: "hero" },
     { label: "About", id: "about", external: true, url: "/about" },
+    { label: "Script", id: "products" },
+    { label: "Docs", id: "docs", external: true, url: "/docs" },
     /*{ label: "Licença", id: "faq" },*/
   ];
 
