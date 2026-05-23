@@ -402,8 +402,8 @@ async function handleApi(request, env) {
 
   if (adminProductMatch && request.method === "DELETE") {
     if (!requireAdmin(request, env)) return jsonResponse({ error: "Admin token inválido." }, 401);
-    await env.DB.prepare("UPDATE products SET visible = 0, updated_at = ? WHERE id = ?")
-      .bind(new Date().toISOString(), decodeURIComponent(adminProductMatch[1]))
+    await env.DB.prepare("DELETE FROM products WHERE id = ?")
+      .bind(decodeURIComponent(adminProductMatch[1]))
       .run();
     return jsonResponse({ ok: true });
   }
@@ -432,8 +432,8 @@ async function handleApi(request, env) {
 
   if (adminCreatorCodeMatch && request.method === "DELETE") {
     if (!requireAdmin(request, env)) return jsonResponse({ error: "Admin token inválido." }, 401);
-    await env.DB.prepare("UPDATE creator_codes SET visible = 0, updated_at = ? WHERE id = ?")
-      .bind(new Date().toISOString(), decodeURIComponent(adminCreatorCodeMatch[1]))
+    await env.DB.prepare("DELETE FROM creator_codes WHERE id = ?")
+      .bind(decodeURIComponent(adminCreatorCodeMatch[1]))
       .run();
     return jsonResponse({ ok: true });
   }

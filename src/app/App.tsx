@@ -709,7 +709,7 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Conta Tebex conectada": "Tebex account connected",
   "Conta / Tebex": "Account / Tebex",
   "Total atual": "Current total",
-  "Cupom / creator code": "Coupon / creator code",
+  "Cupom / Gift Card": "Coupon / Gift Card",
   "Digite seu cupom": "Enter your coupon",
   "Aplicar cupom": "Apply coupon",
   "Histórico de compras": "Purchase history",
@@ -725,7 +725,7 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Reconectar Tebex": "Reconnect Tebex",
   "Login com Tebex": "Login with Tebex",
   "Conectando...": "Connecting...",
-  "Creator Code": "Creator Code",
+  "Coupon/Gift Card": "Coupon/Gift Card",
   "Headless API + Tebex.js": "Headless API + Tebex.js",
 
   "Admin": "Admin",
@@ -737,7 +737,7 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Sair": "Logout",
   "Produtos": "Products",
   "Nenhum produto salvo ainda.": "No saved product yet.",
-  "Ocultar/remover": "Hide/remove",
+  "Apagar": "Hide/remove",
   "Publicar novo produto": "Publish new product",
   "Editar produto": "Edit product",
   "Salvar e publicar": "Save and publish",
@@ -1375,18 +1375,42 @@ async function deleteAdminCreatorCode(token: string, creatorCodeId: string) {
 async function applyCreatorCodeToBasket(basketIdent: string, originalCode: string) {
   const webstoreToken = getTebexWebstoreToken();
 
-  const response = await fetch(`https://headless.tebex.io/api/accounts/${webstoreToken}/baskets/${basketIdent}/creator-codes`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ creator_code: originalCode })
-  });
+  const attempts = [
+    {
+      endpoint: `https://headless.tebex.io/api/accounts/${webstoreToken}/baskets/${basketIdent}/coupons`,
+      body: { coupon_code: originalCode },
+      label: "coupon"
+    },
+    {
+      endpoint: `https://headless.tebex.io/api/accounts/${webstoreToken}/baskets/${basketIdent}/giftcards`,
+      body: { card_number: originalCode },
+      label: "gift card"
+    },
+    {
+      endpoint: `https://headless.tebex.io/api/accounts/${webstoreToken}/baskets/${basketIdent}/creator-codes`,
+      body: { creator_code: originalCode },
+      label: "creator code"
+    }
+  ];
 
-  if (!response.ok) {
+  const errors: string[] = [];
+
+  for (const attempt of attempts) {
+    const response = await fetch(attempt.endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(attempt.body)
+    });
+
+    if (response.ok) {
+      return fetchTebexBasket(basketIdent);
+    }
+
     const payload = await response.json().catch(() => null);
-    throw new Error(payload?.message ?? payload?.detail ?? "Nao foi possivel aplicar o creator code.");
+    errors.push(payload?.message ?? payload?.detail ?? attempt.label);
   }
 
-  return fetchTebexBasket(basketIdent);
+  throw new Error(errors.find(Boolean) ?? "Nao foi possivel aplicar o coupon/gift card.");
 }
 
 async function fetchAccountSummary(basketIdent?: string | null, usernameId?: string | null) {
@@ -2785,9 +2809,12 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
     { label: "Documentação", href: "https://docs.thewantedsolestudio.workers.dev" },
     { label: "Licença", action: () => onNavigate("faq") },
     { label: "Discord", href: "https://discord.gg/qE29trG84u" },
-    { label: "Privacy", href: "https://checkout.tebex.io/privacy" },
-    { label: "Terms", href: "https://checkout.tebex.io/terms" },
+  ];
+
+  const tebexLinks = [
     { label: "Impressum", href: "https://checkout.tebex.io/impressum" },
+    { label: "Terms & Conditions", href: "https://checkout.tebex.io/terms" },
+    { label: "Privacy Policy", href: "https://checkout.tebex.io/privacy" },
   ];
 
   return (
@@ -2820,31 +2847,56 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
           </div>
 
           {/* Links */}
-          <nav className="flex flex-wrap gap-6 lg:gap-8">
-            {links.map((link) =>
-              link.href ? (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-foreground/80 transition-colors"
-                  style={{ fontFamily: "'DM Sans', sans-serif" }}
-                >
-                  {link.label}
-                </a>
-              ) : (
-                <button
-                  key={link.label}
-                  onClick={link.action}
-                  className="text-sm text-muted-foreground hover:text-foreground/80 transition-colors"
-                  style={{ fontFamily: "'DM Sans', sans-serif" }}
-                >
-                  {link.label}
-                </button>
-              )
-            )}
-          </nav>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 lg:gap-16">
+            <nav className="flex flex-wrap gap-6 lg:gap-8">
+              {links.map((link) =>
+                link.href ? (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-muted-foreground hover:text-foreground/80 transition-colors"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <button
+                    key={link.label}
+                    onClick={link.action}
+                    className="text-sm text-muted-foreground hover:text-foreground/80 transition-colors"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    {link.label}
+                  </button>
+                )
+              )}
+            </nav>
+
+            <div className="min-w-[170px]">
+              <p
+                className="text-sm text-muted-foreground mb-4"
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Tebex
+              </p>
+              <nav className="flex flex-col gap-2">
+                {tebexLinks.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-semibold text-foreground/85 hover:text-primary transition-colors"
+                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </div>
         </div>
 
         {/* Bottom bar */}
@@ -3063,7 +3115,7 @@ function CreatorCodeAdminPanel({ token }: { token: string }) {
 
   async function handleSaveCreatorCode() {
     if (!selected.label.trim() || !selected.originalCode.trim()) {
-      setMessage("Preencha o nome público e o código original da Tebex.");
+      setMessage("Preencha o nome público e o cupom/gift card original da Tebex.");
       return;
     }
 
@@ -3073,7 +3125,7 @@ function CreatorCodeAdminPanel({ token }: { token: string }) {
       const saved = await saveAdminCreatorCode(token, selected);
       setSelected(saved);
       await loadCodes();
-      setMessage("Creator code salvo com sucesso.");
+      setMessage("Coupon/Gift Card salvo com sucesso.");
     } catch (error) {
       console.error(error);
       setMessage(error instanceof Error ? error.message : "Nao foi possivel salvar creator code.");
@@ -3083,13 +3135,13 @@ function CreatorCodeAdminPanel({ token }: { token: string }) {
   }
 
   async function handleDeleteCreatorCode(id: string) {
-    if (!window.confirm("Remover este creator code do site?")) return;
+    if (!window.confirm("Apagar este coupon/gift card definitivamente?")) return;
     try {
       setSaving(true);
       await deleteAdminCreatorCode(token, id);
       setSelected(emptyCreatorCode());
       await loadCodes();
-      setMessage("Creator code removido.");
+      setMessage("Coupon/Gift Card removido.");
     } catch (error) {
       console.error(error);
       setMessage(error instanceof Error ? error.message : "Nao foi possivel remover creator code.");
@@ -3102,16 +3154,16 @@ function CreatorCodeAdminPanel({ token }: { token: string }) {
     <div className="mt-8 rounded-[28px] border border-border bg-card p-6 lg:p-8 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5 mb-6">
         <div>
-          <SectionTag>Creator Code</SectionTag>
+          <SectionTag>Coupon/Gift Card</SectionTag>
           <h2 className="mt-3 text-2xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
-            Códigos de criador
+            Coupons / Gift Cards
           </h2>
           <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
-            Cadastre o código original criado na Tebex e escolha o nome que o cliente verá no checkout.
+            Cadastre o cupom ou gift card criado na Tebex e escolha o nome que o cliente verá no checkout.
           </p>
         </div>
         <button onClick={() => setSelected(emptyCreatorCode())} className="rounded-full border border-primary/30 px-4 h-10 text-sm font-semibold text-primary">
-          Novo creator code
+          Novo coupon/gift card
         </button>
       </div>
 
@@ -3126,7 +3178,7 @@ function CreatorCodeAdminPanel({ token }: { token: string }) {
           {loading ? (
             <p className="text-sm text-muted-foreground">Carregando...</p>
           ) : codes.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum creator code configurado.</p>
+            <p className="text-sm text-muted-foreground">Nenhum coupon/gift card configurado.</p>
           ) : codes.map((code) => (
             <button
               key={code.id}
@@ -3138,7 +3190,7 @@ function CreatorCodeAdminPanel({ token }: { token: string }) {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-semibold text-foreground/90">{code.label}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Código original: {code.originalCode}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Original: {code.originalCode}</p>
                 </div>
                 <span className={`mt-2 h-2 w-2 rounded-full ${code.visible ? "bg-emerald-400" : "bg-red-400"}`} />
               </div>
@@ -3167,7 +3219,7 @@ function CreatorCodeAdminPanel({ token }: { token: string }) {
               />
             </label>
             <label className="space-y-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Código original da Tebex</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cupom/Gift Card original da Tebex</span>
               <input
                 value={selected.originalCode}
                 onChange={(e) => setSelected({ ...selected, originalCode: e.target.value })}
@@ -3190,7 +3242,7 @@ function CreatorCodeAdminPanel({ token }: { token: string }) {
             disabled={saving}
             className="mt-5 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
           >
-            {saving ? "Salvando..." : "Salvar creator code"}
+            {saving ? "Salvando..." : "Salvar coupon/gift card"}
           </button>
         </div>
       </div>
@@ -3261,13 +3313,13 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
   }
 
   async function handleDelete(productId: string) {
-    if (!window.confirm("Ocultar/remover este produto da vitrine?")) return;
+    if (!window.confirm("Apagar este produto da vitrine?")) return;
     setSaving(true);
     try {
       await deleteAdminProduct(token, productId);
       setSelected(emptyAdminProduct());
       await load();
-      setMessage("Produto removido da vitrine.");
+      setMessage("Produto apagado definitivamente.");
     } catch (error) {
       console.error(error);
       setMessage(error instanceof Error ? error.message : "Nao foi possivel remover.");
@@ -3381,7 +3433,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
                     }}
                     className="mt-3 text-xs text-red-500 hover:underline"
                   >
-                    Ocultar/remover
+                    Apagar
                   </button>
                 </button>
               ))}
@@ -3571,13 +3623,13 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
 
   async function handleApplyCreatorCode() {
     if (!basketIdent) {
-      setCreatorCodeMessage("Faça login ou adicione um produto antes de aplicar o creator code.");
+      setCreatorCodeMessage("Faça login ou adicione um produto antes de aplicar o coupon/gift card.");
       return;
     }
 
     const selected = creatorCodes.find((code) => code.id === selectedCreatorCode);
     if (!selected) {
-      setCreatorCodeMessage("Selecione um creator code válido.");
+      setCreatorCodeMessage("Selecione um coupon/gift card válido.");
       return;
     }
 
@@ -3585,10 +3637,10 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
       setApplyingCreatorCode(true);
       const updated = await applyCreatorCodeToBasket(basketIdent, selected.originalCode);
       setBasket(updated);
-      setCreatorCodeMessage(`Creator code aplicado: ${selected.label}`);
+      setCreatorCodeMessage(`Coupon/Gift Card aplicado: ${selected.label}`);
     } catch (error) {
       console.error(error);
-      setCreatorCodeMessage(error instanceof Error ? error.message : "Nao foi possivel aplicar o creator code.");
+      setCreatorCodeMessage(error instanceof Error ? error.message : "Nao foi possivel aplicar o coupon/gift card.");
     } finally {
       setApplyingCreatorCode(false);
     }
@@ -3682,12 +3734,12 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
         <div className="mt-8 rounded-[28px] border border-border bg-card p-6">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Creator Code</p>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Coupon/Gift Card</p>
               <h2 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                Apoiar criador
+                Aplicar coupon/gift card
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Selecione o nome público. O site aplica na Tebex o código original configurado no admin.
+                Selecione o nome público. O site aplica na Tebex o cupom/gift card original configurado no admin.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 lg:min-w-[420px]">
@@ -3698,7 +3750,7 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
                 className="h-11 flex-1 rounded-xl border border-border bg-background px-4 text-sm outline-none focus:border-primary/40"
               >
                 {creatorCodes.length === 0 ? (
-                  <option value="">Nenhum creator code configurado</option>
+                  <option value="">Nenhum coupon/gift card configurado</option>
                 ) : creatorCodes.map((code) => (
                   <option key={code.id} value={code.id}>{code.label}</option>
                 ))}
@@ -3742,9 +3794,10 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
           <a href="mailto:vito123bolado86@gmail.com" className="hover:text-primary">Contact us</a>
         </div>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-5 text-xs text-muted-foreground">
-          <a href="https://checkout.tebex.io/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-primary">Privacy</a>
-          <a href="https://checkout.tebex.io/terms" target="_blank" rel="noopener noreferrer" className="hover:text-primary">Terms</a>
-          <a href="https://checkout.tebex.io/impressum" target="_blank" rel="noopener noreferrer" className="hover:text-primary">Impressum</a>
+          <span className="text-muted-foreground/70">Tebex</span>
+          <a href="https://checkout.tebex.io/impressum" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground/80 hover:text-primary">Impressum</a>
+          <a href="https://checkout.tebex.io/terms" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground/80 hover:text-primary">Terms & Conditions</a>
+          <a href="https://checkout.tebex.io/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground/80 hover:text-primary">Privacy Policy</a>
         </div>
       </main>
     </div>
