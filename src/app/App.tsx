@@ -15,7 +15,7 @@ type Category = "Todos" | "Scripts" | "Custom Peds" | "Systems" | "Outfit / Crea
 type SortOrder = "recent" | "popular" | "price-asc" | "price-desc";
 type ProductStatus = "novo" | "atualizado" | "popular" | "em-breve";
 type SiteLanguage = "pt_BR" | "en_US";
-type CurrencyCode = "EUR" | "USD" | "GBP" | "BRL";
+type CurrencyCode = "AUD" | "BRL" | "CAD" | "DKK" | "EUR" | "NOK" | "NZD" | "GBP" | "SEK" | "USD" | "PLN";
 type ProductMedia = {
   type: "image" | "video" | "youtube";
   src: string;
@@ -320,12 +320,44 @@ const STATUS_CONFIG: Record<ProductStatus, { label: string; cls: string }> = {
   "em-breve": { label: "Em Breve", cls: "bg-zinc-900 text-zinc-400 border border-zinc-700/50" }
 };
 
+const PRODUCT_BASE_CURRENCY: CurrencyCode = "BRL";
+const PRODUCT_CURRENCY_RATES: Record<CurrencyCode, number> = {
+  BRL: 1,
+  USD: 0.18,
+  EUR: 0.16,
+  GBP: 0.14,
+  AUD: 0.28,
+  CAD: 0.25,
+  DKK: 1.20,
+  NOK: 1.85,
+  NZD: 0.31,
+  SEK: 1.80,
+  PLN: 0.68
+};
+
+function getCurrencyLocale(currency: CurrencyCode | string) {
+  if (currency === "BRL") return "pt-BR";
+  if (currency === "DKK" || currency === "NOK" || currency === "SEK") return "da-DK";
+  if (currency === "PLN") return "pl-PL";
+  return "en-US";
+}
+
+function convertProductPrice(price: number, currency: CurrencyCode) {
+  if (price === 0) return 0;
+  if (currency === PRODUCT_BASE_CURRENCY) return price;
+  return price * PRODUCT_CURRENCY_RATES[currency];
+}
+
 function formatPrice(price: number, currency: CurrencyCode = "BRL") {
   if (price === 0) return "Grátis";
-  return new Intl.NumberFormat(currency === "BRL" ? "pt-BR" : "en-US", {
+  return new Intl.NumberFormat(getCurrencyLocale(currency), {
     style: "currency",
     currency
   }).format(price);
+}
+
+function formatProductPrice(price: number, currency: CurrencyCode) {
+  return formatPrice(convertProductPrice(price, currency), currency);
 }
 
 function getStoredCurrency(): CurrencyCode {
@@ -339,7 +371,7 @@ function storeCurrency(currency: CurrencyCode) {
 
 function formatCurrencyValue(amount?: number, currency: CurrencyCode | string = "EUR") {
   if (typeof amount !== "number" || Number.isNaN(amount)) return "—";
-  return new Intl.NumberFormat(currency === "BRL" ? "pt-BR" : "en-US", {
+  return new Intl.NumberFormat(getCurrencyLocale(currency), {
     style: "currency",
     currency
   }).format(amount);
@@ -393,7 +425,7 @@ function getYouTubeThumbnail(url: string) {
 const TEBEX_BASKET_KEY = "tws_tebex_basket";
 const SITE_LANGUAGE_KEY = "tws_site_language";
 const SITE_CURRENCY_KEY = "tws_site_currency";
-const CURRENCIES: CurrencyCode[] = ["EUR", "USD", "GBP", "BRL"];
+const CURRENCIES: CurrencyCode[] = ["AUD", "BRL", "CAD", "DKK", "EUR", "NOK", "NZD", "GBP", "SEK", "USD", "PLN"];
 let tebexCheckoutLocale: SiteLanguage = "pt_BR";
 
 function getStoredTebexBasket() {
@@ -489,9 +521,9 @@ async function addPackageToTebexBasket(basketIdent: string, packageId: string) {
   return packagePayload?.data?.ident ?? packagePayload?.ident ?? basketIdent;
 }
 
-async function getTebexAuthUrl(basketIdent: string, packageId?: string) {
+async function getTebexAuthUrl(basketIdent: string, packageId?: string, returnPath = window.location.pathname) {
   const webstoreToken = getTebexWebstoreToken();
-  const returnUrl = new URL(window.location.href);
+  const returnUrl = new URL(window.location.origin + returnPath);
   returnUrl.searchParams.set("tebexBasket", basketIdent);
   if (packageId) {
     returnUrl.searchParams.set("tebexPackage", packageId);
@@ -542,7 +574,7 @@ async function launchTebexCheckout(product: Product) {
     try {
       const basketIdent = getStoredTebexBasket() ?? await createTebexBasket();
       storeTebexBasket(basketIdent);
-      const authUrl = await getTebexAuthUrl(basketIdent, product.packageId);
+      const authUrl = await getTebexAuthUrl(basketIdent, product.packageId, "/account");
       window.location.href = authUrl;
       return;
     } catch (error) {
@@ -581,11 +613,11 @@ async function addProductToTebexCart(product: Product) {
 }
 
 
-async function startTebexLogin() {
+async function startTebexLogin(returnPath = "/account") {
   try {
     const basketIdent = getStoredTebexBasket() ?? await createTebexBasket();
     storeTebexBasket(basketIdent);
-    const authUrl = await getTebexAuthUrl(basketIdent);
+    const authUrl = await getTebexAuthUrl(basketIdent, undefined, returnPath);
     window.location.href = authUrl;
   } catch (error) {
     console.error(error);
@@ -1375,7 +1407,7 @@ function WhySection() {
 
 // ─── Product Card ─────────────────────────────────────────────────────────────
 
-function ProductCard({ product, onSelect }: { product: Product; onSelect: (p: Product) => void }) {
+function ProductCard({ product, currency, onSelect }: { product: Product; currency: CurrencyCode; onSelect: (p: Product) => void }) {
   const Icon = ICON_MAP[product.iconName] ?? Package;
   const status = STATUS_CONFIG[product.status];
 
@@ -1448,7 +1480,7 @@ function ProductCard({ product, onSelect }: { product: Product; onSelect: (p: Pr
             className="text-base font-bold"
             style={{ color: product.price === 0 ? "#5d8a5d" : "#8b714b", fontFamily: "'Cinzel', serif" }}
           >
-            {formatPrice(product.price)}
+            {formatProductPrice(product.price, currency)}
           </span>
           <div className="flex items-center gap-1.5">
             {product.docsUrl && (
@@ -1490,11 +1522,13 @@ function ProductsSection({
   products,
   loading,
   error,
+  currency,
   onSelectProduct
 }: {
   products: Product[];
   loading: boolean;
   error: string | null;
+  currency: CurrencyCode;
   onSelectProduct: (p: Product) => void;
 }) {
   const [search, setSearch] = useState("");
@@ -1609,7 +1643,7 @@ function ProductsSection({
         ) : filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} onSelect={onSelectProduct} />
+              <ProductCard key={product.id} product={product} currency={currency} onSelect={onSelectProduct} />
             ))}
           </div>
         ) : (
@@ -1760,7 +1794,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
 }
 
 
-function ProductDetail({ product, onClose }: { product: Product; onClose: () => void }) {
+function ProductDetail({ product, currency, onClose }: { product: Product; currency: CurrencyCode; onClose: () => void }) {
   const status = STATUS_CONFIG[product.status];
   const [cartBusy, setCartBusy] = useState(false);
   const [buyBusy, setBuyBusy] = useState(false);
@@ -1946,7 +1980,7 @@ function ProductDetail({ product, onClose }: { product: Product; onClose: () => 
                   className="text-2xl font-bold"
                   style={{ color: product.price === 0 ? "#5d8a5d" : "#8b714b", fontFamily: "'Cinzel', serif" }}
                 >
-                  {formatPrice(product.price)}
+                  {formatProductPrice(product.price, currency)}
                 </div>
               </div>
 
@@ -2573,6 +2607,259 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
 }
 
 
+
+function LoginPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onCurrencyChange: (currency: CurrencyCode) => void }) {
+  const [adminToken, setAdminToken] = useState("");
+
+  function handleAdminLogin() {
+    storeAdminToken(adminToken);
+    window.location.href = "/admin";
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="sticky top-0 z-40 border-b border-border bg-background/92 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+          <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
+            <span className="text-base font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
+              The Wanted
+            </span>
+            <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/50 -mt-0.5">Sole Studio</span>
+          </a>
+          <select
+            value={currency}
+            onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)}
+            className="h-10 rounded-full border border-primary/20 bg-card px-4 text-xs font-semibold text-foreground/75 outline-none"
+          >
+            {CURRENCIES.map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <main className="max-w-5xl mx-auto px-6 py-16">
+        <div className="text-center mb-10">
+          <SectionTag>Login</SectionTag>
+          <h1 className="mt-5 text-4xl lg:text-5xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            Escolha como deseja entrar
+          </h1>
+          <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+            Cliente entra pelo fluxo Tebex/CFX. Administrador entra com token protegido para publicar produtos.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="rounded-[28px] border border-primary/20 bg-card p-8 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+            <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6">
+              <User size={22} />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground/95 mb-3" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              Cliente / CFX
+            </h2>
+            <p className="text-sm text-muted-foreground leading-7 mb-6">
+              Acesse sua conta para ver cesta, checkout, pedidos comprados e suporte. O login usa a autorização da Tebex.
+            </p>
+            <button
+              onClick={() => startTebexLogin("/account")}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
+            >
+              <LogIn size={16} />
+              Entrar como cliente
+            </button>
+          </div>
+
+          <div className="rounded-[28px] border border-border bg-card p-8 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+            <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6">
+              <Shield size={22} />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground/95 mb-3" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              Administrador
+            </h2>
+            <p className="text-sm text-muted-foreground leading-7 mb-6">
+              Entre no painel admin para cadastrar, editar, publicar e ocultar produtos da loja.
+            </p>
+            <input
+              type="password"
+              value={adminToken}
+              onChange={(e) => setAdminToken(e.target.value)}
+              placeholder="Token admin"
+              className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary/40 mb-3"
+            />
+            <button
+              onClick={handleAdminLogin}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-primary/25 px-5 py-3 text-sm font-semibold text-primary hover:bg-primary/5"
+            >
+              <Shield size={16} />
+              Entrar como admin
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onCurrencyChange: (currency: CurrencyCode) => void }) {
+  const [basket, setBasket] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [removingItem, setRemovingItem] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const basketIdent = basket?.ident ?? getStoredTebexBasket();
+  const rows = basket?.rows ?? [];
+  const basketCurrency = (basket?.currency?.iso_4217 ?? basket?.currency ?? currency) as CurrencyCode;
+  const basketTotal = basket?.total_price ?? basket?.price?.amount ?? basket?.price ?? 0;
+
+  const loadBasket = useCallback(async () => {
+    try {
+      setLoading(true);
+      const ident = getStoredTebexBasket();
+      if (!ident) {
+        setBasket(null);
+        return;
+      }
+      setBasket(await fetchTebexBasket(ident));
+    } catch (error) {
+      console.error(error);
+      setBasket(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadBasket();
+  }, [loadBasket]);
+
+  async function handleRemoveCartItem(row: any) {
+    if (!basketIdent) return;
+    const packageId = getBasketRowPackageId(row);
+    if (!packageId) return;
+
+    try {
+      setRemovingItem(packageId);
+      const updatedBasket = await removePackageFromTebexBasket(basketIdent, packageId);
+      setBasket(updatedBasket);
+    } catch (error) {
+      console.error(error);
+      window.alert(error instanceof Error ? error.message : "Nao foi possivel remover o item.");
+      await loadBasket();
+    } finally {
+      setRemovingItem(null);
+    }
+  }
+
+  async function handleCheckout() {
+    if (!basketIdent || rows.length === 0) return;
+    try {
+      setBusy(true);
+      await launchTebexCheckoutFromBasket(basketIdent);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="sticky top-0 z-40 border-b border-border bg-background/92 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+          <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
+            <span className="text-base font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
+              The Wanted
+            </span>
+            <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/50 -mt-0.5">Sole Studio</span>
+          </a>
+          <div className="flex items-center gap-3">
+            <select
+              value={currency}
+              onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)}
+              className="h-10 rounded-full border border-primary/20 bg-card px-4 text-xs font-semibold text-foreground/75 outline-none"
+            >
+              {CURRENCIES.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+            <a href="/account" className="hidden sm:inline-flex h-10 items-center rounded-full border border-primary/20 px-4 text-xs font-semibold text-primary">
+              Account
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <main className="max-w-5xl mx-auto px-6 py-14">
+        <div className="text-center mb-10">
+          <SectionTag>Checkout</SectionTag>
+          <h1 className="mt-5 text-4xl lg:text-5xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            Sua Cesta
+          </h1>
+          <p className="mt-3 text-xl font-bold text-primary">
+            Total: {formatCurrencyValue(basketTotal, basketCurrency)}
+          </p>
+        </div>
+
+        <div className="rounded-[28px] border border-border bg-card shadow-[0_22px_80px_rgba(32,32,32,0.08)] overflow-hidden">
+          <div className="grid grid-cols-[1fr_160px_140px] bg-gradient-to-r from-[#c7a56a] to-[#b89458] text-primary-foreground text-sm font-semibold">
+            <div className="px-5 py-4">Nome</div>
+            <div className="px-5 py-4 border-l border-white/20">Preço</div>
+            <div className="px-5 py-4 border-l border-white/20">Ação</div>
+          </div>
+
+          {loading ? (
+            <div className="px-5 py-8 text-center text-muted-foreground">Carregando cesta...</div>
+          ) : rows.length === 0 ? (
+            <div className="px-5 py-12 text-center">
+              <p className="text-muted-foreground mb-5">Sua cesta está vazia.</p>
+              <a href="/#products" className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
+                Ver produtos
+              </a>
+            </div>
+          ) : rows.map((row: any, index: number) => {
+            const packageId = getBasketRowPackageId(row);
+            const rowKey = packageId || String(index);
+            return (
+              <div key={rowKey} className="grid grid-cols-[1fr_160px_140px] text-sm text-foreground/75 border-t border-border first:border-t-0">
+                <div className="px-5 py-4 border-r border-border">{row?.name ?? row?.package?.name ?? "Item Tebex"}</div>
+                <div className="px-5 py-4 border-r border-border">{formatCurrencyValue(row?.total_price ?? row?.price ?? 0, basketCurrency)}</div>
+                <div className="px-5 py-3">
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveCartItem(row)}
+                    disabled={removingItem === packageId}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-red-500/20 px-3 py-1.5 text-xs font-semibold text-red-500 transition-all hover:bg-red-500/5 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <X size={12} />
+                    {removingItem === packageId ? "Removendo..." : "Remover"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-8 rounded-[28px] border border-border bg-card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Total</p>
+            <p className="text-3xl font-bold text-primary" style={{ fontFamily: "'Cinzel', serif" }}>
+              {formatCurrencyValue(basketTotal, basketCurrency)}
+            </p>
+          </div>
+          <button
+            onClick={handleCheckout}
+            disabled={!basketIdent || rows.length === 0 || busy}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ShoppingCart size={16} />
+            {busy ? "Abrindo..." : rows.length === 0 ? "Checkout vazio" : "Finalizar compra"}
+          </button>
+        </div>
+
+        <div className="mt-14 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+          <a href="https://discord.gg/qE29trG84u" target="_blank" rel="noopener noreferrer" className="hover:text-primary">Support on Discord</a>
+          <MessageCircle size={26} className="text-primary" />
+          <a href="mailto:vito123bolado86@gmail.com" className="hover:text-primary">Contact us</a>
+        </div>
+      </main>
+    </div>
+  );
+}
+
 function AccountPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onCurrencyChange: (currency: CurrencyCode) => void }) {
   const [basket, setBasket] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -3087,6 +3374,14 @@ export default function App() {
     });
   }, []);
 
+  if (pathname === "/login") {
+    return <LoginPage currency={currency} onCurrencyChange={setCurrency} />;
+  }
+
+  if (pathname === "/checkout") {
+    return <CheckoutPage currency={currency} onCurrencyChange={setCurrency} />;
+  }
+
   if (pathname === "/account") {
     return <AccountPage currency={currency} onCurrencyChange={setCurrency} />;
   }
@@ -3113,8 +3408,8 @@ export default function App() {
       <Navbar
         onNavigate={scrollTo}
         activeSection={activeSection}
-        onLogin={() => { window.location.href = "/account"; }}
-        onCart={openTebexCart}
+        onLogin={() => { window.location.href = "/login"; }}
+        onCart={() => { window.location.href = "/checkout"; }}
         language={language}
         onLanguageChange={setLanguage}
         currency={currency}
@@ -3132,6 +3427,7 @@ export default function App() {
         products={products}
         loading={productsLoading}
         error={productsError}
+        currency={currency}
         onSelectProduct={setSelectedProduct}
       />
 
@@ -3147,6 +3443,7 @@ export default function App() {
       {selectedProduct && (
         <ProductDetail
           product={selectedProduct}
+          currency={currency}
           onClose={() => setSelectedProduct(null)}
         />
       )}
