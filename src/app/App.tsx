@@ -3471,51 +3471,19 @@ function ProductAdminForm({
     { id: "media" as const, number: "05", label: "Mídia", hint: "Ícone e galeria" }
   ];
 
-  function renderAccordionHeader(
-    id: "product" | "tebex" | "pt" | "en" | "media",
-    number: string,
-    title: string,
-    subtitle: string,
-    light = false
-  ) {
-    const open = activeSection === id;
-
+  function renderPanelTitle(number: string, title: string, subtitle: string) {
     return (
-      <button
-        type="button"
-        onClick={() => setActiveSection(id)}
-        className={`flex w-full items-center justify-between gap-4 rounded-2xl border px-4 py-4 text-left transition-all ${
-          light
-            ? open
-              ? "border-primary/30 bg-white/55"
-              : "border-primary/10 bg-white/35 hover:border-primary/25 hover:bg-white/50"
-            : open
-              ? "border-primary/25 bg-primary/5"
-              : "border-border bg-background/45 hover:border-primary/20 hover:bg-primary/5"
-        }`}
-      >
-        <div className="min-w-0">
-          <div className="flex items-center gap-3">
-            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
-              open ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-            }`}>
-              {number}
-            </span>
-            <div className="min-w-0">
-              <p className={`text-base font-bold ${open ? "text-primary" : "text-foreground/90"}`} style={{ fontFamily: "'Raleway', sans-serif" }}>
-                {title}
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
-            </div>
-          </div>
+      <div className="mb-5 flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+          {number}
+        </span>
+        <div>
+          <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            {title}
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
         </div>
-
-        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-all ${
-          open ? "border-primary/25 bg-primary/10 text-primary" : "border-border text-muted-foreground"
-        }`}>
-          <ChevronRight size={16} className={`transition-transform ${open ? "rotate-90" : ""}`} />
-        </div>
-      </button>
+      </div>
     );
   }
 
@@ -3529,7 +3497,7 @@ function ProductAdminForm({
               {product.id.startsWith("new-") ? "Novo produto" : product.name || "Editar produto"}
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Clique nas categorias do formulário para abrir somente a parte que você quer editar, sem deixar tudo em scroll.
+              Clique nas categorias do formulário. Agora somente a área selecionada aparece no centro.
             </p>
           </div>
 
@@ -3590,7 +3558,7 @@ function ProductAdminForm({
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
                     className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-all ${
-                      open ? "border-primary/25 bg-primary/8" : "border-border bg-background/55 hover:border-primary/15 hover:bg-primary/5"
+                      open ? "border-primary/25 bg-primary/10" : "border-border bg-background/55 hover:border-primary/15 hover:bg-primary/5"
                     }`}
                   >
                     <span className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold ${
@@ -3613,11 +3581,11 @@ function ProductAdminForm({
           </div>
         </aside>
 
-        <div className="space-y-4">
-          <section className={panelClass}>
-            {renderAccordionHeader("product", "01", "Produto", "Nome, categoria, etiqueta e documentação")}
-            {activeSection === "product" && (
-              <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="min-h-[520px]">
+          {activeSection === "product" && (
+            <section className={panelClass}>
+              {renderPanelTitle("01", "Produto", "Nome, categoria, etiqueta e documentação")}
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
                 <label className="space-y-2 xl:col-span-2">
                   <span className={labelClass}>Nome do produto</span>
                   <input value={product.name} onChange={(e) => update({ name: e.target.value })} className={fieldClass} />
@@ -3650,13 +3618,13 @@ function ProductAdminForm({
                   <input value={product.docsUrl ?? ""} onChange={(e) => update({ docsUrl: e.target.value })} placeholder="https://docs..." className={fieldClass} />
                 </label>
               </div>
-            )}
-          </section>
+            </section>
+          )}
 
-          <section className={panelClass}>
-            {renderAccordionHeader("tebex", "02", "Tebex", "Preço fallback, Package ID e URL Tebex")}
-            {activeSection === "tebex" && (
-              <div className="mt-5 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {activeSection === "tebex" && (
+            <section className={panelClass}>
+              {renderPanelTitle("02", "Tebex", "Preço fallback, Package ID e URL Tebex")}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <label className="space-y-2">
                   <span className={labelClass}>Package ID Tebex</span>
                   <input value={product.packageId ?? ""} onChange={(e) => update({ packageId: e.target.value })} placeholder="7457637" className={fieldClass} />
@@ -3679,13 +3647,13 @@ function ProductAdminForm({
                   </p>
                 </div>
               </div>
-            )}
-          </section>
+            </section>
+          )}
 
-          <section className={panelClass}>
-            {renderAccordionHeader("pt", "03", "Português", "Descrição, recursos e requisitos")}
-            {activeSection === "pt" && (
-              <div className="mt-5 grid grid-cols-1 xl:grid-cols-2 gap-4">
+          {activeSection === "pt" && (
+            <section className={panelClass}>
+              {renderPanelTitle("03", "Português", "Descrição, recursos e requisitos")}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <label className="space-y-2 xl:col-span-2">
                   <span className={labelClass}>Descrição curta</span>
                   <input value={product.description} onChange={(e) => update({ description: e.target.value })} className={fieldClass} />
@@ -3706,13 +3674,13 @@ function ProductAdminForm({
                   <textarea value={requirementsText} onChange={(e) => update({ requirements: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
                 </label>
               </div>
-            )}
-          </section>
+            </section>
+          )}
 
-          <section className="rounded-[28px] border border-primary/20 bg-primary/5 p-5 lg:p-6 shadow-[0_18px_55px_rgba(32,32,32,0.05)]">
-            {renderAccordionHeader("en", "04", "English", "Name, description, features and requirements", true)}
-            {activeSection === "en" && (
-              <div className="mt-5 grid grid-cols-1 xl:grid-cols-2 gap-4">
+          {activeSection === "en" && (
+            <section className="rounded-[28px] border border-primary/20 bg-primary/5 p-5 lg:p-6 shadow-[0_18px_55px_rgba(32,32,32,0.05)]">
+              {renderPanelTitle("04", "English", "Name, description, features and requirements")}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <label className="space-y-2 xl:col-span-2">
                   <span className={labelClass}>Name EN</span>
                   <input value={product.nameEn ?? ""} onChange={(e) => update({ nameEn: e.target.value })} className={fieldClass} />
@@ -3738,13 +3706,13 @@ function ProductAdminForm({
                   <textarea value={requirementsEnText} onChange={(e) => update({ requirementsEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
                 </label>
               </div>
-            )}
-          </section>
+            </section>
+          )}
 
-          <section className={panelClass}>
-            {renderAccordionHeader("media", "05", "Mídia", "Ícone do card, links e galeria")}
-            {activeSection === "media" && (
-              <div className="mt-5 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_290px] gap-5">
+          {activeSection === "media" && (
+            <section className={panelClass}>
+              {renderPanelTitle("05", "Mídia", "Ícone do card, links e galeria")}
+              <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_290px] gap-5">
                 <label className="space-y-2 block">
                   <span className={labelClass}>URLs de mídia, uma por linha</span>
                   <textarea
@@ -3781,8 +3749,8 @@ function ProductAdminForm({
                   </div>
                 </div>
               </div>
-            )}
-          </section>
+            </section>
+          )}
         </div>
 
         <aside className="2xl:sticky 2xl:top-6 space-y-5">
