@@ -378,6 +378,38 @@ async function handleApi(request, env) {
     return jsonResponse({ ok: true, service: "TWS Worker API" });
   }
 
+  if (pathname === "/api/tebex/headless") {
+    const headlessPath = url.searchParams.get("path") || "";
+
+    if (!headlessPath.startsWith("/accounts/") && !headlessPath.startsWith("/baskets/")) {
+      return jsonResponse({ error: "Rota Tebex não permitida." }, 400);
+    }
+
+    const upstreamUrl = new URL(`https://headless.tebex.io/api${headlessPath}`);
+
+    const upstreamResponse = await fetch(upstreamUrl.toString(), {
+      method: request.method,
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": request.headers.get("Content-Type") || "application/json"
+      },
+      body: request.method === "GET" || request.method === "HEAD" ? undefined : await request.text()
+    });
+
+    const contentType = upstreamResponse.headers.get("Content-Type") || "application/json";
+    const body = await upstreamResponse.text();
+
+    return new Response(body, {
+      status: upstreamResponse.status,
+      headers: {
+        "Content-Type": contentType,
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      }
+    });
+  }
+
   if (pathname === "/api/products" && request.method === "GET") {
     return jsonResponse({ products: await listProducts(env, false) });
   }

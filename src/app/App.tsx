@@ -445,7 +445,7 @@ function getTebexPackageCurrency(pkg: any) {
 
 async function fetchTebexPackagesForPricing() {
   const webstoreToken = getTebexWebstoreToken();
-  const response = await fetch(`https://headless.tebex.io/api/accounts/${webstoreToken}/packages`, {
+  const response = await tebexFetch(`/accounts/${webstoreToken}/packages`, {
     headers: { "Accept": "application/json" }
   });
 
@@ -829,7 +829,7 @@ function getTebexWebstoreToken() {
 async function createTebexBasket() {
   const webstoreToken = getTebexWebstoreToken();
 
-  const basketResponse = await fetch(`https://headless.tebex.io/api/accounts/${webstoreToken}/baskets`, {
+  const basketResponse = await tebexFetch(`/accounts/${webstoreToken}/baskets`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -854,7 +854,7 @@ async function createTebexBasket() {
 }
 
 async function addPackageToTebexBasket(basketIdent: string, packageId: string) {
-  const packageResponse = await fetch(`https://headless.tebex.io/api/baskets/${basketIdent}/packages`, {
+  const packageResponse = await tebexFetch(`/baskets/${basketIdent}/packages`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -881,9 +881,7 @@ async function getTebexAuthUrl(basketIdent: string, packageId?: string, returnPa
     returnUrl.searchParams.set("tebexPackage", packageId);
   }
 
-  const authResponse = await fetch(
-    `https://headless.tebex.io/api/accounts/${webstoreToken}/baskets/${basketIdent}/auth?returnUrl=${encodeURIComponent(returnUrl.toString())}`
-  );
+  const authResponse = await tebexFetch(`/accounts/${webstoreToken}/baskets/${basketIdent}/auth?returnUrl=${encodeURIComponent(returnUrl.toString())}`);
 
   if (!authResponse.ok) {
     throw new Error("Nao foi possivel iniciar o login da Tebex.");
@@ -975,7 +973,7 @@ async function startTebexLogin(returnPath = "/account") {
     window.location.href = authUrl;
   } catch (error) {
     console.error(error);
-    window.alert(error instanceof Error ? error.message : "Nao foi possivel iniciar o login da Tebex.");
+    window.alert(error instanceof Error ? error.message : "Nao foi possivel iniciar o login da Tebex. Verifique se o Worker foi publicado e se a API /api/tebex/headless está ativa.");
   }
 }
 
@@ -998,7 +996,7 @@ async function openTebexCart() {
 
 async function fetchTebexBasket(basketIdent: string) {
   const webstoreToken = getTebexWebstoreToken();
-  const response = await fetch(`https://headless.tebex.io/api/accounts/${webstoreToken}/baskets/${basketIdent}`);
+  const response = await tebexFetch(`/accounts/${webstoreToken}/baskets/${basketIdent}`);
   if (!response.ok) {
     throw new Error("Nao foi possivel carregar os dados do basket na Tebex.");
   }
@@ -1009,7 +1007,7 @@ async function fetchTebexBasket(basketIdent: string) {
 async function applyCouponToTebexBasket(basketIdent: string, couponCode: string) {
   const webstoreToken = getTebexWebstoreToken();
 
-  const couponResponse = await fetch(`https://headless.tebex.io/api/accounts/${webstoreToken}/baskets/${basketIdent}/coupons`, {
+  const couponResponse = await tebexFetch(`/accounts/${webstoreToken}/baskets/${basketIdent}/coupons`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ coupon_code: couponCode })
@@ -1021,7 +1019,7 @@ async function applyCouponToTebexBasket(basketIdent: string, couponCode: string)
 
   const couponError = await couponResponse.json().catch(() => null);
 
-  const creatorResponse = await fetch(`https://headless.tebex.io/api/accounts/${webstoreToken}/baskets/${basketIdent}/creator-codes`, {
+  const creatorResponse = await tebexFetch(`/accounts/${webstoreToken}/baskets/${basketIdent}/creator-codes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ creator_code: couponCode })
@@ -1152,7 +1150,7 @@ function getBasketTotal(basket: any) {
 }
 
 async function removePackageFromTebexBasket(basketIdent: string, packageId: string) {
-  const response = await fetch(`https://headless.tebex.io/api/baskets/${basketIdent}/packages/remove`, {
+  const response = await tebexFetch(`/baskets/${basketIdent}/packages/remove`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ package_id: packageId })
@@ -1178,6 +1176,42 @@ function apiUrl(path: string) {
   return base ? `${base}${path}` : path;
 }
 
+function slugifyClient(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function getProductPagePath(product: Product) {
+  const category = String(product.category || "scripts").toLowerCase();
+
+  const base =
+    category.includes("ped") ? "custom-peds" :
+    category.includes("system") ? "systems" :
+    category.includes("outfit") ? "outfit-creator" :
+    category.includes("addon") || category.includes("add-on") ? "add-ons" :
+    "script";
+
+  return `/${base}/${slugifyClient(product.name)}`;
+}
+
+async function tebexFetch(path: string, init?: RequestInit) {
+  const response = await fetch(apiUrl(`/api/tebex/headless?path=${encodeURIComponent(path)}`), {
+    method: init?.method ?? "GET",
+    headers: {
+      "Accept": "application/json",
+      ...(init?.headers ?? {}),
+    },
+    body: init?.body,
+  });
+
+  return response;
+}
+
 function getAdminToken() {
   return localStorage.getItem("tws_admin_token") ?? "";
 }
@@ -1188,6 +1222,7 @@ function storeAdminToken(token: string) {
   } else {
     localStorage.removeItem("tws_admin_token");
   }
+  window.dispatchEvent(new Event("tws:admin-session-changed"));
 }
 
 function normalizeProductFromApi(item: any): Product {
@@ -1377,17 +1412,17 @@ async function applyCreatorCodeToBasket(basketIdent: string, originalCode: strin
 
   const attempts = [
     {
-      endpoint: `https://headless.tebex.io/api/accounts/${webstoreToken}/baskets/${basketIdent}/coupons`,
+      endpoint: `/accounts/${webstoreToken}/baskets/${basketIdent}/coupons`,
       body: { coupon_code: originalCode },
       label: "coupon"
     },
     {
-      endpoint: `https://headless.tebex.io/api/accounts/${webstoreToken}/baskets/${basketIdent}/giftcards`,
+      endpoint: `/accounts/${webstoreToken}/baskets/${basketIdent}/giftcards`,
       body: { card_number: originalCode },
       label: "gift card"
     },
     {
-      endpoint: `https://headless.tebex.io/api/accounts/${webstoreToken}/baskets/${basketIdent}/creator-codes`,
+      endpoint: `/accounts/${webstoreToken}/baskets/${basketIdent}/creator-codes`,
       body: { creator_code: originalCode },
       label: "creator code"
     }
@@ -1396,7 +1431,7 @@ async function applyCreatorCodeToBasket(basketIdent: string, originalCode: strin
   const errors: string[] = [];
 
   for (const attempt of attempts) {
-    const response = await fetch(attempt.endpoint, {
+    const response = await tebexFetch(attempt.endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(attempt.body)
@@ -1613,22 +1648,15 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
 
         {/* CTA buttons */}
         <div className="hidden lg:flex items-center gap-2">
-          <div className="inline-flex h-9 items-center rounded-full border border-primary/20 bg-background/40 p-0.5">
-            {(["pt_BR", "en_US"] as SiteLanguage[]).map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => onLanguageChange(option)}
-                className={`h-7 px-3 rounded-full text-[11px] font-semibold tracking-wide transition-all ${
-                  language === option
-                    ? "bg-primary text-primary-foreground shadow-[0_0_14px_rgba(201,168,76,0.22)]"
-                    : "text-muted-foreground hover:text-primary"
-                }`}
-              >
-                {option === "pt_BR" ? "PT" : "EN"}
-              </button>
-            ))}
-          </div>
+          <select
+            value={language}
+            onChange={(e) => onLanguageChange(e.target.value as SiteLanguage)}
+            className="h-9 rounded-full border border-primary/20 bg-primary px-3 text-[11px] font-semibold tracking-wide text-primary-foreground outline-none transition-all hover:brightness-105"
+            title="Idioma"
+          >
+            <option value="pt_BR">PT</option>
+            <option value="en_US">EN</option>
+          </select>
           <select
             value={currency}
             onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)}
@@ -1745,22 +1773,15 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
                 )
               )}
               <div className="flex items-center gap-2 pt-3 border-t border-border mt-2">
-                <div className="inline-grid grid-cols-2 rounded-full border border-primary/20 bg-background/40 p-0.5">
-                  {(["pt_BR", "en_US"] as SiteLanguage[]).map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => onLanguageChange(option)}
-                      className={`h-8 px-4 rounded-full text-xs font-semibold transition-all ${
-                        language === option
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-primary"
-                      }`}
-                    >
-                      {option === "pt_BR" ? "PT" : "EN"}
-                    </button>
-                  ))}
-                </div>
+                <select
+                  value={language}
+                  onChange={(e) => onLanguageChange(e.target.value as SiteLanguage)}
+                  className="h-9 rounded-full border border-primary/20 bg-primary px-3 text-xs font-semibold text-primary-foreground outline-none"
+                  title="Idioma"
+                >
+                  <option value="pt_BR">PT</option>
+                  <option value="en_US">EN</option>
+                </select>
                 <select
                   value={currency}
                   onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)}
@@ -2005,19 +2026,21 @@ function HeroSection({ onNavigate }: { onNavigate: (id: string) => void }) {
 
 // ─── Why Us ───────────────────────────────────────────────────────────────────
 
-function WhySection() {
+function WhySection({ language }: { language: SiteLanguage }) {
   return (
     <section id="why" className="py-28 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <SectionTag>Por que nos escolher</SectionTag>
+          <SectionTag>{language === "en_US" ? "Why choose us" : "Por que nos escolher"}</SectionTag>
           <h2
             className="mt-5 text-3xl lg:text-4xl font-bold text-foreground/90"
             style={{ fontFamily: "'Raleway', sans-serif" }}
           >
-            O Studio por trás do melhor
+            {language === "en_US" ? "The studio behind premium" : "O Studio por trás do melhor"}
             <br />
-            <span style={{ color: "#8b714b" }}>conteúdo para RedM</span>
+            <span style={{ color: "#8b714b" }}>
+              {language === "en_US" ? "RedM content" : "conteúdo para RedM"}
+            </span>
           </h2>
         </div>
 
@@ -2075,7 +2098,7 @@ function ProductCard({ product, currency, onSelect }: { product: Product; curren
       className="group relative flex flex-col rounded-sm border border-border bg-card
         hover:border-primary/30 hover:shadow-[0_0_32px_rgba(201,168,76,0.07)]
         transition-all duration-300 overflow-hidden cursor-pointer"
-      onClick={() => onSelect(product)}
+      onClick={() => { window.location.href = getProductPagePath(product); }}
     >
       {/* Thumbnail */}
       <div
@@ -2448,6 +2471,109 @@ function ProductMediaGallery({ product }: { product: Product }) {
   );
 }
 
+
+
+function ProductPage({ product, currency }: { product: Product; currency: CurrencyCode }) {
+  const status = STATUS_CONFIG[product.status];
+
+  async function handleAddToCart() {
+    try {
+      const basket = await addProductToTebexCart(product);
+      if (basket && getBasketItems(basket).length === 0) {
+        window.alert("A cesta foi criada, mas a Tebex nao retornou o item no basket. Verifique se o Package ID do produto esta correto no admin.");
+        return;
+      }
+      window.location.href = "/checkout";
+    } catch (error) {
+      console.error(error);
+      window.alert(error instanceof Error ? error.message : "Nao foi possivel adicionar o produto ao carrinho.");
+    }
+  }
+
+  async function handleBuyNow() {
+    await launchTebexCheckout(product);
+  }
+
+  return (
+    <main className="max-w-7xl mx-auto px-6 py-16">
+      <div className="mb-6">
+        <a href="/#products" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80">
+          <ChevronRight size={14} className="rotate-180" />
+          Voltar para produtos
+        </a>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_520px] gap-8">
+        <div className="rounded-[28px] border border-border bg-card overflow-hidden shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+          <ProductMediaGallery product={product} />
+        </div>
+
+        <aside className="rounded-[28px] border border-border bg-card p-8 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            <span className={`px-2 py-0.5 rounded-sm text-[10px] font-semibold tracking-wider uppercase ${status.cls}`}>
+              {status.label}
+            </span>
+            <span className="px-2 py-0.5 rounded-sm text-[10px] tracking-wider uppercase border border-border text-muted-foreground">
+              {product.category}
+            </span>
+          </div>
+
+          <h1 className="text-3xl lg:text-4xl font-bold text-foreground/95 mb-4" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            {product.name}
+          </h1>
+
+          <p className="text-base text-muted-foreground leading-8 mb-6">
+            {product.fullDescription || product.description}
+          </p>
+
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 mb-7">
+            <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1">Valor</p>
+            <p className="text-3xl font-bold text-primary" style={{ fontFamily: "'Cinzel', serif" }}>
+              {formatProductPrice(product.price, currency, product.priceCurrency)}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+            <button onClick={handleAddToCart} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-primary/25 px-5 text-sm font-semibold text-primary hover:bg-primary/5">
+              <ShoppingCart size={16} />
+              Adicionar
+            </button>
+            <button onClick={handleBuyNow} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground">
+              Comprar
+              <ArrowRight size={15} />
+            </button>
+          </div>
+
+          <div className="space-y-7">
+            <div>
+              <h2 className="text-xs font-semibold tracking-widest uppercase text-primary/70 mb-4">Recursos Principais</h2>
+              <ul className="space-y-3">
+                {product.features.map((feat) => (
+                  <li key={feat} className="flex items-start gap-3 text-sm text-foreground/75 leading-7">
+                    <Check size={14} className="text-primary mt-1 shrink-0" />
+                    {feat}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-xs font-semibold tracking-widest uppercase text-primary/70 mb-4">Requisitos</h2>
+              <ul className="space-y-3">
+                {product.requirements.map((req) => (
+                  <li key={req} className="flex items-start gap-3 text-sm text-muted-foreground leading-7">
+                    <ChevronRight size={13} className="text-muted-foreground mt-1.5 shrink-0" />
+                    {req}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  );
+}
 
 function ProductDetail({ product, currency, onClose }: { product: Product; currency: CurrencyCode; onClose: () => void }) {
   const status = STATUS_CONFIG[product.status];
@@ -2835,11 +2961,16 @@ function FAQSection() {
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
 function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
-  const links = [
+  const companyLinks = [
+    { label: "About", action: () => onNavigate("why") },
+    { label: "Terms of use", action: () => onNavigate("faq") },
+    { label: "Privacy Policy", href: "https://checkout.tebex.io/privacy" },
+  ];
+
+  const quickLinks = [
     { label: "Início", action: () => onNavigate("hero") },
     { label: "Scripts", action: () => onNavigate("products") },
     { label: "Documentação", href: "https://docs.thewantedsolestudio.workers.dev" },
-    { label: "Licença", action: () => onNavigate("faq") },
     { label: "Discord", href: "https://discord.gg/qE29trG84u" },
   ];
 
@@ -2849,11 +2980,33 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
     { label: "Privacy Policy", href: "https://checkout.tebex.io/privacy" },
   ];
 
+  const renderLink = (link: { label: string; href?: string; action?: () => void }, className = "") =>
+    link.href ? (
+      <a
+        key={link.label}
+        href={link.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+        style={{ fontFamily: "'DM Sans', sans-serif" }}
+      >
+        {link.label}
+      </a>
+    ) : (
+      <button
+        key={link.label}
+        onClick={link.action}
+        className={className}
+        style={{ fontFamily: "'DM Sans', sans-serif" }}
+      >
+        {link.label}
+      </button>
+    );
+
   return (
     <footer className="border-t border-border py-14 px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-10">
-          {/* Brand */}
+        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.4fr)_0.8fr_0.8fr_0.8fr] gap-10 items-start">
           <div className="max-w-xs">
             <div className="mb-3">
               <span
@@ -2878,71 +3031,39 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
             </p>
           </div>
 
-          {/* Links */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 lg:gap-16">
-            <nav className="flex flex-wrap gap-6 lg:gap-8">
-              {links.map((link) =>
-                link.href ? (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-muted-foreground hover:text-foreground/80 transition-colors"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    {link.label}
-                  </a>
-                ) : (
-                  <button
-                    key={link.label}
-                    onClick={link.action}
-                    className="text-sm text-muted-foreground hover:text-foreground/80 transition-colors"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    {link.label}
-                  </button>
-                )
-              )}
+          <div>
+            <p className="text-sm uppercase tracking-wide text-muted-foreground mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              Company
+            </p>
+            <nav className="flex flex-col items-start gap-2">
+              {companyLinks.map((link) => renderLink(link, "text-sm font-semibold text-foreground/85 hover:text-primary transition-colors text-left"))}
             </nav>
+          </div>
 
-            <div className="min-w-[170px]">
-              <p
-                className="text-sm text-muted-foreground mb-4"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              >
-                Tebex
-              </p>
-              <nav className="flex flex-col gap-2">
-                {tebexLinks.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-semibold text-foreground/85 hover:text-primary transition-colors"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </nav>
-            </div>
+          <div>
+            <p className="text-sm uppercase tracking-wide text-muted-foreground mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              Links
+            </p>
+            <nav className="flex flex-col items-start gap-2">
+              {quickLinks.map((link) => renderLink(link, "text-sm text-muted-foreground hover:text-foreground/90 transition-colors text-left"))}
+            </nav>
+          </div>
+
+          <div>
+            <p className="text-sm text-muted-foreground mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              Tebex
+            </p>
+            <nav className="flex flex-col items-start gap-2">
+              {tebexLinks.map((link) => renderLink(link, "text-sm font-semibold text-foreground/85 hover:text-primary transition-colors text-left"))}
+            </nav>
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p
-            className="text-xs text-muted-foreground/60"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
-          >
+          <p className="text-xs text-muted-foreground/60" style={{ fontFamily: "'DM Sans', sans-serif" }}>
             © 2026 The Wanted Sole Studio — Todos os direitos reservados.
           </p>
-          <p
-            className="text-xs text-muted-foreground/40"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
-          >
+          <p className="text-xs text-muted-foreground/40" style={{ fontFamily: "'DM Sans', sans-serif" }}>
             RedM · Scripts &amp; Custom Peds
           </p>
         </div>
@@ -3326,6 +3447,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
     setToken("");
     setProducts([]);
     setSelected(emptyAdminProduct());
+    window.location.href = "/login";
   }
 
   async function handleSave() {
@@ -3417,19 +3539,29 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
       </div>
 
       <main className="max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <SectionTag>Admin Dashboard</SectionTag>
-          <h1 className="mt-4 text-4xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
-            Publicação de produtos
-          </h1>
-          <p className="mt-3 text-muted-foreground max-w-2xl">
-            Cadastre produtos uma vez no admin. Eles aparecem automaticamente na vitrine pública, na categoria escolhida e com o package ID da Tebex.
-          </p>
-          {message && (
-            <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
-              {message}
-            </div>
-          )}
+        <div className="mb-8 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+          <div>
+            <SectionTag>Admin Dashboard</SectionTag>
+            <h1 className="mt-4 text-4xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              Publicação de produtos
+            </h1>
+            <p className="mt-3 text-muted-foreground max-w-2xl">
+              Cadastre produtos uma vez no admin. Eles aparecem automaticamente na vitrine pública, na categoria escolhida e com o package ID da Tebex.
+            </p>
+            {message && (
+              <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+                {message}
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-red-500/20 px-4 text-sm font-semibold text-red-500 hover:bg-red-500/5"
+          >
+            <LogOut size={15} />
+            Sair do admin
+          </button>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[330px_minmax(0,1fr)] gap-8">
@@ -4369,6 +4501,38 @@ export default function App() {
     </div>
   );
 
+  const productRouteMatch = pathname.match(/^\/(script|scripts|custom-peds|systems|outfit-creator|add-ons)\/(.+)$/);
+  if (productRouteMatch) {
+    const requestedSlug = decodeURIComponent(productRouteMatch[2] ?? "");
+    const matchedProduct = products.find((product) =>
+      slugifyClient(product.name) === slugifyClient(requestedSlug) ||
+      product.id === requestedSlug ||
+      product.name.toLowerCase() === requestedSlug.toLowerCase()
+    );
+
+    if (productsLoading) {
+      return renderPageWithNavbar(
+        <main className="max-w-7xl mx-auto px-6 py-20 text-center text-muted-foreground">
+          Carregando produto...
+        </main>
+      );
+    }
+
+    if (!matchedProduct) {
+      return renderPageWithNavbar(
+        <main className="max-w-7xl mx-auto px-6 py-20 text-center">
+          <SectionTag>Produto</SectionTag>
+          <h1 className="mt-5 text-3xl font-bold text-foreground/90">Produto não encontrado</h1>
+          <a href="/#products" className="mt-6 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
+            Ver produtos
+          </a>
+        </main>
+      );
+    }
+
+    return renderPageWithNavbar(<ProductPage product={matchedProduct} currency={currency} />);
+  }
+
   if (pathname === "/login") {
     return renderPageWithNavbar(<LoginPage currency={currency} onCurrencyChange={setCurrency} />);
   }
@@ -4411,7 +4575,7 @@ export default function App() {
         onCurrencyChange={setCurrency}
       />
       <HeroSection onNavigate={scrollTo} />
-      <WhySection />
+      <WhySection language={language} />
 
       {/* Thin gold divider */}
       <div className="max-w-6xl mx-auto px-6">
