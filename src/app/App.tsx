@@ -4720,7 +4720,7 @@ function DocsAdminPage() {
     }
   }
 
-  const fieldClass = "w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary/40";
+  const fieldClass = "w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary/50 focus:ring-2 focus:ring-primary/10";
   const labelClass = "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
 
   if (!isLogged) {
@@ -4820,17 +4820,15 @@ function DocsAdminPage() {
             </div>
           </aside>
 
-          <section className="rounded-[22px] border border-border bg-card p-4 lg:p-5 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
-            <div className="mb-5 rounded-2xl border border-primary/15 bg-primary/5 p-4">
-              <p className="text-sm font-semibold text-foreground/85">Produto selecionado</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {getDocsProductLabel(selected.productId || selectedProductId)} · ID: {selected.productId || selectedProductId}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <label className="space-y-2">
-                <span className={labelClass}>Produto ID</span>
+          <section className="rounded-[22px] border border-border bg-card p-5 lg:p-6 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
+            {/* Metadata row */}
+            <div className="mb-5 grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="col-span-2 md:col-span-1 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Produto</p>
+                <p className="mt-1 text-sm font-semibold text-foreground/85 truncate">{getDocsProductLabel(selected.productId || selectedProductId)}</p>
+              </div>
+              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
+                <span className={labelClass + " mb-1"}>Produto ID</span>
                 <input
                   value={selected.productId ?? selectedProductId}
                   onChange={(e) => {
@@ -4838,64 +4836,79 @@ function DocsAdminPage() {
                     setSelectedProductId(productId);
                     setSelected({ ...selected, productId });
                   }}
-                  placeholder="ex: tws-identity-forge"
-                  className={fieldClass}
+                  placeholder="tws-identity-forge"
+                  className="w-full bg-transparent text-sm outline-none text-foreground/80"
                 />
               </label>
-              <label className="space-y-2">
-                <span className={labelClass}>ID da página</span>
-                <input value={selected.id} onChange={(e) => setSelected({ ...selected, id: e.target.value })} className={fieldClass} />
+              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
+                <span className={labelClass + " mb-1"}>Slug</span>
+                <input value={selected.slug} onChange={(e) => setSelected({ ...selected, slug: e.target.value })} className="w-full bg-transparent text-sm outline-none text-foreground/80" />
               </label>
-              <label className="space-y-2">
-                <span className={labelClass}>Slug</span>
-                <input value={selected.slug} onChange={(e) => setSelected({ ...selected, slug: e.target.value })} className={fieldClass} />
+              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
+                <span className={labelClass + " mb-1"}>Categoria</span>
+                <input value={selected.category} onChange={(e) => setSelected({ ...selected, category: e.target.value })} className="w-full bg-transparent text-sm outline-none text-foreground/80" />
               </label>
-              <label className="space-y-2">
-                <span className={labelClass}>Categoria</span>
-                <input value={selected.category} onChange={(e) => setSelected({ ...selected, category: e.target.value })} className={fieldClass} />
+            </div>
+
+            <div className="mb-5 grid grid-cols-2 md:grid-cols-4 gap-3">
+              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
+                <span className={labelClass + " mb-1"}>Ordem</span>
+                <input type="number" value={selected.orderIndex} onChange={(e) => setSelected({ ...selected, orderIndex: Number(e.target.value) })} className="w-full bg-transparent text-sm outline-none text-foreground/80" />
               </label>
-              <label className="space-y-2">
-                <span className={labelClass}>Ordem</span>
-                <input type="number" value={selected.orderIndex} onChange={(e) => setSelected({ ...selected, orderIndex: Number(e.target.value) })} className={fieldClass} />
-              </label>
-              <label className="space-y-2">
-                <span className={labelClass}>Título PT</span>
-                <input value={selected.title} onChange={(e) => setSelected({ ...selected, title: e.target.value })} className={fieldClass} />
-              </label>
-              <label className="space-y-2">
-                <span className={labelClass}>Título EN</span>
-                <input value={selected.titleEn ?? ""} onChange={(e) => setSelected({ ...selected, titleEn: e.target.value })} className={fieldClass} />
-              </label>
-              <label className="space-y-2">
-                <span className={labelClass}>Visível</span>
-                <select value={selected.visible ? "1" : "0"} onChange={(e) => setSelected({ ...selected, visible: e.target.value === "1" })} className={fieldClass}>
+              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
+                <span className={labelClass + " mb-1"}>Visível</span>
+                <select value={selected.visible ? "1" : "0"} onChange={(e) => setSelected({ ...selected, visible: e.target.value === "1" })} className="w-full bg-transparent text-sm outline-none text-foreground/80">
                   <option value="1">Sim</option>
                   <option value="0">Não</option>
                 </select>
               </label>
-            </div>
-
-            <div className="mt-5 grid grid-cols-1 xl:grid-cols-2 gap-4">
-              <label className="space-y-2">
-                <span className={labelClass}>Conteúdo PT</span>
-                <textarea value={selected.contentPt} onChange={(e) => setSelected({ ...selected, contentPt: e.target.value })} rows={18} className={fieldClass + " font-mono"} />
+              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
+                <span className={labelClass + " mb-1"}>Título PT</span>
+                <input value={selected.title} onChange={(e) => setSelected({ ...selected, title: e.target.value })} className="w-full bg-transparent text-sm outline-none text-foreground/80" />
               </label>
-              <label className="space-y-2">
-                <span className={labelClass}>Conteúdo EN</span>
-                <textarea value={selected.contentEn ?? ""} onChange={(e) => setSelected({ ...selected, contentEn: e.target.value })} rows={18} className={fieldClass + " font-mono"} />
+              <label className="rounded-xl border border-border bg-background px-4 py-2.5 block">
+                <span className={labelClass + " mb-1"}>Título EN</span>
+                <input value={selected.titleEn ?? ""} onChange={(e) => setSelected({ ...selected, titleEn: e.target.value })} className="w-full bg-transparent text-sm outline-none text-foreground/80" />
               </label>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-3">
-              <button onClick={handleSave} disabled={saving} className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+            {/* Content editors side by side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <label>
+                <span className={labelClass + " mb-2 flex items-center gap-2"}>
+                  <span className="inline-block w-2 h-2 rounded-full bg-green-400"></span>
+                  Conteúdo PT
+                </span>
+                <textarea
+                  value={selected.contentPt}
+                  onChange={(e) => setSelected({ ...selected, contentPt: e.target.value })}
+                  rows={22}
+                  className={fieldClass + " font-mono text-xs resize-y"}
+                />
+              </label>
+              <label>
+                <span className={labelClass + " mb-2 flex items-center gap-2"}>
+                  <span className="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
+                  Conteúdo EN
+                </span>
+                <textarea
+                  value={selected.contentEn ?? ""}
+                  onChange={(e) => setSelected({ ...selected, contentEn: e.target.value })}
+                  rows={22}
+                  className={fieldClass + " font-mono text-xs resize-y"}
+                />
+              </label>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <button onClick={handleSave} disabled={saving} className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:brightness-105 disabled:opacity-60 transition-all">
                 {saving ? "Salvando..." : "Salvar / publicar"}
               </button>
-              <button onClick={handleDelete} disabled={saving} className="rounded-xl border border-red-500/25 px-5 py-3 text-sm font-semibold text-red-500 hover:bg-red-500/5 disabled:opacity-60">
-                Apagar
+              <button onClick={handleDelete} disabled={saving} className="rounded-xl border border-red-500/25 px-5 py-3 text-sm font-semibold text-red-500 hover:bg-red-500/5 disabled:opacity-60 transition-colors">
+                Apagar página
               </button>
+              {message && <p className="text-sm text-muted-foreground">{message}</p>}
             </div>
-
-            {message && <p className="mt-4 text-sm text-muted-foreground">{message}</p>}
           </section>
         </div>
       </div>
@@ -5063,7 +5076,6 @@ function ProductAdminForm({
   saving: boolean;
 }) {
   const [previewFailed, setPreviewFailed] = useState(false);
-  const [activeSection, setActiveSection] = useState<"product" | "tebex" | "pt" | "en" | "media">("product");
   const featuresText = product.features.join("\n");
   const featuresEnText = (product.featuresEn ?? []).join("\n");
   const requirementsText = product.requirements.join("\n");
@@ -5076,331 +5088,265 @@ function ProductAdminForm({
 
   const update = (patch: Partial<Product>) => onChange({ ...product, ...patch });
 
-  const fieldClass = "w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none transition-colors focus:border-primary/40";
-  const textareaClass = `${fieldClass} min-h-[145px] resize-y`;
-  const labelClass = "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
-  const panelClass = "rounded-[28px] border border-border bg-card p-5 lg:p-6 shadow-[0_18px_55px_rgba(32,32,32,0.05)]";
-  const sectionButtons = [
-    { id: "product" as const, number: "01", label: "Produto", hint: "Nome, categoria e docs" },
-    { id: "tebex" as const, number: "02", label: "Tebex", hint: "Preço e integração" },
-    { id: "pt" as const, number: "03", label: "Português", hint: "Conteúdo principal" },
-    { id: "en" as const, number: "04", label: "English", hint: "Versão em inglês" },
-    { id: "media" as const, number: "05", label: "Mídia", hint: "Ícone e galeria" }
-  ];
+  const field = "w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary/50 focus:ring-2 focus:ring-primary/10";
+  const textarea = `${field} resize-y`;
+  const lbl = "block text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2";
 
-  function renderPanelTitle(number: string, title: string, subtitle: string) {
+  function SectionHeader({ number, title, subtitle }: { number: string; title: string; subtitle: string }) {
     return (
-      <div className="mb-5 flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
           {number}
         </span>
         <div>
-          <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
-            {title}
-          </h3>
-          <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
+          <h3 className="text-base font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>{title}</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-[24px] border border-border bg-card p-4 lg:p-5 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-          <div>
-            <SectionTag>Editor de produto</SectionTag>
-            <h2 className="mt-2 text-xl lg:text-2xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
-              {product.id.startsWith("new-") ? "Novo produto" : product.name || "Editar produto"}
-            </h2>
-            <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">
-              Clique nas categorias do formulário. Agora somente a área selecionada aparece no centro.
+    <div className="space-y-5">
+      {/* ── Header ── */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-[22px] border border-border bg-card px-5 py-4 shadow-[0_8px_28px_rgba(32,32,32,0.05)]">
+        <div>
+          <SectionTag>Editor de produto</SectionTag>
+          <h2 className="mt-2 text-xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            {product.id.startsWith("new-") ? "Novo produto" : product.name || "Editar produto"}
+          </h2>
+        </div>
+        <button
+          onClick={onSave}
+          disabled={saving}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground hover:brightness-105 disabled:opacity-60 shrink-0"
+        >
+          {saving ? "Salvando..." : "Salvar e publicar"}
+        </button>
+      </div>
+
+      {/* ── Main two-column layout ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_300px] gap-5 items-start">
+
+        {/* ── Left: all form sections stacked ── */}
+        <div className="space-y-5">
+
+          {/* 01 — Identificação */}
+          <div className="rounded-[22px] border border-border bg-card p-5 lg:p-6 shadow-[0_8px_28px_rgba(32,32,32,0.04)]">
+            <SectionHeader number="01" title="Identificação" subtitle="Nome, categoria, etiqueta e ícone" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="md:col-span-2">
+                <span className={lbl}>Nome do produto</span>
+                <input value={product.name} onChange={(e) => update({ name: e.target.value })} className={field} placeholder="Ex: TWS Identity Forge" />
+              </label>
+              <label>
+                <span className={lbl}>Nome em inglês</span>
+                <input value={product.nameEn ?? ""} onChange={(e) => update({ nameEn: e.target.value })} className={field} placeholder="Product name EN" />
+              </label>
+              <label>
+                <span className={lbl}>Categoria</span>
+                <select value={product.category} onChange={(e) => update({ category: e.target.value as Product["category"] })} className={field}>
+                  {CATEGORIES.filter((item) => item !== "Todos").map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </label>
+              <label>
+                <span className={lbl}>Etiqueta</span>
+                <select value={product.status} onChange={(e) => update({ status: e.target.value as ProductStatus })} className={field}>
+                  <option value="novo">Novo</option>
+                  <option value="popular">Popular</option>
+                  <option value="atualizado">Atualizado</option>
+                  <option value="em-breve">Em breve</option>
+                </select>
+              </label>
+              <label>
+                <span className={lbl}>Ícone fallback</span>
+                <input value={product.iconName ?? ""} onChange={(e) => update({ iconName: e.target.value })} placeholder="Package, Crown, Star..." className={field} />
+              </label>
+              <label className="md:col-span-2">
+                <span className={lbl}>URL Documentação</span>
+                <input value={product.docsUrl ?? ""} onChange={(e) => update({ docsUrl: e.target.value })} placeholder="https://docs..." className={field} />
+              </label>
+            </div>
+          </div>
+
+          {/* 02 — Tebex */}
+          <div className="rounded-[22px] border border-border bg-card p-5 lg:p-6 shadow-[0_8px_28px_rgba(32,32,32,0.04)]">
+            <SectionHeader number="02" title="Tebex" subtitle="Package ID, preço fallback e URL" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label>
+                <span className={lbl}>Package ID Tebex</span>
+                <input value={product.packageId ?? ""} onChange={(e) => update({ packageId: e.target.value })} placeholder="7457637" className={field} />
+              </label>
+              <label>
+                <span className={lbl}>Preço fallback</span>
+                <input type="number" step="0.01" value={product.price} onChange={(e) => update({ price: Number(e.target.value), priceSource: "fallback" })} className={field} />
+              </label>
+              <label>
+                <span className={lbl}>URL Tebex</span>
+                <input value={product.tebexUrl} onChange={(e) => update({ tebexUrl: e.target.value })} placeholder="https://.../package/..." className={field} />
+              </label>
+            </div>
+            <p className="mt-4 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-xs text-muted-foreground leading-5">
+              Com o Package ID correto, o preço é puxado direto da Tebex. O fallback só entra se a Tebex não retornar valor.
             </p>
           </div>
 
-          <button
-            onClick={onSave}
-            disabled={saving}
-            className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all hover:brightness-105 disabled:opacity-60"
-          >
-            {saving ? "Salvando..." : "Salvar e publicar"}
-          </button>
-        </div>
-      </div>
+          {/* 03 — Conteúdo PT + EN lado a lado */}
+          <div className="rounded-[22px] border border-border bg-card p-5 lg:p-6 shadow-[0_8px_28px_rgba(32,32,32,0.04)]">
+            <SectionHeader number="03" title="Conteúdo" subtitle="Descrições, recursos e requisitos em Português e Inglês" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-4">
 
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 -mt-1">
-        {sectionButtons.map((section) => {
-          const open = activeSection === section.id;
-          return (
-            <button
-              key={section.id}
-              type="button"
-              onClick={() => setActiveSection(section.id)}
-              className={`flex flex-col items-center gap-2 rounded-2xl border px-3 py-3 text-center transition-all ${
-                open
-                  ? "border-primary/30 bg-primary/10 shadow-[0_8px_24px_rgba(201,168,76,0.12)]"
-                  : "border-border bg-card hover:border-primary/20 hover:bg-primary/5"
-              }`}
-            >
-              <span className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold ${
-                open ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-              }`}>
-                {section.number}
-              </span>
-              <div>
-                <p className={`text-xs font-bold leading-tight ${open ? "text-primary" : "text-foreground/90"}`}>
-                  {section.label}
-                </p>
-                <p className="mt-0.5 hidden sm:block text-[10px] text-muted-foreground leading-tight">{section.hint}</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
-        <div className="min-w-0">
-          {activeSection === "product" && (
-            <section className={panelClass}>
-              {renderPanelTitle("01", "Produto", "Nome, categoria, etiqueta e documentação")}
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-6 gap-4">
-                <label className="space-y-2 xl:col-span-5">
-                  <span className={labelClass}>Nome do produto</span>
-                  <input value={product.name} onChange={(e) => update({ name: e.target.value })} className={fieldClass} />
+              {/* PT column */}
+              <div className="space-y-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60 border-b border-border pb-2">🇧🇷 Português</p>
+                <label>
+                  <span className={lbl}>Descrição curta</span>
+                  <input value={product.description} onChange={(e) => update({ description: e.target.value })} className={field} />
                 </label>
-
-                <label className="space-y-2">
-                  <span className={labelClass}>Categoria</span>
-                  <select value={product.category} onChange={(e) => update({ category: e.target.value as Product["category"] })} className={fieldClass}>
-                    {CATEGORIES.filter((item) => item !== "Todos").map((item) => <option key={item} value={item}>{item}</option>)}
-                  </select>
+                <label>
+                  <span className={lbl}>Descrição completa</span>
+                  <textarea value={product.fullDescription} onChange={(e) => update({ fullDescription: e.target.value })} rows={6} className={textarea} />
                 </label>
-
-                <label className="space-y-2">
-                  <span className={labelClass}>Etiqueta</span>
-                  <select value={product.status} onChange={(e) => update({ status: e.target.value as ProductStatus })} className={fieldClass}>
-                    <option value="novo">Novo</option>
-                    <option value="popular">Popular</option>
-                    <option value="atualizado">Atualizado</option>
-                    <option value="em-breve">Em breve</option>
-                  </select>
+                <label>
+                  <span className={lbl}>Recursos — um por linha</span>
+                  <textarea value={featuresText} onChange={(e) => update({ features: e.target.value.split("\n").map((l) => l.trim()).filter(Boolean) })} rows={7} className={textarea} />
                 </label>
-
-                <label className="space-y-2">
-                  <span className={labelClass}>Ícone fallback</span>
-                  <input value={product.iconName ?? ""} onChange={(e) => update({ iconName: e.target.value })} placeholder="Package, Crown..." className={fieldClass} />
-                </label>
-
-                <label className="space-y-2 xl:col-span-3">
-                  <span className={labelClass}>URL Documentação</span>
-                  <input value={product.docsUrl ?? ""} onChange={(e) => update({ docsUrl: e.target.value })} placeholder="https://docs..." className={fieldClass} />
+                <label>
+                  <span className={lbl}>Requisitos — um por linha</span>
+                  <textarea value={requirementsText} onChange={(e) => update({ requirements: e.target.value.split("\n").map((l) => l.trim()).filter(Boolean) })} rows={5} className={textarea} />
                 </label>
               </div>
-            </section>
-          )}
 
-          {activeSection === "tebex" && (
-            <section className={panelClass}>
-              {renderPanelTitle("02", "Tebex", "Preço fallback, Package ID e URL Tebex")}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <label className="space-y-2">
-                  <span className={labelClass}>Package ID Tebex</span>
-                  <input value={product.packageId ?? ""} onChange={(e) => update({ packageId: e.target.value })} placeholder="7457637" className={fieldClass} />
+              {/* EN column */}
+              <div className="space-y-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60 border-b border-border pb-2">🇺🇸 English</p>
+                <label>
+                  <span className={lbl}>Short description</span>
+                  <input value={product.descriptionEn ?? ""} onChange={(e) => update({ descriptionEn: e.target.value })} className={field} />
                 </label>
-
-                <label className="space-y-2">
-                  <span className={labelClass}>Preço fallback</span>
-                  <input type="number" step="0.01" value={product.price} onChange={(e) => update({ price: Number(e.target.value), priceSource: "fallback" })} className={fieldClass} />
+                <label>
+                  <span className={lbl}>Full description</span>
+                  <textarea value={product.fullDescriptionEn ?? ""} onChange={(e) => update({ fullDescriptionEn: e.target.value })} rows={6} className={textarea} />
                 </label>
-
-                <label className="space-y-2 lg:col-span-1">
-                  <span className={labelClass}>URL Tebex</span>
-                  <input value={product.tebexUrl} onChange={(e) => update({ tebexUrl: e.target.value })} placeholder="https://.../package/..." className={fieldClass} />
+                <label>
+                  <span className={lbl}>Features — one per line</span>
+                  <textarea value={featuresEnText} onChange={(e) => update({ featuresEn: e.target.value.split("\n").map((l) => l.trim()).filter(Boolean) })} rows={7} className={textarea} />
                 </label>
-
-                <div className="lg:col-span-3 rounded-2xl border border-primary/15 bg-primary/5 p-4">
-                  <p className="text-xs font-semibold text-foreground/80">Preço automático</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Se o Package ID estiver correto, o site puxa o valor direto da Tebex. O fallback só entra se a Tebex não retornar preço.
-                  </p>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {activeSection === "pt" && (
-            <section className={panelClass}>
-              {renderPanelTitle("03", "Português", "Descrição, recursos e requisitos")}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                <label className="space-y-2 xl:col-span-2">
-                  <span className={labelClass}>Descrição curta</span>
-                  <input value={product.description} onChange={(e) => update({ description: e.target.value })} className={fieldClass} />
-                </label>
-
-                <label className="space-y-2 xl:col-span-2">
-                  <span className={labelClass}>Descrição completa</span>
-                  <textarea value={product.fullDescription} onChange={(e) => update({ fullDescription: e.target.value })} rows={5} className={textareaClass} />
-                </label>
-
-                <label className="space-y-2">
-                  <span className={labelClass}>Recursos, um por linha</span>
-                  <textarea value={featuresText} onChange={(e) => update({ features: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
-                </label>
-
-                <label className="space-y-2">
-                  <span className={labelClass}>Requisitos, um por linha</span>
-                  <textarea value={requirementsText} onChange={(e) => update({ requirements: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
+                <label>
+                  <span className={lbl}>Requirements — one per line</span>
+                  <textarea value={requirementsEnText} onChange={(e) => update({ requirementsEn: e.target.value.split("\n").map((l) => l.trim()).filter(Boolean) })} rows={5} className={textarea} />
                 </label>
               </div>
-            </section>
-          )}
+            </div>
+          </div>
 
-          {activeSection === "en" && (
-            <section className="rounded-[28px] border border-primary/20 bg-primary/5 p-5 lg:p-6 shadow-[0_18px_55px_rgba(32,32,32,0.05)]">
-              {renderPanelTitle("04", "English", "Name, description, features and requirements")}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                <label className="space-y-2 xl:col-span-2">
-                  <span className={labelClass}>Name EN</span>
-                  <input value={product.nameEn ?? ""} onChange={(e) => update({ nameEn: e.target.value })} className={fieldClass} />
-                </label>
-
-                <label className="space-y-2 xl:col-span-2">
-                  <span className={labelClass}>Short Description EN</span>
-                  <input value={product.descriptionEn ?? ""} onChange={(e) => update({ descriptionEn: e.target.value })} className={fieldClass} />
-                </label>
-
-                <label className="space-y-2 xl:col-span-2">
-                  <span className={labelClass}>Full Description EN</span>
-                  <textarea value={product.fullDescriptionEn ?? ""} onChange={(e) => update({ fullDescriptionEn: e.target.value })} rows={5} className={textareaClass} />
-                </label>
-
-                <label className="space-y-2">
-                  <span className={labelClass}>Features EN, one per line</span>
-                  <textarea value={featuresEnText} onChange={(e) => update({ featuresEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
-                </label>
-
-                <label className="space-y-2">
-                  <span className={labelClass}>Requirements EN, one per line</span>
-                  <textarea value={requirementsEnText} onChange={(e) => update({ requirementsEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
-                </label>
-              </div>
-            </section>
-          )}
-
-          {activeSection === "media" && (
-            <section className={panelClass}>
-              {renderPanelTitle("05", "Mídia", "Ícone do card, links e galeria")}
-              <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_290px] gap-5">
-                <label className="space-y-2 block">
-                  <span className={labelClass}>URLs de mídia, uma por linha</span>
-                  <textarea
-                    value={mediaText}
-                    onChange={(e) => update({
-                      media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
-                        type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
-                        src,
-                        alt: product.name || "Preview do produto"
-                      }))
-                    })}
-                    rows={9}
-                    className={textareaClass}
-                  />
-                </label>
-
+          {/* 04 — Mídia */}
+          <div className="rounded-[22px] border border-border bg-card p-5 lg:p-6 shadow-[0_8px_28px_rgba(32,32,32,0.04)]">
+            <SectionHeader number="04" title="Mídia" subtitle="Imagem do card (linha 1) e galeria (linhas seguintes)" />
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_220px] gap-5">
+              <label>
+                <span className={lbl}>URLs — uma por linha</span>
+                <textarea
+                  value={mediaText}
+                  onChange={(e) => update({
+                    media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
+                      type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
+                      src,
+                      alt: product.name || "Preview do produto"
+                    }))
+                  })}
+                  rows={10}
+                  className={textarea}
+                  placeholder={"https://cdn.../thumb.png\nhttps://youtube.com/watch?v=...\nhttps://cdn.../screenshot2.png"}
+                />
+              </label>
+              <div className="space-y-3">
                 <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
-                  <p className="text-sm font-semibold text-foreground/85">Como usar</p>
-                  <ul className="mt-3 space-y-2 text-xs leading-5 text-muted-foreground">
-                    <li>• Linha 1: imagem do card.</li>
-                    <li>• Linha 2+: galeria do produto.</li>
-                    <li>• YouTube vira vídeo.</li>
-                    <li>• .mp4, .webm e .mov viram vídeo direto.</li>
+                  <p className="text-xs font-semibold text-foreground/80 mb-2">Como usar</p>
+                  <ul className="space-y-1.5 text-xs leading-5 text-muted-foreground">
+                    <li>• Linha 1 → imagem do card</li>
+                    <li>• Linha 2+ → galeria</li>
+                    <li>• YouTube → player embutido</li>
+                    <li>• .mp4 / .webm / .mov → vídeo</li>
                   </ul>
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="rounded-xl border border-border bg-card p-3">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">URLs</p>
-                      <p className="mt-1 text-lg font-bold text-primary">{product.media?.length ?? 0}</p>
-                    </div>
-                    <div className="rounded-xl border border-border bg-card p-3">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Galeria</p>
-                      <p className="mt-1 text-lg font-bold text-primary">{galleryCount}</p>
-                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-xl border border-border bg-background p-3 text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">URLs</p>
+                    <p className="mt-1 text-xl font-bold text-primary">{product.media?.length ?? 0}</p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background p-3 text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Galeria</p>
+                    <p className="mt-1 text-xl font-bold text-primary">{galleryCount}</p>
                   </div>
                 </div>
               </div>
-            </section>
-          )}
+            </div>
+          </div>
+
         </div>
 
-        <aside className="xl:sticky xl:top-6 space-y-5">
-          <div className="rounded-[28px] border border-border bg-card p-5 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Preview</p>
+        {/* ── Right: preview + publish ── */}
+        <aside className="xl:sticky xl:top-6 space-y-4">
 
-            <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-background">
+          {/* Preview card */}
+          <div className="rounded-[22px] border border-border bg-card p-4 shadow-[0_8px_28px_rgba(32,32,32,0.06)]">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary/60 mb-3">Preview</p>
+            <div className="overflow-hidden rounded-2xl border border-border bg-background">
               <div
-                className="relative h-36 flex items-center justify-center overflow-hidden"
+                className="relative h-32 flex items-center justify-center overflow-hidden"
                 style={{ background: `linear-gradient(135deg, ${product.gradientFrom}, ${product.gradientTo})` }}
               >
                 {iconPreview && !previewFailed ? (
-                  <img
-                    src={iconPreview}
-                    alt={product.name}
-                    onError={() => setPreviewFailed(true)}
-                    className="h-full w-full object-cover"
-                  />
+                  <img src={iconPreview} alt={product.name} onError={() => setPreviewFailed(true)} className="h-full w-full object-cover" />
                 ) : (
                   <div className="rounded-xl border border-primary/25 bg-primary/10 p-4">
-                    <Icon size={26} className="text-primary" />
+                    <Icon size={24} className="text-primary" />
                   </div>
                 )}
               </div>
-
               <div className="p-4">
-                <div className="flex flex-wrap gap-2">
-                  <span className={`px-2 py-0.5 rounded-sm text-[10px] font-semibold tracking-wider uppercase ${status.cls}`}>
-                    {status.label}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-sm text-[10px] tracking-wider uppercase border border-border text-muted-foreground">
-                    {product.category}
-                  </span>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className={`px-2 py-0.5 rounded-sm text-[10px] font-semibold tracking-wider uppercase ${status.cls}`}>{status.label}</span>
+                  <span className="px-2 py-0.5 rounded-sm text-[10px] tracking-wider uppercase border border-border text-muted-foreground">{product.category}</span>
                 </div>
-                <p className="mt-3 font-bold text-foreground/90">{product.name || "Nome do produto"}</p>
-                <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{product.description || "Descrição curta do produto."}</p>
-                <p className="mt-3 text-lg font-bold text-primary" style={{ fontFamily: "'Cinzel', serif" }}>
+                <p className="mt-2.5 font-bold text-foreground/90 text-sm">{product.name || "Nome do produto"}</p>
+                <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{product.description || "Descrição curta."}</p>
+                <p className="mt-2.5 text-base font-bold text-primary" style={{ fontFamily: "'Cinzel', serif" }}>
                   {formatProductPrice(product.price, PRODUCT_BASE_CURRENCY, product.priceCurrency)}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-border bg-card p-5 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Publicação</p>
-
-            <div className="mt-4 space-y-3">
-              <label className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background/70 p-4 text-sm text-foreground/75">
+          {/* Publish settings */}
+          <div className="rounded-[22px] border border-border bg-card p-4 shadow-[0_8px_28px_rgba(32,32,32,0.06)]">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary/60 mb-3">Publicação</p>
+            <div className="space-y-2">
+              <label className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background/70 px-4 py-3 cursor-pointer hover:border-primary/20 transition-colors">
                 <span>
-                  <strong className="block text-foreground/90">Visível</strong>
-                  <span className="text-xs text-muted-foreground">Aparece na vitrine.</span>
+                  <strong className="block text-sm text-foreground/90">Visível</strong>
+                  <span className="text-xs text-muted-foreground">Aparece na vitrine</span>
                 </span>
-                <input type="checkbox" checked={product.visible !== false} onChange={(e) => update({ visible: e.target.checked })} />
+                <input type="checkbox" checked={product.visible !== false} onChange={(e) => update({ visible: e.target.checked })} className="h-4 w-4 accent-primary" />
               </label>
-
-              <label className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background/70 p-4 text-sm text-foreground/75">
+              <label className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background/70 px-4 py-3 cursor-pointer hover:border-primary/20 transition-colors">
                 <span>
-                  <strong className="block text-foreground/90">Destaque</strong>
-                  <span className="text-xs text-muted-foreground">Prioriza na listagem.</span>
+                  <strong className="block text-sm text-foreground/90">Destaque</strong>
+                  <span className="text-xs text-muted-foreground">Prioriza na listagem</span>
                 </span>
-                <input type="checkbox" checked={product.featured === true} onChange={(e) => update({ featured: e.target.checked })} />
+                <input type="checkbox" checked={product.featured === true} onChange={(e) => update({ featured: e.target.checked })} className="h-4 w-4 accent-primary" />
               </label>
             </div>
-
             <button
               onClick={onSave}
               disabled={saving}
-              className="mt-5 w-full rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-all hover:brightness-105 disabled:opacity-60"
+              className="mt-4 w-full rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:brightness-105 disabled:opacity-60 transition-all"
             >
               {saving ? "Salvando..." : "Salvar alterações"}
             </button>
           </div>
+
         </aside>
       </div>
     </div>
@@ -5507,33 +5453,34 @@ function CreatorCodeAdminPanel({ token }: { token: string }) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-[300px_minmax(0,1fr)] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-6">
         <div className="space-y-3">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Cadastrados</p>
+            {loading && <span className="text-xs text-muted-foreground">Carregando...</span>}
+          </div>
           {loading ? (
             <p className="text-sm text-muted-foreground">Carregando...</p>
           ) : codes.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum coupon/gift card configurado.</p>
+            <p className="rounded-2xl border border-dashed border-border p-5 text-sm text-muted-foreground text-center">Nenhum cupom ainda.</p>
           ) : codes.map((code) => (
             <button
               key={code.id}
               onClick={() => setSelected(code)}
               className={`w-full rounded-2xl border p-4 text-left transition-all ${
-                selected.id === code.id ? "border-primary/50 bg-primary/10" : "border-border hover:border-primary/25"
+                selected.id === code.id ? "border-primary/50 bg-primary/10 shadow-[0_4px_16px_rgba(201,168,76,0.10)]" : "border-border hover:border-primary/25 hover:bg-primary/5"
               }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-semibold text-foreground/90">{code.label}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Original: {code.originalCode}</p>
+                  <p className="mt-1 text-xs text-muted-foreground font-mono">{code.originalCode}</p>
                 </div>
-                <span className={`mt-2 h-2 w-2 rounded-full ${code.visible ? "bg-emerald-400" : "bg-red-400"}`} />
+                <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${code.visible ? "bg-emerald-400" : "bg-red-400"}`} />
               </div>
               <button
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleDeleteCreatorCode(code.id);
-                }}
-                className="mt-3 text-xs text-red-500 hover:underline"
+                onClick={(event) => { event.stopPropagation(); handleDeleteCreatorCode(code.id); }}
+                className="mt-2.5 text-xs text-red-500/60 hover:text-red-500 hover:underline transition-colors"
               >
                 Remover
               </button>
@@ -5541,42 +5488,49 @@ function CreatorCodeAdminPanel({ token }: { token: string }) {
           ))}
         </div>
 
-        <div className="rounded-2xl border border-border bg-background/70 p-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="space-y-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nome público</span>
+        <div className="rounded-2xl border border-border bg-background/70 p-6">
+          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-4">
+            {selected.id.startsWith("new-") ? "Novo cupom / gift card" : "Editar cupom"}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <label>
+              <span className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Nome público</span>
               <input
                 value={selected.label}
                 onChange={(e) => setSelected({ ...selected, label: e.target.value })}
                 placeholder="Ex: Parceiro Oficial"
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary/40"
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition-colors"
               />
             </label>
-            <label className="space-y-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cupom/Gift Card original da Tebex</span>
+            <label>
+              <span className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Código original Tebex</span>
               <input
                 value={selected.originalCode}
                 onChange={(e) => setSelected({ ...selected, originalCode: e.target.value })}
                 placeholder="Ex: TWSCREATOR"
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary/40"
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm font-mono outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition-colors"
               />
             </label>
-            <label className="md:col-span-2 inline-flex items-center gap-2 text-sm text-foreground/75">
+            <label className="md:col-span-2 flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 cursor-pointer hover:border-primary/20 transition-colors">
               <input
                 type="checkbox"
                 checked={selected.visible}
                 onChange={(e) => setSelected({ ...selected, visible: e.target.checked })}
+                className="h-4 w-4 accent-primary"
               />
-              Visível para clientes no checkout
+              <span>
+                <strong className="block text-sm text-foreground/90">Visível para clientes</strong>
+                <span className="text-xs text-muted-foreground">Aparece no checkout para o cliente usar</span>
+              </span>
             </label>
           </div>
 
           <button
             onClick={handleSaveCreatorCode}
             disabled={saving}
-            className="mt-5 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+            className="mt-5 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:brightness-105 disabled:opacity-60 transition-all"
           >
-            {saving ? "Salvando..." : "Salvar coupon/gift card"}
+            {saving ? "Salvando..." : "Salvar cupom / gift card"}
           </button>
         </div>
       </div>
