@@ -1230,6 +1230,25 @@ function storeAdminToken(token: string) {
   window.dispatchEvent(new Event("tws:admin-session-changed"));
 }
 
+function parseProductList(value: any) {
+  let source = value;
+
+  if (typeof source === "string" && source.trim()) {
+    try {
+      source = JSON.parse(source);
+    } catch {
+      source = source.split(/\r?\n/);
+    }
+  }
+
+  if (!Array.isArray(source)) return [];
+
+  return source
+    .flatMap((item) => String(item ?? "").split(/\r?\n/))
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
 function normalizeProductFromApi(item: any): Product {
   const media = Array.isArray(item.media)
     ? item.media
@@ -1237,29 +1256,10 @@ function normalizeProductFromApi(item: any): Product {
       ? JSON.parse(item.media)
       : [];
 
-  const features = Array.isArray(item.features)
-    ? item.features
-    : typeof item.features === "string" && item.features.trim()
-      ? JSON.parse(item.features)
-      : [];
-
-  const requirements = Array.isArray(item.requirements)
-    ? item.requirements
-    : typeof item.requirements === "string" && item.requirements.trim()
-      ? JSON.parse(item.requirements)
-      : [];
-
-  const featuresEn = Array.isArray(item.featuresEn ?? item.features_en)
-    ? (item.featuresEn ?? item.features_en)
-    : typeof (item.featuresEn ?? item.features_en) === "string" && (item.featuresEn ?? item.features_en).trim()
-      ? JSON.parse(item.featuresEn ?? item.features_en)
-      : [];
-
-  const requirementsEn = Array.isArray(item.requirementsEn ?? item.requirements_en)
-    ? (item.requirementsEn ?? item.requirements_en)
-    : typeof (item.requirementsEn ?? item.requirements_en) === "string" && (item.requirementsEn ?? item.requirements_en).trim()
-      ? JSON.parse(item.requirementsEn ?? item.requirements_en)
-      : [];
+  const features = parseProductList(item.features);
+  const requirements = parseProductList(item.requirements);
+  const featuresEn = parseProductList(item.featuresEn ?? item.features_en);
+  const requirementsEn = parseProductList(item.requirementsEn ?? item.requirements_en);
 
   return {
     id: item.id ?? item.slug ?? crypto.randomUUID(),
@@ -1352,7 +1352,14 @@ async function fetchAdminProducts(token: string) {
 async function saveAdminProduct(token: string, product: Product) {
   const editing = !!product.id && !product.id.startsWith("new-");
   const endpoint = editing ? `/api/admin/products/${encodeURIComponent(product.id)}` : "/api/admin/products";
-  const productPayload = editing ? product : { ...product, id: undefined };
+  const normalizedProduct = {
+    ...product,
+    features: parseProductList(product.features),
+    featuresEn: parseProductList(product.featuresEn),
+    requirements: parseProductList(product.requirements),
+    requirementsEn: parseProductList(product.requirementsEn)
+  };
+  const productPayload = editing ? normalizedProduct : { ...normalizedProduct, id: undefined };
 
   const response = await fetch(apiUrl(endpoint), {
     method: editing ? "PUT" : "POST",
