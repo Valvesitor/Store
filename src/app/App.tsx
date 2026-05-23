@@ -5,7 +5,7 @@ import {
   MessageCircle, Star, Zap, Shield, Crown, ArrowRight,
   Package, Users, Palette, Code2, ChevronDown, Check,
   ChevronRight, Sparkles, LayoutGrid, Filter, LogIn, ShoppingCart,
-  Play, Image as ImageIcon, User, LogOut, Github
+  Play, Image as ImageIcon, User, LogOut, Github, Plus
 } from "lucide-react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 
