@@ -3459,316 +3459,335 @@ function ProductAdminForm({
   const update = (patch: Partial<Product>) => onChange({ ...product, ...patch });
 
   const fieldClass = "w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none transition-colors focus:border-primary/40";
-  const textareaClass = `${fieldClass} min-h-[150px] resize-y`;
+  const textareaClass = `${fieldClass} min-h-[145px] resize-y`;
   const labelClass = "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
-  const sectionClass = "rounded-[26px] border border-border bg-card p-5 lg:p-6 shadow-[0_18px_55px_rgba(32,32,32,0.05)]";
+  const panelClass = "rounded-[28px] border border-border bg-card p-5 lg:p-6 shadow-[0_18px_55px_rgba(32,32,32,0.05)]";
 
   return (
-    <div className="grid grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
-      <div className="space-y-6">
-        <div className="rounded-[28px] border border-border bg-card p-6 lg:p-7 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <SectionTag>Editor</SectionTag>
-              <h2 className="mt-3 text-2xl lg:text-3xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                {product.id.startsWith("new-") ? "Novo produto" : product.name || "Editar produto"}
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Layout reorganizado por blocos. Preencha primeiro a base do produto, depois traduções, mídia e publicação.
-              </p>
-            </div>
-
-            <button
-              onClick={onSave}
-              disabled={saving}
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all hover:brightness-105 disabled:opacity-60"
-            >
-              {saving ? "Salvando..." : "Salvar e publicar"}
-            </button>
-          </div>
-        </div>
-
-        <section className={sectionClass}>
-          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">01 · Base</p>
-              <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                Identidade e categoria
-              </h3>
-            </div>
-            <p className="text-xs text-muted-foreground">Dados principais do produto na loja.</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
-            <label className="space-y-2 xl:col-span-2">
-              <span className={labelClass}>Nome do produto</span>
-              <input value={product.name} onChange={(e) => update({ name: e.target.value })} className={fieldClass} />
-            </label>
-
-            <label className="space-y-2">
-              <span className={labelClass}>Categoria</span>
-              <select value={product.category} onChange={(e) => update({ category: e.target.value as Product["category"] })} className={fieldClass}>
-                {CATEGORIES.filter((item) => item !== "Todos").map((item) => <option key={item} value={item}>{item}</option>)}
-              </select>
-            </label>
-
-            <label className="space-y-2">
-              <span className={labelClass}>Etiqueta</span>
-              <select value={product.status} onChange={(e) => update({ status: e.target.value as ProductStatus })} className={fieldClass}>
-                <option value="novo">Novo</option>
-                <option value="popular">Popular</option>
-                <option value="atualizado">Atualizado</option>
-                <option value="em-breve">Em breve</option>
-              </select>
-            </label>
-
-            <label className="space-y-2">
-              <span className={labelClass}>Preço fallback</span>
-              <input type="number" step="0.01" value={product.price} onChange={(e) => update({ price: Number(e.target.value), priceSource: "fallback" })} className={fieldClass} />
-            </label>
-
-            <label className="space-y-2">
-              <span className={labelClass}>Ícone fallback</span>
-              <input value={product.iconName ?? ""} onChange={(e) => update({ iconName: e.target.value })} placeholder="Package, Crown, Palette..." className={fieldClass} />
-            </label>
-
-            <label className="space-y-2 xl:col-span-2">
-              <span className={labelClass}>URL Documentação</span>
-              <input value={product.docsUrl ?? ""} onChange={(e) => update({ docsUrl: e.target.value })} placeholder="https://docs..." className={fieldClass} />
-            </label>
-          </div>
-        </section>
-
-        <section className={sectionClass}>
-          <div className="mb-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">02 · Conteúdo</p>
-            <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
-              Português e Inglês lado a lado
-            </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              O cliente vê apenas o idioma selecionado. Campos em inglês vazios usam português como fallback.
+    <div className="space-y-6">
+      <div className="rounded-[28px] border border-border bg-card p-6 lg:p-7 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+          <div>
+            <SectionTag>Editor de produto</SectionTag>
+            <h2 className="mt-3 text-2xl lg:text-3xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              {product.id.startsWith("new-") ? "Novo produto" : product.name || "Editar produto"}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+              O preview fica fixo ao lado. O formulário abaixo está separado por finalidade para facilitar publicação e revisão.
             </p>
-          </div>
-
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-            <div className="rounded-2xl border border-border bg-background/55 p-4">
-              <div className="mb-4">
-                <p className="text-sm font-bold text-foreground/90">Português</p>
-                <p className="text-[11px] text-muted-foreground">Conteúdo padrão da loja.</p>
-              </div>
-
-              <div className="space-y-4">
-                <label className="space-y-2 block">
-                  <span className={labelClass}>Descrição curta</span>
-                  <input value={product.description} onChange={(e) => update({ description: e.target.value })} className={fieldClass} />
-                </label>
-
-                <label className="space-y-2 block">
-                  <span className={labelClass}>Descrição completa</span>
-                  <textarea value={product.fullDescription} onChange={(e) => update({ fullDescription: e.target.value })} rows={6} className={textareaClass} />
-                </label>
-
-                <label className="space-y-2 block">
-                  <span className={labelClass}>Recursos, um por linha</span>
-                  <textarea value={featuresText} onChange={(e) => update({ features: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
-                </label>
-
-                <label className="space-y-2 block">
-                  <span className={labelClass}>Requisitos, um por linha</span>
-                  <textarea value={requirementsText} onChange={(e) => update({ requirements: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
-                </label>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-              <div className="mb-4">
-                <p className="text-sm font-bold text-primary">English</p>
-                <p className="text-[11px] text-muted-foreground">Shown when the customer selects EN.</p>
-              </div>
-
-              <div className="space-y-4">
-                <label className="space-y-2 block">
-                  <span className={labelClass}>Name EN</span>
-                  <input value={product.nameEn ?? ""} onChange={(e) => update({ nameEn: e.target.value })} className={fieldClass} />
-                </label>
-
-                <label className="space-y-2 block">
-                  <span className={labelClass}>Short Description EN</span>
-                  <input value={product.descriptionEn ?? ""} onChange={(e) => update({ descriptionEn: e.target.value })} className={fieldClass} />
-                </label>
-
-                <label className="space-y-2 block">
-                  <span className={labelClass}>Full Description EN</span>
-                  <textarea value={product.fullDescriptionEn ?? ""} onChange={(e) => update({ fullDescriptionEn: e.target.value })} rows={6} className={textareaClass} />
-                </label>
-
-                <label className="space-y-2 block">
-                  <span className={labelClass}>Features EN, one per line</span>
-                  <textarea value={featuresEnText} onChange={(e) => update({ featuresEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
-                </label>
-
-                <label className="space-y-2 block">
-                  <span className={labelClass}>Requirements EN, one per line</span>
-                  <textarea value={requirementsEnText} onChange={(e) => update({ requirementsEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
-                </label>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className={sectionClass}>
-          <div className="mb-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">03 · Tebex</p>
-            <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
-              Integração de pagamento
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            <label className="space-y-2">
-              <span className={labelClass}>Package ID Tebex</span>
-              <input value={product.packageId ?? ""} onChange={(e) => update({ packageId: e.target.value })} placeholder="7457637" className={fieldClass} />
-            </label>
-
-            <label className="space-y-2">
-              <span className={labelClass}>URL Tebex</span>
-              <input value={product.tebexUrl} onChange={(e) => update({ tebexUrl: e.target.value })} placeholder="https://.../package/..." className={fieldClass} />
-            </label>
-
-            <div className="xl:col-span-2 rounded-2xl border border-primary/15 bg-primary/5 p-4">
-              <p className="text-xs font-semibold text-foreground/80">Como o preço funciona</p>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                O site tenta puxar o preço direto da Tebex pelo Package ID. Se a Tebex não retornar valor, o preço fallback será usado.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className={sectionClass}>
-          <div className="mb-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">04 · Mídia</p>
-            <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
-              Ícone do card e galeria
-            </h3>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Primeira URL = imagem do card. Da segunda URL em diante = galeria do produto.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_300px] gap-5">
-            <label className="space-y-2 block">
-              <span className={labelClass}>Ícone do card + galeria, uma URL por linha</span>
-              <textarea
-                value={mediaText}
-                onChange={(e) => update({
-                  media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
-                    type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
-                    src,
-                    alt: product.name || "Preview do produto"
-                  }))
-                })}
-                rows={10}
-                className={textareaClass}
-              />
-            </label>
-
-            <div className="space-y-4">
-              <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
-                <p className="text-sm font-semibold text-foreground/85">Regra da galeria</p>
-                <ul className="mt-3 space-y-2 text-xs leading-5 text-muted-foreground">
-                  <li>• 1ª URL: usada somente no card da vitrine.</li>
-                  <li>• 2ª URL em diante: aparece na galeria.</li>
-                  <li>• YouTube vira vídeo automaticamente.</li>
-                  <li>• .mp4, .webm e .mov viram vídeo direto.</li>
-                </ul>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-border bg-background/70 p-4">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">URLs</p>
-                  <p className="mt-1 text-lg font-bold text-primary">{product.media?.length ?? 0}</p>
-                </div>
-                <div className="rounded-2xl border border-border bg-background/70 p-4">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Galeria</p>
-                  <p className="mt-1 text-lg font-bold text-primary">{galleryCount}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <aside className="2xl:sticky 2xl:top-6 space-y-5">
-        <div className="rounded-[28px] border border-border bg-card p-5 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Preview</p>
-
-          <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-background">
-            <div
-              className="relative h-36 flex items-center justify-center overflow-hidden"
-              style={{ background: `linear-gradient(135deg, ${product.gradientFrom}, ${product.gradientTo})` }}
-            >
-              {iconPreview && !previewFailed ? (
-                <img
-                  src={iconPreview}
-                  alt={product.name}
-                  onError={() => setPreviewFailed(true)}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="rounded-xl border border-primary/25 bg-primary/10 p-4">
-                  <Icon size={26} className="text-primary" />
-                </div>
-              )}
-            </div>
-
-            <div className="p-4">
-              <div className="flex flex-wrap gap-2">
-                <span className={`px-2 py-0.5 rounded-sm text-[10px] font-semibold tracking-wider uppercase ${status.cls}`}>
-                  {status.label}
-                </span>
-                <span className="px-2 py-0.5 rounded-sm text-[10px] tracking-wider uppercase border border-border text-muted-foreground">
-                  {product.category}
-                </span>
-              </div>
-              <p className="mt-3 font-bold text-foreground/90">{product.name || "Nome do produto"}</p>
-              <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{product.description || "Descrição curta do produto."}</p>
-              <p className="mt-3 text-lg font-bold text-primary" style={{ fontFamily: "'Cinzel', serif" }}>
-                {formatProductPrice(product.price, PRODUCT_BASE_CURRENCY, product.priceCurrency)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-[28px] border border-border bg-card p-5 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Publicação</p>
-
-          <div className="mt-4 space-y-3">
-            <label className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background/70 p-4 text-sm text-foreground/75">
-              <span>
-                <strong className="block text-foreground/90">Visível</strong>
-                <span className="text-xs text-muted-foreground">Aparece na vitrine.</span>
-              </span>
-              <input type="checkbox" checked={product.visible !== false} onChange={(e) => update({ visible: e.target.checked })} />
-            </label>
-
-            <label className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background/70 p-4 text-sm text-foreground/75">
-              <span>
-                <strong className="block text-foreground/90">Destaque</strong>
-                <span className="text-xs text-muted-foreground">Prioriza na listagem.</span>
-              </span>
-              <input type="checkbox" checked={product.featured === true} onChange={(e) => update({ featured: e.target.checked })} />
-            </label>
           </div>
 
           <button
             onClick={onSave}
             disabled={saving}
-            className="mt-5 w-full rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-all hover:brightness-105 disabled:opacity-60"
+            className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all hover:brightness-105 disabled:opacity-60"
           >
-            {saving ? "Salvando..." : "Salvar alterações"}
+            {saving ? "Salvando..." : "Salvar e publicar"}
           </button>
         </div>
-      </aside>
+      </div>
+
+      <div className="grid grid-cols-1 2xl:grid-cols-[220px_minmax(0,1fr)_340px] gap-6 items-start">
+        <aside className="hidden 2xl:block sticky top-6 space-y-4">
+          <div className="rounded-[24px] border border-border bg-card p-4 shadow-[0_14px_45px_rgba(32,32,32,0.04)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Fluxo</p>
+            <nav className="mt-4 space-y-2">
+              {[
+                ["01", "Produto"],
+                ["02", "Tebex"],
+                ["03", "Português"],
+                ["04", "English"],
+                ["05", "Mídia"]
+              ].map(([number, label]) => (
+                <div key={label} className="flex items-center gap-3 rounded-2xl border border-border bg-background/55 px-3 py-3">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
+                    {number}
+                  </span>
+                  <span className="text-sm font-semibold text-foreground/75">{label}</span>
+                </div>
+              ))}
+            </nav>
+          </div>
+
+          <div className="rounded-[24px] border border-primary/15 bg-primary/5 p-4">
+            <p className="text-sm font-semibold text-foreground/85">Regra importante</p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              A primeira URL da mídia é o ícone do card. As próximas aparecem na galeria do produto.
+            </p>
+          </div>
+        </aside>
+
+        <div className="space-y-6">
+          <section className={panelClass}>
+            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">01 · Produto</p>
+                <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                  Identidade visual e categoria
+                </h3>
+              </div>
+              <p className="text-xs text-muted-foreground">Define como o produto aparece na vitrine.</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+              <label className="space-y-2 xl:col-span-2">
+                <span className={labelClass}>Nome do produto</span>
+                <input value={product.name} onChange={(e) => update({ name: e.target.value })} className={fieldClass} />
+              </label>
+
+              <label className="space-y-2">
+                <span className={labelClass}>Categoria</span>
+                <select value={product.category} onChange={(e) => update({ category: e.target.value as Product["category"] })} className={fieldClass}>
+                  {CATEGORIES.filter((item) => item !== "Todos").map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </label>
+
+              <label className="space-y-2">
+                <span className={labelClass}>Etiqueta</span>
+                <select value={product.status} onChange={(e) => update({ status: e.target.value as ProductStatus })} className={fieldClass}>
+                  <option value="novo">Novo</option>
+                  <option value="popular">Popular</option>
+                  <option value="atualizado">Atualizado</option>
+                  <option value="em-breve">Em breve</option>
+                </select>
+              </label>
+
+              <label className="space-y-2">
+                <span className={labelClass}>Ícone fallback</span>
+                <input value={product.iconName ?? ""} onChange={(e) => update({ iconName: e.target.value })} placeholder="Package, Crown..." className={fieldClass} />
+              </label>
+
+              <label className="space-y-2 xl:col-span-3">
+                <span className={labelClass}>URL Documentação</span>
+                <input value={product.docsUrl ?? ""} onChange={(e) => update({ docsUrl: e.target.value })} placeholder="https://docs..." className={fieldClass} />
+              </label>
+            </div>
+          </section>
+
+          <section className={panelClass}>
+            <div className="mb-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">02 · Tebex</p>
+              <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                Pagamento e preço
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <label className="space-y-2">
+                <span className={labelClass}>Package ID Tebex</span>
+                <input value={product.packageId ?? ""} onChange={(e) => update({ packageId: e.target.value })} placeholder="7457637" className={fieldClass} />
+              </label>
+
+              <label className="space-y-2">
+                <span className={labelClass}>Preço fallback</span>
+                <input type="number" step="0.01" value={product.price} onChange={(e) => update({ price: Number(e.target.value), priceSource: "fallback" })} className={fieldClass} />
+              </label>
+
+              <label className="space-y-2 lg:col-span-1">
+                <span className={labelClass}>URL Tebex</span>
+                <input value={product.tebexUrl} onChange={(e) => update({ tebexUrl: e.target.value })} placeholder="https://.../package/..." className={fieldClass} />
+              </label>
+
+              <div className="lg:col-span-3 rounded-2xl border border-primary/15 bg-primary/5 p-4">
+                <p className="text-xs font-semibold text-foreground/80">Preço automático</p>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Se o Package ID estiver correto, o site puxa o valor direto da Tebex. O fallback só entra se a Tebex não retornar preço.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className={panelClass}>
+            <div className="mb-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">03 · Português</p>
+              <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                Texto principal do produto
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              <label className="space-y-2 xl:col-span-2">
+                <span className={labelClass}>Descrição curta</span>
+                <input value={product.description} onChange={(e) => update({ description: e.target.value })} className={fieldClass} />
+              </label>
+
+              <label className="space-y-2 xl:col-span-2">
+                <span className={labelClass}>Descrição completa</span>
+                <textarea value={product.fullDescription} onChange={(e) => update({ fullDescription: e.target.value })} rows={5} className={textareaClass} />
+              </label>
+
+              <label className="space-y-2">
+                <span className={labelClass}>Recursos, um por linha</span>
+                <textarea value={featuresText} onChange={(e) => update({ features: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
+              </label>
+
+              <label className="space-y-2">
+                <span className={labelClass}>Requisitos, um por linha</span>
+                <textarea value={requirementsText} onChange={(e) => update({ requirements: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
+              </label>
+            </div>
+          </section>
+
+          <section className="rounded-[28px] border border-primary/20 bg-primary/5 p-5 lg:p-6 shadow-[0_18px_55px_rgba(32,32,32,0.05)]">
+            <div className="mb-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/80">04 · English</p>
+              <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                Product English version
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground">Empty English fields use Portuguese as fallback.</p>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              <label className="space-y-2 xl:col-span-2">
+                <span className={labelClass}>Name EN</span>
+                <input value={product.nameEn ?? ""} onChange={(e) => update({ nameEn: e.target.value })} className={fieldClass} />
+              </label>
+
+              <label className="space-y-2 xl:col-span-2">
+                <span className={labelClass}>Short Description EN</span>
+                <input value={product.descriptionEn ?? ""} onChange={(e) => update({ descriptionEn: e.target.value })} className={fieldClass} />
+              </label>
+
+              <label className="space-y-2 xl:col-span-2">
+                <span className={labelClass}>Full Description EN</span>
+                <textarea value={product.fullDescriptionEn ?? ""} onChange={(e) => update({ fullDescriptionEn: e.target.value })} rows={5} className={textareaClass} />
+              </label>
+
+              <label className="space-y-2">
+                <span className={labelClass}>Features EN, one per line</span>
+                <textarea value={featuresEnText} onChange={(e) => update({ featuresEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
+              </label>
+
+              <label className="space-y-2">
+                <span className={labelClass}>Requirements EN, one per line</span>
+                <textarea value={requirementsEnText} onChange={(e) => update({ requirementsEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
+              </label>
+            </div>
+          </section>
+
+          <section className={panelClass}>
+            <div className="mb-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">05 · Mídia</p>
+              <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                Ícone do card e galeria
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Primeira URL = card da vitrine. Segunda em diante = galeria.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_290px] gap-5">
+              <label className="space-y-2 block">
+                <span className={labelClass}>URLs de mídia, uma por linha</span>
+                <textarea
+                  value={mediaText}
+                  onChange={(e) => update({
+                    media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
+                      type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
+                      src,
+                      alt: product.name || "Preview do produto"
+                    }))
+                  })}
+                  rows={9}
+                  className={textareaClass}
+                />
+              </label>
+
+              <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
+                <p className="text-sm font-semibold text-foreground/85">Como usar</p>
+                <ul className="mt-3 space-y-2 text-xs leading-5 text-muted-foreground">
+                  <li>• Linha 1: imagem do card.</li>
+                  <li>• Linha 2+: galeria do produto.</li>
+                  <li>• YouTube vira vídeo.</li>
+                  <li>• .mp4, .webm e .mov viram vídeo direto.</li>
+                </ul>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-border bg-card p-3">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">URLs</p>
+                    <p className="mt-1 text-lg font-bold text-primary">{product.media?.length ?? 0}</p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-card p-3">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Galeria</p>
+                    <p className="mt-1 text-lg font-bold text-primary">{galleryCount}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside className="2xl:sticky 2xl:top-6 space-y-5">
+          <div className="rounded-[28px] border border-border bg-card p-5 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Preview</p>
+
+            <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-background">
+              <div
+                className="relative h-36 flex items-center justify-center overflow-hidden"
+                style={{ background: `linear-gradient(135deg, ${product.gradientFrom}, ${product.gradientTo})` }}
+              >
+                {iconPreview && !previewFailed ? (
+                  <img
+                    src={iconPreview}
+                    alt={product.name}
+                    onError={() => setPreviewFailed(true)}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="rounded-xl border border-primary/25 bg-primary/10 p-4">
+                    <Icon size={26} className="text-primary" />
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4">
+                <div className="flex flex-wrap gap-2">
+                  <span className={`px-2 py-0.5 rounded-sm text-[10px] font-semibold tracking-wider uppercase ${status.cls}`}>
+                    {status.label}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-sm text-[10px] tracking-wider uppercase border border-border text-muted-foreground">
+                    {product.category}
+                  </span>
+                </div>
+                <p className="mt-3 font-bold text-foreground/90">{product.name || "Nome do produto"}</p>
+                <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{product.description || "Descrição curta do produto."}</p>
+                <p className="mt-3 text-lg font-bold text-primary" style={{ fontFamily: "'Cinzel', serif" }}>
+                  {formatProductPrice(product.price, PRODUCT_BASE_CURRENCY, product.priceCurrency)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[28px] border border-border bg-card p-5 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Publicação</p>
+
+            <div className="mt-4 space-y-3">
+              <label className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background/70 p-4 text-sm text-foreground/75">
+                <span>
+                  <strong className="block text-foreground/90">Visível</strong>
+                  <span className="text-xs text-muted-foreground">Aparece na vitrine.</span>
+                </span>
+                <input type="checkbox" checked={product.visible !== false} onChange={(e) => update({ visible: e.target.checked })} />
+              </label>
+
+              <label className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background/70 p-4 text-sm text-foreground/75">
+                <span>
+                  <strong className="block text-foreground/90">Destaque</strong>
+                  <span className="text-xs text-muted-foreground">Prioriza na listagem.</span>
+                </span>
+                <input type="checkbox" checked={product.featured === true} onChange={(e) => update({ featured: e.target.checked })} />
+              </label>
+            </div>
+
+            <button
+              onClick={onSave}
+              disabled={saving}
+              className="mt-5 w-full rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-all hover:brightness-105 disabled:opacity-60"
+            >
+              {saving ? "Salvando..." : "Salvar alterações"}
+            </button>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
