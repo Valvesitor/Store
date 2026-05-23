@@ -2521,7 +2521,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
       </div>
 
       <div className="relative z-20 h-[92px] shrink-0 border-t border-border bg-card/90 px-4 py-3 backdrop-blur-sm">
-        <div className="flex h-full gap-2.5 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex h-full gap-2.5 overflow-hidden pb-1">
           {media.length > 0 ? media.map((item, index) => {
             const isActive = index === activeIndex;
             const isFailed = failedMedia[item.src];
@@ -3732,20 +3732,46 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             )}
           </div>
 
-          <button
-            onClick={handleLogout}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-red-500/20 px-4 text-sm font-semibold text-red-500 hover:bg-red-500/5"
-          >
-            <LogOut size={15} />
-            Sair do admin
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => {
+                setSelected(emptyAdminProduct());
+                setMessage("Novo produto pronto para cadastro.");
+              }}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground hover:brightness-105"
+            >
+              <Plus size={15} />
+              Novo produto
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-red-500/20 px-4 text-sm font-semibold text-red-500 hover:bg-red-500/5"
+            >
+              <LogOut size={15} />
+              Sair do admin
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[330px_minmax(0,1fr)] gap-8">
           <aside className="rounded-[28px] border border-border bg-card p-5 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-bold text-foreground/90">Produtos</h2>
-              {loading && <span className="text-xs text-muted-foreground">Carregando...</span>}
+            <div className="flex items-center justify-between gap-3 mb-5">
+              <div>
+                <h2 className="font-bold text-foreground/90">Produtos</h2>
+                {loading && <span className="text-xs text-muted-foreground">Carregando...</span>}
+              </div>
+              <button
+                onClick={() => {
+                  setSelected(emptyAdminProduct());
+                  setMessage("Novo produto pronto para cadastro.");
+                }}
+                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-primary/30 px-3 text-xs font-semibold text-primary hover:bg-primary/5"
+                title="Adicionar produto novo"
+              >
+                <Plus size={13} />
+                Novo
+              </button>
             </div>
 
             <div className="space-y-3 max-h-[720px] overflow-y-auto pr-1">
