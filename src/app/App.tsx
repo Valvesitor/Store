@@ -617,6 +617,7 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Scripts": "Scripts",
   "Custom Peds": "Custom Peds",
   "Documentação": "Documentation",
+  "About": "About",
   "Login": "Login",
   "Carrinho": "Cart",
   "Sair": "Logout",
@@ -920,6 +921,39 @@ async function getTebexAuthUrl(basketIdent: string, packageId?: string, returnPa
   }
 
   return authUrl;
+}
+
+function isTebexLoginRequiredError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  const normalized = message.toLowerCase();
+
+  return (
+    normalized.includes("must login") ||
+    normalized.includes("must log in") ||
+    normalized.includes("login before") ||
+    normalized.includes("log in before") ||
+    normalized.includes("before adding packages") ||
+    normalized.includes("unauthorized") ||
+    normalized.includes("not authenticated")
+  );
+}
+
+async function redirectToTebexLoginForProduct(product: Product, returnPath = "/checkout") {
+  if (!product.packageId) {
+    throw new Error("Produto ainda nao configurado com packageId da Tebex.");
+  }
+
+  if (getAdminToken()) {
+    window.alert("Você está logado como admin. Saia do admin antes de acessar a conta de cliente.");
+    window.location.href = "/admin";
+    return;
+  }
+
+  const basketIdent = getStoredTebexBasket() ?? await createTebexBasket();
+  storeTebexBasket(basketIdent);
+
+  const authUrl = await getTebexAuthUrl(basketIdent, product.packageId, returnPath);
+  window.location.href = authUrl;
 }
 
 async function launchTebexCheckoutFromBasket(basketIdent: string, packageId?: string) {
@@ -1786,6 +1820,7 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
     { label: "Scripts", id: "products" },
     { label: "Custom Peds", id: "custom-peds" },
     { label: "Documentação", id: "docs", external: true, url: "/docs" },
+    { label: "About", id: "about", external: true, url: "/about" },
     /*{ label: "Licença", id: "faq" },*/
   ];
 
@@ -2881,6 +2916,12 @@ function ProductPage({ product, currency, language }: { product: Product; curren
       window.location.href = "/checkout";
     } catch (error) {
       console.error(error);
+
+      if (isTebexLoginRequiredError(error) && product.packageId) {
+        await redirectToTebexLoginForProduct(product, "/checkout");
+        return;
+      }
+
       window.alert(error instanceof Error ? error.message : "Nao foi possivel adicionar o produto ao carrinho.");
     }
   }
@@ -3015,6 +3056,12 @@ function ProductDetail({ product, currency, language, onClose }: { product: Prod
       window.setTimeout(() => setAddedToCart(false), 2500);
     } catch (error) {
       console.error(error);
+
+      if (isTebexLoginRequiredError(error) && product.packageId) {
+        await redirectToTebexLoginForProduct(product, "/checkout");
+        return;
+      }
+
       window.alert(error instanceof Error ? error.message : "Nao foi possivel adicionar o produto ao carrinho.");
     } finally {
       setCartBusy(false);
@@ -7162,6 +7209,52 @@ export default function App() {
     const onPopState = () => setPathname(window.location.pathname);
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const basketIdent = params.get("tebexBasket");
+    const packageId = params.get("tebexPackage");
+
+    if (!basketIdent) return;
+
+    storeTebexBasket(basketIdent);
+
+    if (!packageId) {
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete("tebexBasket");
+      window.history.replaceState(null, "", cleanUrl.toString());
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        await addPackageToTebexBasket(basketIdent, packageId);
+        if (cancelled) return;
+
+        window.dispatchEvent(new Event("tws:tebex-session-changed"));
+
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete("tebexBasket");
+        cleanUrl.searchParams.delete("tebexPackage");
+        window.history.replaceState(null, "", cleanUrl.toString());
+
+        if (window.location.pathname !== "/checkout") {
+          window.location.href = "/checkout";
+        }
+      } catch (error) {
+        console.error(error);
+        if (!cancelled) {
+          window.alert(error instanceof Error ? error.message : "Login concluído, mas não foi possível adicionar o produto ao carrinho.");
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Track active section on scroll
