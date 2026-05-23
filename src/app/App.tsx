@@ -4747,29 +4747,26 @@ function DocsAdminPage() {
   }
 
   return (
-    <main className="bg-transparent px-0 py-0">
-      <div className="mx-auto max-w-[1500px]">
-        <section className="mb-4 rounded-[24px] border border-border bg-card p-5 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <SectionTag>Admin Docs</SectionTag>
-              <h1 className="mt-2 text-2xl lg:text-3xl font-bold text-foreground/95">Editor da documentação</h1>
-              <p className="mt-2 text-sm text-muted-foreground">Separe a documentação por produto. Cada produto pode ter suas próprias páginas, categorias, PT e EN.</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <a href={`/docs?product=${selectedProductId}`} className="rounded-xl border border-border px-4 py-3 text-sm font-semibold text-foreground/70 hover:bg-primary/5">
-                Ver documentação
-              </a>
-              <button onClick={() => handleNewPage()} className="rounded-xl border border-primary/25 px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5">
-                Nova página neste produto
-              </button>
-            </div>
+    <main className="bg-transparent px-5 py-5 lg:px-7 lg:py-6">
+      <div className="mx-auto">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-foreground/90">Editor da documentação</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Separe a documentação por produto. Cada produto pode ter suas próprias páginas, categorias, PT e EN.</p>
           </div>
-        </section>
+          <div className="flex flex-wrap gap-2">
+            <a href={`/docs?product=${selectedProductId}`} className="rounded-xl border border-border px-3 py-2 text-sm font-semibold text-foreground/70 hover:bg-primary/5">
+              Ver documentação
+            </a>
+            <button onClick={() => handleNewPage()} className="rounded-xl border border-primary/25 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5">
+              Nova página
+            </button>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-4 items-start">
-          <aside className="xl:sticky xl:top-20 rounded-[22px] border border-border bg-card p-4 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
-            <div className="mb-5">
+        <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-5 items-start">
+          <aside className="xl:sticky xl:top-6 rounded-[22px] border border-border bg-background p-4 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
+            <div className="mb-4">
               <h2 className="font-bold text-foreground/90">Produtos</h2>
               <p className="mt-1 text-xs text-muted-foreground">Escolha o produto para ver ou criar páginas.</p>
             </div>
@@ -5131,41 +5128,37 @@ function ProductAdminForm({
         </div>
       </div>
 
-      <div className="overflow-x-auto pb-1 -mt-2">
-        <div className="flex min-w-max gap-3">
-          {sectionButtons.map((section) => {
-            const open = activeSection === section.id;
-            return (
-              <button
-                key={section.id}
-                type="button"
-                onClick={() => setActiveSection(section.id)}
-                className={`rounded-2xl border px-4 py-3 text-left transition-all ${
-                  open
-                    ? "border-primary/30 bg-primary/10 shadow-[0_12px_30px_rgba(201,168,76,0.12)]"
-                    : "border-border bg-card hover:border-primary/20 hover:bg-primary/5"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold ${
-                    open ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-                  }`}>
-                    {section.number}
-                  </span>
-                  <div>
-                    <p className={`text-sm font-bold ${open ? "text-primary" : "text-foreground/90"}`}>
-                      {section.label}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">{section.hint}</p>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 -mt-1">
+        {sectionButtons.map((section) => {
+          const open = activeSection === section.id;
+          return (
+            <button
+              key={section.id}
+              type="button"
+              onClick={() => setActiveSection(section.id)}
+              className={`flex flex-col items-center gap-2 rounded-2xl border px-3 py-3 text-center transition-all ${
+                open
+                  ? "border-primary/30 bg-primary/10 shadow-[0_8px_24px_rgba(201,168,76,0.12)]"
+                  : "border-border bg-card hover:border-primary/20 hover:bg-primary/5"
+              }`}
+            >
+              <span className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold ${
+                open ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+              }`}>
+                {section.number}
+              </span>
+              <div>
+                <p className={`text-xs font-bold leading-tight ${open ? "text-primary" : "text-foreground/90"}`}>
+                  {section.label}
+                </p>
+                <p className="mt-0.5 hidden sm:block text-[10px] text-muted-foreground leading-tight">{section.hint}</p>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="grid grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
         <div className="min-w-0">
           {activeSection === "product" && (
             <section className={panelClass}>
@@ -5338,7 +5331,7 @@ function ProductAdminForm({
           )}
         </div>
 
-        <aside className="2xl:sticky 2xl:top-6 space-y-5">
+        <aside className="xl:sticky xl:top-6 space-y-5">
           <div className="rounded-[28px] border border-border bg-card p-5 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Preview</p>
 
@@ -5492,7 +5485,7 @@ function CreatorCodeAdminPanel({ token }: { token: string }) {
   }
 
   return (
-    <div className="mt-8 rounded-[28px] border border-border bg-card p-6 lg:p-8 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+    <div className="rounded-[28px] border border-border bg-card p-6 lg:p-8 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5 mb-6">
         <div>
           <SectionTag>Coupon/Gift Card</SectionTag>
@@ -5699,211 +5692,227 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
     );
   }
 
-  return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      <div className="hidden">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-          <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
-            <span className="text-base font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
-              The Wanted
-            </span>
-            <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/50 -mt-0.5">Admin Studio</span>
-          </a>
+  const adminNavItems = [
+    { id: "products" as const, label: "Produtos", description: "Editor de produto", icon: Package },
+    { id: "docs" as const, label: "Documentação", description: "Editor de docs", icon: BookOpen },
+    { id: "coupons" as const, label: "Cupons", description: "Coupon / Gift Card", icon: Crown },
+  ];
 
-          <div className="flex items-center gap-3">
+  return (
+    <div className="min-h-[calc(100vh-4rem)] bg-[#f7f5f0] text-foreground flex" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+
+      {/* ── Sidebar ── */}
+      <nav className="hidden lg:flex flex-col w-60 xl:w-64 shrink-0 border-r border-border bg-card/90 px-4 py-7 gap-1 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
+        <a href="/" className="flex flex-col items-start mb-7 px-2 transition-opacity hover:opacity-75">
+          <span className="text-sm font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
+            The Wanted
+          </span>
+          <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/40 mt-0.5">Admin Studio</span>
+        </a>
+
+        <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground/60">Seções</p>
+
+        {adminNavItems.map((section) => {
+          const Icon = section.icon;
+          const active = activeAdminSection === section.id;
+          return (
+            <button
+              key={section.id}
+              type="button"
+              onClick={() => setActiveAdminSection(section.id)}
+              className={`flex items-center gap-3 rounded-2xl px-3 py-3 text-left transition-all ${
+                active
+                  ? "bg-primary/10 text-primary shadow-[inset_0_0_0_1px_rgba(201,168,76,0.25)]"
+                  : "text-foreground/65 hover:bg-primary/5 hover:text-foreground/90"
+              }`}
+            >
+              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"}`}>
+                <Icon size={15} />
+              </span>
+              <span>
+                <strong className={`block text-sm font-semibold ${active ? "text-primary" : "text-foreground/80"}`}>{section.label}</strong>
+                <span className="mt-0.5 block text-[11px] text-muted-foreground">{section.description}</span>
+              </span>
+            </button>
+          );
+        })}
+
+        <div className="mt-auto pt-5 border-t border-border space-y-2">
+          <div className="rounded-2xl border border-border bg-background/60 px-3 py-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Moeda</p>
             <select
               value={currency}
               onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)}
-              className="h-10 rounded-full border border-primary/20 bg-card px-4 text-xs font-semibold text-foreground/75 outline-none"
+              className="mt-1 w-full bg-transparent text-sm font-semibold text-foreground/80 outline-none"
             >
               {CURRENCIES.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
-            <button onClick={() => setSelected(emptyAdminProduct())} className="rounded-full border border-primary/30 px-4 h-10 text-sm font-semibold text-primary">
-              Novo produto
-            </button>
-            <button
-              onClick={handleLogout}
-              className="inline-flex h-7 items-center gap-1 rounded-full px-2 text-[11px] font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
-              title="Sair"
-            >
-              <LogOut size={12} />
-              Sair
-            </button>
           </div>
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-sm font-semibold text-foreground/40 transition-all hover:bg-red-50 hover:text-red-500"
+          >
+            <LogOut size={14} />
+            Sair do painel
+          </button>
         </div>
-      </div>
+      </nav>
 
-      <main className="mx-auto max-w-[1500px] px-4 py-4 lg:px-6 lg:py-5">
-        <div className="mb-3 rounded-[22px] border border-border bg-card px-4 py-3 shadow-[0_12px_38px_rgba(32,32,32,0.05)] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      {/* ── Main content ── */}
+      <main className="flex-1 min-w-0 px-4 py-6 lg:px-8 lg:py-8 overflow-auto">
+
+        {/* Mobile section tabs */}
+        <div className="lg:hidden mb-5 flex gap-2 overflow-x-auto pb-1">
+          {adminNavItems.map((section) => {
+            const Icon = section.icon;
+            const active = activeAdminSection === section.id;
+            return (
+              <button
+                key={section.id}
+                onClick={() => setActiveAdminSection(section.id)}
+                className={`flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition-all ${
+                  active ? "border-primary/30 bg-primary/10 text-primary" : "border-border bg-card text-foreground/60"
+                }`}
+              >
+                <Icon size={13} />
+                {section.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Page header */}
+        <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <SectionTag>Admin Dashboard</SectionTag>
-            <h1 className="mt-2 text-2xl lg:text-3xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            <h1 className="mt-3 text-2xl lg:text-3xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
               {activeAdminSection === "products" && "Produtos"}
               {activeAdminSection === "docs" && "Documentação"}
               {activeAdminSection === "coupons" && "Cupom / Gift Card"}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
+            <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
               {activeAdminSection === "products" && "Cadastre, edite e publique os produtos da vitrine."}
               {activeAdminSection === "docs" && "Crie e edite páginas de documentação separadas por produto."}
               {activeAdminSection === "coupons" && "Cadastre o nome público e o código original da Tebex para cupons e gift cards."}
             </p>
-            {message && (
-              <div className="mt-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
-                {message}
-              </div>
-            )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {activeAdminSection === "products" && (
               <button
                 onClick={() => {
                   setSelected(emptyAdminProduct());
                   setMessage("Novo produto pronto para cadastro.");
                 }}
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground hover:brightness-105"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground hover:brightness-105"
               >
                 <Plus size={15} />
                 Novo produto
               </button>
             )}
-
             {activeAdminSection === "docs" && (
               <a
                 href="/docs"
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-primary/25 px-4 text-xs font-semibold text-primary hover:bg-primary/5"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-primary/25 px-5 text-sm font-semibold text-primary hover:bg-primary/5"
               >
                 <BookOpen size={15} />
                 Ver docs
               </a>
             )}
-
-            {activeAdminSection === "coupons" && (
-              <span className="inline-flex h-9 items-center rounded-full border border-primary/20 bg-primary/5 px-4 text-xs font-semibold text-primary">
-                Coupon/Gift Card
-              </span>
-            )}
-
+            {/* Mobile logout */}
             <button
               onClick={handleLogout}
-              className="inline-flex h-7 items-center gap-1 rounded-full px-2 text-[11px] font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
-              title="Sair"
+              className="lg:hidden inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-semibold text-foreground/50 hover:text-red-500"
             >
-              <LogOut size={12} />
+              <LogOut size={13} />
               Sair
             </button>
           </div>
         </div>
 
-        <div className="mb-4 rounded-[20px] border border-border bg-card p-3 shadow-[0_12px_38px_rgba(32,32,32,0.05)]">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-primary/70">Categoria</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {[
-              { id: "products" as const, label: "Produto", description: "Editor de produto", icon: Package },
-              { id: "docs" as const, label: "Documentação", description: "Editor de docs", icon: BookOpen },
-              { id: "coupons" as const, label: "Cupom", description: "Coupon / Gift Card", icon: Crown }
-            ].map((section) => {
-              const Icon = section.icon;
-              const active = activeAdminSection === section.id;
-
-              return (
-                <button
-                  key={section.id}
-                  type="button"
-                  onClick={() => setActiveAdminSection(section.id)}
-                  className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition-all ${
-                    active
-                      ? "border-primary/35 bg-primary/10 text-primary shadow-[0_12px_30px_rgba(201,168,76,0.12)]"
-                      : "border-border bg-background/60 text-foreground/70 hover:border-primary/20 hover:bg-primary/5"
-                  }`}
-                >
-                  <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${active ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"}`}>
-                    <Icon size={16} />
-                  </span>
-                  <span>
-                    <strong className="block text-sm">{section.label}</strong>
-                    <span className="mt-0.5 block text-[11px] text-muted-foreground">{section.description}</span>
-                  </span>
-                </button>
-              );
-            })}
+        {message && (
+          <div className="mb-5 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+            {message}
           </div>
-        </div>
+        )}
 
-        <div>
+        {/* ── Products section ── */}
         {activeAdminSection === "products" && (
-        <div className="grid grid-cols-1 2xl:grid-cols-[340px_minmax(0,1fr)] gap-4 lg:gap-5 items-start">
-          <aside className="rounded-[22px] border border-border bg-card p-4 shadow-[0_14px_42px_rgba(32,32,32,0.06)] 2xl:sticky 2xl:top-20">
-            <div className="flex items-center justify-between gap-3 mb-5">
-              <div>
-                <h2 className="font-bold text-foreground/90">Produtos</h2>
-                {loading && <span className="text-xs text-muted-foreground">Carregando...</span>}
-              </div>
-              <button
-                onClick={() => {
-                  setSelected(emptyAdminProduct());
-                  setMessage("Novo produto pronto para cadastro.");
-                }}
-                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-primary/30 px-3 text-xs font-semibold text-primary hover:bg-primary/5"
-                title="Adicionar produto novo"
-              >
-                <Plus size={13} />
-                Novo
-              </button>
-            </div>
-            <div className="mb-5 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-primary/15 bg-primary/5 p-3">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Total</p>
-                <p className="mt-1 text-lg font-bold text-primary">{products.length}</p>
-              </div>
-              <div className="rounded-2xl border border-border bg-background/60 p-3">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Selecionado</p>
-                <p className="mt-1 truncate text-sm font-semibold text-foreground/80">{selected.name || "Novo"}</p>
-              </div>
-            </div>
-
-            <div className="space-y-2 max-h-[calc(100vh-330px)] overflow-y-auto pr-1">
-              {products.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum produto salvo ainda.</p>
-              ) : products.map((product) => (
+          <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-5 lg:gap-6 items-start">
+            <aside className="rounded-[22px] border border-border bg-card p-5 shadow-[0_14px_42px_rgba(32,32,32,0.06)] xl:sticky xl:top-6">
+              <div className="flex items-center justify-between gap-3 mb-5">
+                <div>
+                  <h2 className="font-bold text-foreground/90">Lista de produtos</h2>
+                  {loading && <span className="text-xs text-muted-foreground mt-0.5 block">Carregando...</span>}
+                </div>
                 <button
-                  key={product.id}
-                  onClick={() => setSelected(product)}
-                  className={`w-full text-left rounded-2xl border p-3 transition-all ${
-                    selected.id === product.id ? "border-primary/50 bg-primary/10" : "border-border hover:border-primary/25"
-                  }`}
+                  onClick={() => {
+                    setSelected(emptyAdminProduct());
+                    setMessage("Novo produto pronto para cadastro.");
+                  }}
+                  className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-primary/30 px-3 text-xs font-semibold text-primary hover:bg-primary/5"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-foreground/90">{product.name}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{product.category} · {product.status}</p>
-                    </div>
-                    <span className={`h-2 w-2 mt-2 rounded-full ${product.visible === false ? "bg-red-400" : "bg-emerald-400"}`} />
-                  </div>
-                  <p className="mt-2 text-sm text-primary font-semibold">{formatProductPrice(product.price, currency, product.priceCurrency)}</p>
-                  <button
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleDelete(product.id);
-                    }}
-                    className="mt-3 text-xs text-red-500 hover:underline"
-                  >
-                    Apagar
-                  </button>
+                  <Plus size={13} />
+                  Novo
                 </button>
-              ))}
-            </div>
-          </aside>
+              </div>
 
-          <div>
-            <ProductAdminForm
-              product={selected}
-              onChange={setSelected}
-              onSave={handleSave}
-              saving={saving}
-            />
+              <div className="mb-5 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border border-primary/15 bg-primary/5 p-3.5">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Total</p>
+                  <p className="mt-1 text-xl font-bold text-primary">{products.length}</p>
+                </div>
+                <div className="rounded-2xl border border-border bg-background/60 p-3.5">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Selecionado</p>
+                  <p className="mt-1 truncate text-sm font-semibold text-foreground/80">{selected.name || "Novo"}</p>
+                </div>
+              </div>
+
+              <div className="space-y-2 max-h-[calc(100vh-420px)] overflow-y-auto pr-1">
+                {products.length === 0 ? (
+                  <p className="rounded-2xl border border-dashed border-border p-5 text-sm text-muted-foreground text-center">
+                    Nenhum produto ainda.<br />
+                    <span className="text-xs">Clique em "Novo" para começar.</span>
+                  </p>
+                ) : products.map((product) => (
+                  <button
+                    key={product.id}
+                    onClick={() => setSelected(product)}
+                    className={`w-full text-left rounded-2xl border p-3.5 transition-all ${
+                      selected.id === product.id ? "border-primary/50 bg-primary/10 shadow-[0_4px_16px_rgba(201,168,76,0.10)]" : "border-border hover:border-primary/25 hover:bg-primary/5"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-foreground/90">{product.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{product.category} · {product.status}</p>
+                      </div>
+                      <span className={`h-2 w-2 mt-1.5 shrink-0 rounded-full ${product.visible === false ? "bg-red-400" : "bg-emerald-400"}`} />
+                    </div>
+                    <p className="mt-2 text-sm text-primary font-semibold">{formatProductPrice(product.price, currency, product.priceCurrency)}</p>
+                    <button
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleDelete(product.id);
+                      }}
+                      className="mt-2.5 text-xs text-red-500/70 hover:text-red-500 hover:underline transition-colors"
+                    >
+                      Apagar produto
+                    </button>
+                  </button>
+                ))}
+              </div>
+            </aside>
+
+            <div>
+              <ProductAdminForm
+                product={selected}
+                onChange={setSelected}
+                onSave={handleSave}
+                saving={saving}
+              />
+            </div>
           </div>
-        </div>
         )}
 
         {activeAdminSection === "docs" && (
@@ -5913,11 +5922,8 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
         )}
 
         {activeAdminSection === "coupons" && (
-          <div>
-            <CreatorCodeAdminPanel token={token} />
-          </div>
+          <CreatorCodeAdminPanel token={token} />
         )}
-        </div>
       </main>
     </div>
   );
