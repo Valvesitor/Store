@@ -3838,9 +3838,257 @@ function PrivacyPolicyPage({ language }: { language: SiteLanguage }) {
 }
 
 
+
+function AboutPage({ language }: { language: SiteLanguage }) {
+  const isEnglish = language === "en_US";
+
+  const sections = isEnglish ? [
+    {
+      title: "1. Who we are",
+      paragraphs: [
+        "The Wanted Sole Studio is a brand focused on visual creation, digital customization, and system development with its own identity. Our goal is to create tools, scripts, and experiences that combine design, organization, and technology for servers, creators, and digital projects.",
+        "Founded by Vitor Alves, also known as Valvesitor, the brand represents a clear vision: delivering products with personality, professional visuals, and genuinely useful features."
+      ]
+    },
+    {
+      title: "2. Our proposal",
+      paragraphs: [
+        "Our proposal is to develop digital products that are not only functional, but also visually remarkable, organized, and easy to use.",
+        "Each project is designed to help servers, stores, and creators present their products in a more professional, modern, and reliable way."
+      ]
+    },
+    {
+      title: "3. What we do",
+      paragraphs: [
+        "We develop digital products mainly focused on RedM, including scripts, custom peds, visual systems, panels, interfaces, previews, organization tools, and personalized resources."
+      ],
+      list: [
+        "Scripts and systems for RedM servers;",
+        "Custom peds and personalized visual resources;",
+        "Panels, interfaces, and organization tools;",
+        "Documentation, previews, and product presentation pages;",
+        "Digital solutions focused on visual identity and user experience."
+      ]
+    },
+    {
+      title: "4. Identity",
+      paragraphs: [
+        "We believe every project needs a strong identity. That is why our products are created with attention to detail, maintaining a unique appearance and a visual experience aligned with the brand's proposal."
+      ],
+      highlight: "Our focus is to create tools that make your server, store, or project stand out."
+    },
+    {
+      title: "5. Style",
+      paragraphs: [
+        "Each interface, panel, and visual resource is developed with a focus on a modern, elegant, and organized presentation. We aim to combine visual beauty with practicality, creating products that are pleasant for both administrators and users."
+      ]
+    },
+    {
+      title: "6. Technology",
+      paragraphs: [
+        "We work to deliver functional, practical systems designed to make life easier for those who create, sell, or manage digital projects.",
+        "Our goal is to turn complex processes into simpler, more organized, and more efficient tools."
+      ]
+    },
+    {
+      title: "7. Our vision",
+      paragraphs: [
+        "We believe a good product should not only be functional. It also needs clarity, identity, visual polish, and a pleasant user experience.",
+        "That is why every The Wanted Sole Studio project is treated like a forge: every detail is shaped, adjusted, and refined until it becomes something unique."
+      ]
+    },
+    {
+      title: "8. Our commitment",
+      paragraphs: [
+        "Our commitment is to deliver digital products with quality, organization, and personality. We seek to build solutions that help our clients value their projects and offer a more professional experience to their audience.",
+        "The Wanted Sole Studio is always evolving, creating new tools and improving its products to follow the needs of the community."
+      ]
+    },
+    {
+      title: "9. Our essence",
+      highlight: "Where style, identity, and technology are forged.",
+      paragraphs: [
+        "This is the essence of The Wanted Sole Studio: creating digital tools with personality, organization, and visual impact."
+      ]
+    },
+    {
+      title: "10. Contact",
+      paragraphs: [
+        "Want to know our products, ask questions, or request support? Contact us through our official channels."
+      ],
+      contacts: [
+        { label: "Discord", href: "https://discord.gg/qE29trG84u" },
+        { label: "Website", href: "https://store-test.thewantedsolestudio.workers.dev/" }
+      ]
+    }
+  ] : [
+    {
+      title: "1. Quem somos",
+      paragraphs: [
+        "A The Wanted Sole Studio é uma marca focada em criação visual, customização digital e desenvolvimento de sistemas com identidade própria. Nosso objetivo é criar ferramentas, scripts e experiências que unem design, organização e tecnologia para servidores, criadores e projetos digitais.",
+        "Fundada por Vitor Alves, também conhecido como Valvesitor, a marca representa uma visão clara: entregar produtos com personalidade, visual profissional e funcionalidades realmente úteis."
+      ]
+    },
+    {
+      title: "2. Nossa proposta",
+      paragraphs: [
+        "Nossa proposta é desenvolver produtos digitais que não sejam apenas funcionais, mas também visualmente marcantes, organizados e fáceis de utilizar.",
+        "Cada projeto é pensado para ajudar servidores, lojas e criadores a apresentarem seus produtos de forma mais profissional, moderna e confiável."
+      ]
+    },
+    {
+      title: "3. O que fazemos",
+      paragraphs: [
+        "Desenvolvemos produtos digitais voltados principalmente para RedM, incluindo scripts, custom peds, sistemas visuais, painéis, interfaces, previews, ferramentas de organização e recursos personalizados."
+      ],
+      list: [
+        "Scripts e sistemas para servidores RedM;",
+        "Custom peds e recursos visuais personalizados;",
+        "Painéis, interfaces e ferramentas de organização;",
+        "Documentações, previews e páginas para apresentação de produtos;",
+        "Soluções digitais com foco em identidade visual e experiência do usuário."
+      ]
+    },
+    {
+      title: "4. Identidade",
+      paragraphs: [
+        "Acreditamos que cada projeto precisa ter uma identidade forte. Por isso, nossos produtos são criados com atenção aos detalhes, mantendo uma aparência própria e uma experiência visual que combina com a proposta da marca."
+      ],
+      highlight: "Nosso foco é criar ferramentas que façam seu servidor, sua loja ou seu projeto se destacar."
+    },
+    {
+      title: "5. Estilo",
+      paragraphs: [
+        "Cada interface, painel e recurso visual é desenvolvido com foco em uma apresentação moderna, elegante e organizada. Buscamos unir beleza visual com praticidade, criando produtos que sejam agradáveis tanto para quem administra quanto para quem utiliza."
+      ]
+    },
+    {
+      title: "6. Tecnologia",
+      paragraphs: [
+        "Trabalhamos para entregar sistemas funcionais, práticos e preparados para facilitar a rotina de quem cria, vende ou administra projetos digitais.",
+        "Nosso objetivo é transformar processos complexos em ferramentas mais simples, organizadas e eficientes."
+      ]
+    },
+    {
+      title: "7. Nossa visão",
+      paragraphs: [
+        "Acreditamos que um bom produto não deve ser apenas funcional. Ele também precisa ter clareza, identidade, acabamento visual e uma experiência agradável para o usuário.",
+        "Por isso, cada projeto da The Wanted Sole Studio é tratado como uma forja: cada detalhe é moldado, ajustado e refinado até se tornar algo único."
+      ]
+    },
+    {
+      title: "8. Nosso compromisso",
+      paragraphs: [
+        "Nosso compromisso é entregar produtos digitais com qualidade, organização e personalidade. Buscamos construir soluções que ajudem nossos clientes a valorizar seus projetos e oferecer uma experiência mais profissional ao público.",
+        "A The Wanted Sole Studio está sempre evoluindo, criando novas ferramentas e melhorando seus produtos para acompanhar as necessidades da comunidade."
+      ]
+    },
+    {
+      title: "9. Nossa essência",
+      highlight: "Onde estilo, identidade e tecnologia são forjados.",
+      paragraphs: [
+        "Essa é a essência da The Wanted Sole Studio: criar ferramentas digitais com personalidade, organização e impacto visual."
+      ]
+    },
+    {
+      title: "10. Contato",
+      paragraphs: [
+        "Quer conhecer nossos produtos, tirar dúvidas ou solicitar suporte? Entre em contato pelos nossos canais oficiais."
+      ],
+      contacts: [
+        { label: "Discord", href: "https://discord.gg/qE29trG84u" },
+        { label: "Site", href: "https://store-test.thewantedsolestudio.workers.dev/" }
+      ]
+    }
+  ];
+
+  return (
+    <main className="relative min-h-screen overflow-hidden bg-[#07080c] px-6 py-16 lg:py-20 text-[#f4f4f5]">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute left-[-14%] top-[-12%] h-80 w-80 rounded-full bg-[#d6a84f]/15 blur-3xl" />
+        <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-white/5 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-5xl">
+        <header className="mb-10 text-center">
+          <div className="mb-5 inline-flex items-center rounded-full border border-[#d6a84f]/35 bg-[#d6a84f]/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#d6a84f]">
+            The Wanted Sole Studio
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight lg:text-6xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            {isEnglish ? "About Us" : "Sobre Nós"}
+          </h1>
+          <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-zinc-400 lg:text-base">
+            {isEnglish
+              ? "Discover the essence of The Wanted Sole Studio: a brand created to transform ideas into digital experiences with identity, style, and technology."
+              : "Conheça a essência da The Wanted Sole Studio: uma marca criada para transformar ideias em experiências digitais com identidade, estilo e tecnologia."}
+          </p>
+          <div className="mt-6 inline-flex rounded-full border border-[#d6a84f]/25 bg-[#d6a84f]/10 px-4 py-2 text-xs font-semibold text-[#d6a84f]">
+            {isEnglish ? "Language: English" : "Idioma: Português"}
+          </div>
+        </header>
+
+        <section className="rounded-[30px] border border-white/10 bg-white/[0.045] p-5 shadow-[0_30px_100px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:p-8">
+          <div className="space-y-5">
+            {sections.map((section) => (
+              <article key={section.title} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 lg:p-6">
+                <h2 className="mb-3 text-lg font-bold text-[#d6a84f] lg:text-xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                  {section.title}
+                </h2>
+
+                <div className="space-y-3">
+                  {section.paragraphs?.map((paragraph: string) => (
+                    <p key={paragraph} className="text-sm leading-7 text-zinc-300">
+                      {paragraph}
+                    </p>
+                  ))}
+
+                  {section.list && (
+                    <ul className="grid gap-2 pt-1">
+                      {section.list.map((item: string) => (
+                        <li key={item} className="flex gap-3 text-sm leading-6 text-zinc-300">
+                          <span className="mt-0.5 text-[#d6a84f]">✦</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {section.highlight && (
+                    <div className="rounded-2xl border border-[#d6a84f]/25 bg-[#d6a84f]/10 px-4 py-3 text-sm leading-6 text-[#f5e7c6]">
+                      {section.highlight}
+                    </div>
+                  )}
+
+                  {section.contacts && (
+                    <div className="grid gap-2 pt-2">
+                      {section.contacts.map((contact: { label: string; href: string }) => (
+                        <p key={contact.href} className="text-sm text-zinc-300">
+                          <strong>{contact.label}:</strong>{" "}
+                          <a href={contact.href} target="_blank" rel="noopener noreferrer" className="font-bold text-[#d6a84f] hover:underline">
+                            {contact.href}
+                          </a>
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <p className="mt-8 text-center text-xs text-zinc-500">
+          © 2026 The Wanted Sole Studio. {isEnglish ? "All rights reserved." : "Todos os direitos reservados."}
+        </p>
+      </div>
+    </main>
+  );
+}
+
+
 function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
   const companyLinks = [
-    { label: "About", action: () => onNavigate("why") },
+    { label: "About", href: "/about" },
     { label: "Terms of use", href: "/terms" },
     { label: "Privacy Policy", href: "/privacy-policy" },
   ];
@@ -5696,6 +5944,10 @@ export default function App() {
 
   if (pathname === "/privacy-policy" || pathname === "/privacy") {
     return renderPageWithNavbar(<PrivacyPolicyPage language={language} />);
+  }
+
+  if (pathname === "/about" || pathname === "/about-us") {
+    return renderPageWithNavbar(<AboutPage language={language} />);
   }
 
   const productRouteMatch = pathname.match(/^\/(script|scripts|custom-peds|systems|outfit-creator|add-ons)\/(.+)$/);
