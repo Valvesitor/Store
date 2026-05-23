@@ -4638,7 +4638,6 @@ function DocsAdminPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [activeAdminSection, setActiveAdminSection] = useState<"products" | "docs" | "coupons">("products");
 
   const isLogged = !!token;
   const productOptions = getDocsProductOptions(pages);
@@ -5600,6 +5599,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [activeAdminSection, setActiveAdminSection] = useState<"products" | "docs" | "coupons">("products");
 
   const isLogged = !!token;
 
