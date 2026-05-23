@@ -5,7 +5,7 @@ import {
   MessageCircle, Star, Zap, Shield, Crown, ArrowRight,
   Package, Users, Palette, Code2, ChevronDown, Check,
   ChevronRight, Sparkles, LayoutGrid, Filter, LogIn, ShoppingCart,
-  Play, Image as ImageIcon, User, LogOut, Github, Plus
+  Play, Image as ImageIcon, User, LogOut, Github
 } from "lucide-react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 
@@ -1230,25 +1230,6 @@ function storeAdminToken(token: string) {
   window.dispatchEvent(new Event("tws:admin-session-changed"));
 }
 
-function parseProductList(value: any) {
-  let source = value;
-
-  if (typeof source === "string" && source.trim()) {
-    try {
-      source = JSON.parse(source);
-    } catch {
-      source = source.split(/\r?\n/);
-    }
-  }
-
-  if (!Array.isArray(source)) return [];
-
-  return source
-    .flatMap((item) => String(item ?? "").split(/\r?\n/))
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
 function normalizeProductFromApi(item: any): Product {
   const media = Array.isArray(item.media)
     ? item.media
@@ -1256,10 +1237,29 @@ function normalizeProductFromApi(item: any): Product {
       ? JSON.parse(item.media)
       : [];
 
-  const features = parseProductList(item.features);
-  const requirements = parseProductList(item.requirements);
-  const featuresEn = parseProductList(item.featuresEn ?? item.features_en);
-  const requirementsEn = parseProductList(item.requirementsEn ?? item.requirements_en);
+  const features = Array.isArray(item.features)
+    ? item.features
+    : typeof item.features === "string" && item.features.trim()
+      ? JSON.parse(item.features)
+      : [];
+
+  const requirements = Array.isArray(item.requirements)
+    ? item.requirements
+    : typeof item.requirements === "string" && item.requirements.trim()
+      ? JSON.parse(item.requirements)
+      : [];
+
+  const featuresEn = Array.isArray(item.featuresEn ?? item.features_en)
+    ? (item.featuresEn ?? item.features_en)
+    : typeof (item.featuresEn ?? item.features_en) === "string" && (item.featuresEn ?? item.features_en).trim()
+      ? JSON.parse(item.featuresEn ?? item.features_en)
+      : [];
+
+  const requirementsEn = Array.isArray(item.requirementsEn ?? item.requirements_en)
+    ? (item.requirementsEn ?? item.requirements_en)
+    : typeof (item.requirementsEn ?? item.requirements_en) === "string" && (item.requirementsEn ?? item.requirements_en).trim()
+      ? JSON.parse(item.requirementsEn ?? item.requirements_en)
+      : [];
 
   return {
     id: item.id ?? item.slug ?? crypto.randomUUID(),
@@ -1352,14 +1352,7 @@ async function fetchAdminProducts(token: string) {
 async function saveAdminProduct(token: string, product: Product) {
   const editing = !!product.id && !product.id.startsWith("new-");
   const endpoint = editing ? `/api/admin/products/${encodeURIComponent(product.id)}` : "/api/admin/products";
-  const normalizedProduct = {
-    ...product,
-    features: parseProductList(product.features),
-    featuresEn: parseProductList(product.featuresEn),
-    requirements: parseProductList(product.requirements),
-    requirementsEn: parseProductList(product.requirementsEn)
-  };
-  const productPayload = editing ? normalizedProduct : { ...normalizedProduct, id: undefined };
+  const productPayload = editing ? product : { ...product, id: undefined };
 
   const response = await fetch(apiUrl(endpoint), {
     method: editing ? "PUT" : "POST",
@@ -1748,25 +1741,15 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
               </button>
             </div>
           ) : adminLoggedIn ? (
-            <div className="inline-flex h-9 items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2">
-              <a
-                href="/admin"
-                className="inline-flex items-center gap-2 px-2 text-xs font-semibold text-primary transition-colors hover:text-primary/80"
-                title="Abrir painel admin"
-              >
-                <Shield size={14} />
-                <span className="max-w-[120px] truncate">Admin</span>
-              </a>
-              <button
-                type="button"
-                onClick={handleNavbarAdminLogout}
-                className="inline-flex h-7 items-center gap-1 rounded-full px-2 text-[11px] font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
-                title="Sair"
-              >
-                <LogOut size={12} />
-                Sair
-              </button>
-            </div>
+            <a
+              href="/admin"
+              className="inline-flex h-9 items-center gap-2 px-3 rounded-full text-xs font-semibold
+                border border-primary/20 bg-primary/5 text-primary hover:border-primary/35 hover:bg-primary/10 transition-all"
+              title="Abrir painel admin"
+            >
+              <Shield size={14} />
+              Admin
+            </a>
           ) : (
             <button
               type="button"
@@ -1886,26 +1869,15 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
                     </button>
                   </div>
                 ) : adminLoggedIn ? (
-                  <div className="flex-1 flex gap-2">
-                    <a
-                      href="/admin"
-                      onClick={() => setMobileOpen(false)}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
-                        border border-primary/20 bg-primary/5 text-sm font-semibold text-primary"
-                    >
-                      <Shield size={14} />
-                      Admin
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => { handleNavbarAdminLogout(); setMobileOpen(false); }}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
-                        border border-red-500/20 text-sm font-semibold text-red-500 hover:bg-red-500/5 transition-all"
-                    >
-                      <LogOut size={14} />
-                      Sair
-                    </button>
-                  </div>
+                  <a
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
+                      border border-primary/20 bg-primary/5 text-sm font-semibold text-primary"
+                  >
+                    <Shield size={14} />
+                    Admin
+                  </a>
                 ) : (
                   <button
                     type="button"
@@ -2460,7 +2432,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
       className="relative flex h-[560px] flex-col overflow-hidden bg-background"
       style={{ background: `linear-gradient(135deg, ${product.gradientFrom}, ${product.gradientTo})` }}
     >
-      <div className="relative min-h-0 flex-1 overflow-visible px-14 sm:px-16 lg:px-[72px]">
+      <div className="relative min-h-0 flex-1 overflow-hidden">
         <div
           className="absolute inset-0 opacity-20"
           style={{
@@ -2475,7 +2447,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
               src={activeMedia.src}
               alt={activeMedia.alt}
               onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
-              className="max-h-full max-w-full object-contain"
+              className="max-h-full w-full object-contain"
             />
           )}
 
@@ -2486,7 +2458,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
               controls
               playsInline
               onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
-              className="max-h-full max-w-full rounded-xl bg-black object-contain shadow-[0_18px_55px_rgba(32,32,32,0.14)]"
+              className="max-h-full w-full rounded-xl bg-black object-contain shadow-[0_18px_55px_rgba(32,32,32,0.14)]"
             />
           )}
 
@@ -2524,7 +2496,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
             <button
               type="button"
               onClick={() => goToMedia("prev")}
-              className="absolute left-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/95 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground sm:left-3 lg:left-4"
+              className="absolute left-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/90 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground"
               aria-label="Imagem anterior"
             >
               <ChevronRight size={19} className="rotate-180" />
@@ -2533,7 +2505,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
             <button
               type="button"
               onClick={() => goToMedia("next")}
-              className="absolute right-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/95 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground sm:right-3 lg:right-4"
+              className="absolute right-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/90 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground"
               aria-label="Próxima imagem"
             >
               <ChevronRight size={19} />
@@ -3736,12 +3708,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             <button onClick={() => setSelected(emptyAdminProduct())} className="rounded-full border border-primary/30 px-4 h-10 text-sm font-semibold text-primary">
               Novo produto
             </button>
-            <button
-              onClick={handleLogout}
-              className="inline-flex h-9 items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-3 text-xs font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
-              title="Sair"
-            >
-              <LogOut size={12} />
+            <button onClick={handleLogout} className="rounded-full bg-primary px-4 h-10 text-sm font-semibold text-primary-foreground">
               Sair
             </button>
           </div>
@@ -3779,11 +3746,10 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
 
             <button
               onClick={handleLogout}
-              className="inline-flex h-9 items-center gap-1 rounded-full px-3 text-xs font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
-              title="Sair"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-red-500/20 px-4 text-sm font-semibold text-red-500 hover:bg-red-500/5"
             >
-              <LogOut size={12} />
-              Sair
+              <LogOut size={15} />
+              Sair do admin
             </button>
           </div>
         </div>
