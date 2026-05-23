@@ -4260,10 +4260,10 @@ async function deleteAdminDocsPage(token: string, id: string) {
   }
 }
 
-function emptyDocsPage(): DocsPageRecord {
+function emptyDocsPage(productId = "tws-identity-forge"): DocsPageRecord {
   return {
     id: `new-${Date.now()}`,
-    productId: "tws-identity-forge",
+    productId,
     category: "Nova Categoria",
     title: "Nova página",
     titleEn: "New page",
@@ -4421,8 +4421,39 @@ function DocsContent({ content }: { content: string }) {
   );
 }
 
+
+function getDocsProductId(page: DocsPageRecord) {
+  return page.productId || "tws-identity-forge";
+}
+
+function getDocsProductLabel(productId: string) {
+  const product = PRODUCTS.find((item) => item.id === productId || slugifyClient(item.name) === productId);
+  return product?.name ?? productId
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function getDocsProductOptions(pages: DocsPageRecord[]) {
+  const ids = new Set<string>();
+
+  PRODUCTS.forEach((product) => ids.add(product.id));
+  pages.forEach((page) => ids.add(getDocsProductId(page)));
+
+  return Array.from(ids).map((id) => ({
+    id,
+    label: getDocsProductLabel(id),
+    count: pages.filter((page) => getDocsProductId(page) === id).length
+  }));
+}
+
 function DocsPage({ language }: { language: SiteLanguage }) {
   const [pages, setPages] = useState<DocsPageRecord[]>(DOCS_FALLBACK_PAGES);
+  const [selectedProductId, setSelectedProductId] = useState(() => {
+    const param = new URLSearchParams(window.location.search).get("product");
+    return param || getDocsProductId(DOCS_FALLBACK_PAGES[0] ?? emptyDocsPage());
+  });
   const [selectedId, setSelectedId] = useState(DOCS_FALLBACK_PAGES[0]?.id ?? "");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -4435,7 +4466,10 @@ function DocsPage({ language }: { language: SiteLanguage }) {
       .then((rows) => {
         if (!mounted) return;
         setPages(rows);
-        setSelectedId((current) => current || rows[0]?.id || "");
+        const param = new URLSearchParams(window.location.search).get("product");
+        const initialProduct = param || getDocsProductId(rows[0] ?? emptyDocsPage());
+        setSelectedProductId((current) => current || initialProduct);
+        setSelectedId((current) => current || rows.find((page) => getDocsProductId(page) === initialProduct)?.id || rows[0]?.id || "");
       })
       .catch((error) => console.error(error))
       .finally(() => mounted && setLoading(false));
@@ -4443,7 +4477,16 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     return () => { mounted = false; };
   }, []);
 
-  const filteredPages = pages.filter((page) => {
+  const productOptions = getDocsProductOptions(pages);
+  const selectedProductPages = pages.filter((page) => getDocsProductId(page) === selectedProductId);
+
+  useEffect(() => {
+    if (selectedProductPages.length > 0 && !selectedProductPages.some((page) => page.id === selectedId)) {
+      setSelectedId(selectedProductPages[0].id);
+    }
+  }, [selectedProductId, pages.length]);
+
+  const filteredPages = selectedProductPages.filter((page) => {
     const title = getDocsTitle(page, isEnglish);
     const content = getDocsContent(page, isEnglish);
     const category = translateDocsCategory(page.category, isEnglish);
@@ -4451,7 +4494,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     return !query.trim() || haystack.includes(query.trim().toLowerCase());
   });
 
-  const selected = filteredPages.find((page) => page.id === selectedId) ?? filteredPages[0] ?? pages[0];
+  const selected = filteredPages.find((page) => page.id === selectedId) ?? filteredPages[0] ?? selectedProductPages[0];
   const grouped = filteredPages.reduce<Record<string, DocsPageRecord[]>>((acc, page) => {
     const category = translateDocsCategory(page.category, isEnglish);
     if (!acc[category]) acc[category] = [];
@@ -4461,6 +4504,16 @@ function DocsPage({ language }: { language: SiteLanguage }) {
 
   const selectedContent = selected ? getDocsContent(selected, isEnglish) : "";
   const selectedTitle = selected ? getDocsTitle(selected, isEnglish) : "";
+  const selectedProductName = getDocsProductLabel(selectedProductId);
+
+  function handleProductChange(productId: string) {
+    setSelectedProductId(productId);
+    const productFirstPage = pages.find((page) => getDocsProductId(page) === productId);
+    setSelectedId(productFirstPage?.id ?? "");
+    const url = new URL(window.location.href);
+    url.searchParams.set("product", productId);
+    window.history.replaceState(null, "", url.toString());
+  }
 
   return (
     <main className="h-[calc(100vh-4rem)] overflow-hidden bg-background px-4 py-4 lg:px-6 lg:py-5">
@@ -4482,15 +4535,36 @@ function DocsPage({ language }: { language: SiteLanguage }) {
 
       <div className="mx-auto flex h-full max-w-[1500px] flex-col gap-4 overflow-hidden">
         <section className="shrink-0 rounded-[26px] border border-border bg-card px-6 py-5 lg:px-8 lg:py-6 shadow-[0_16px_55px_rgba(32,32,32,0.07)]">
-          <SectionTag>{isEnglish ? "Documentation" : "Documentação"}</SectionTag>
-          <h1 className="mt-4 text-3xl lg:text-5xl font-bold tracking-tight text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
-            TWS Identity Forge
-          </h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-            {isEnglish
-              ? "Customer documentation for installation, configuration, usage, and support."
-              : "Documentação para cliente com instalação, configuração, uso e suporte."}
-          </p>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <SectionTag>{isEnglish ? "Documentation" : "Documentação"}</SectionTag>
+              <h1 className="mt-4 text-3xl lg:text-5xl font-bold tracking-tight text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                {selectedProductName}
+              </h1>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+                {isEnglish
+                  ? "Customer documentation separated by product."
+                  : "Documentação para cliente separada por produto."}
+              </p>
+            </div>
+
+            <label className="w-full max-w-sm space-y-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                {isEnglish ? "Product documentation" : "Documentação do produto"}
+              </span>
+              <select
+                value={selectedProductId}
+                onChange={(e) => handleProductChange(e.target.value)}
+                className="h-11 w-full rounded-xl border border-border bg-background px-4 text-sm outline-none focus:border-primary/40"
+              >
+                {productOptions.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.label} {product.count ? `(${product.count})` : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </section>
 
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
@@ -4498,13 +4572,19 @@ function DocsPage({ language }: { language: SiteLanguage }) {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={isEnglish ? "Search documentation..." : "Buscar na documentação..."}
+              placeholder={isEnglish ? "Search this product..." : "Buscar neste produto..."}
               className="mb-3 h-10 w-full shrink-0 rounded-full border border-border bg-background px-4 text-sm outline-none focus:border-primary/40"
             />
 
             {loading && <p className="px-2 py-2 text-xs text-muted-foreground">{isEnglish ? "Loading..." : "Carregando..."}</p>}
 
             <nav className="docs-scroll-area min-h-0 flex-1 overflow-y-auto pr-1">
+              {Object.keys(grouped).length === 0 && (
+                <p className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+                  {isEnglish ? "No documentation pages for this product yet." : "Ainda não existem páginas para este produto."}
+                </p>
+              )}
+
               {Object.entries(grouped).map(([category, rows]) => (
                 <div key={category} className="mb-4">
                   <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{category}</p>
@@ -4553,12 +4633,15 @@ function DocsAdminPage() {
   const [token, setToken] = useState(() => getAdminToken());
   const [tokenInput, setTokenInput] = useState("");
   const [pages, setPages] = useState<DocsPageRecord[]>([]);
-  const [selected, setSelected] = useState<DocsPageRecord>(() => emptyDocsPage());
+  const [selectedProductId, setSelectedProductId] = useState("tws-identity-forge");
+  const [selected, setSelected] = useState<DocsPageRecord>(() => emptyDocsPage("tws-identity-forge"));
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   const isLogged = !!token;
+  const productOptions = getDocsProductOptions(pages);
+  const selectedProductPages = pages.filter((page) => getDocsProductId(page) === selectedProductId);
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -4567,14 +4650,16 @@ function DocsAdminPage() {
     try {
       const rows = await fetchDocsPages(true, token);
       setPages(rows);
-      if (rows.length > 0 && selected.id.startsWith("new-")) setSelected(rows[0]);
+      const firstProduct = selectedProductId || getDocsProductId(rows[0] ?? emptyDocsPage());
+      const firstPageForProduct = rows.find((page) => getDocsProductId(page) === firstProduct);
+      if (rows.length > 0 && selected.id.startsWith("new-") && firstPageForProduct) setSelected(firstPageForProduct);
     } catch (error) {
       console.error(error);
       setMessage(error instanceof Error ? error.message : "Erro ao carregar documentação.");
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, selectedProductId]);
 
   useEffect(() => {
     load();
@@ -4586,12 +4671,26 @@ function DocsAdminPage() {
     setTokenInput("");
   }
 
+  function handleSelectProduct(productId: string) {
+    setSelectedProductId(productId);
+    const firstPage = pages.find((page) => getDocsProductId(page) === productId);
+    setSelected(firstPage ?? emptyDocsPage(productId));
+  }
+
+  function handleNewPage(productId = selectedProductId) {
+    const next = emptyDocsPage(productId);
+    setSelectedProductId(productId);
+    setSelected(next);
+  }
+
   async function handleSave() {
     setSaving(true);
     setMessage(null);
     try {
-      const saved = await saveAdminDocsPage(token, selected);
+      const pageToSave = { ...selected, productId: selected.productId || selectedProductId };
+      const saved = await saveAdminDocsPage(token, pageToSave);
       setSelected(saved);
+      setSelectedProductId(getDocsProductId(saved));
       setMessage("Página salva com sucesso.");
       await load();
     } catch (error) {
@@ -4610,7 +4709,7 @@ function DocsAdminPage() {
     setMessage(null);
     try {
       await deleteAdminDocsPage(token, selected.id);
-      setSelected(emptyDocsPage());
+      setSelected(emptyDocsPage(selectedProductId));
       setMessage("Página apagada.");
       await load();
     } catch (error) {
@@ -4655,27 +4754,63 @@ function DocsAdminPage() {
             <div>
               <SectionTag>Admin Docs</SectionTag>
               <h1 className="mt-4 text-3xl lg:text-5xl font-bold text-foreground/95">Editor da documentação</h1>
-              <p className="mt-2 text-sm text-muted-foreground">Crie e edite as páginas da documentação do TWS Identity Forge sem mexer no código.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Separe a documentação por produto. Cada produto pode ter suas próprias páginas, categorias, PT e EN.</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <a href="/docs" className="rounded-xl border border-border px-4 py-3 text-sm font-semibold text-foreground/70 hover:bg-primary/5">
+              <a href={`/docs?product=${selectedProductId}`} className="rounded-xl border border-border px-4 py-3 text-sm font-semibold text-foreground/70 hover:bg-primary/5">
                 Ver documentação
               </a>
-              <button onClick={() => setSelected(emptyDocsPage())} className="rounded-xl border border-primary/25 px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5">
-                Nova página
+              <button onClick={() => handleNewPage()} className="rounded-xl border border-primary/25 px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5">
+                Nova página neste produto
               </button>
             </div>
           </div>
         </section>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-6 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-6 items-start">
           <aside className="xl:sticky xl:top-24 rounded-[26px] border border-border bg-card p-5 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
+            <div className="mb-5">
+              <h2 className="font-bold text-foreground/90">Produtos</h2>
+              <p className="mt-1 text-xs text-muted-foreground">Escolha o produto para ver ou criar páginas.</p>
+            </div>
+
+            <div className="mb-5 grid gap-2">
+              {productOptions.map((product) => (
+                <button
+                  key={product.id}
+                  onClick={() => handleSelectProduct(product.id)}
+                  className={`rounded-2xl border p-3 text-left transition-all ${selectedProductId === product.id ? "border-primary/35 bg-primary/10" : "border-border bg-background/60 hover:border-primary/20"}`}
+                >
+                  <p className="font-semibold text-foreground/85">{product.label}</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">{product.id} · {product.count} páginas</p>
+                </button>
+              ))}
+
+              <button
+                onClick={() => {
+                  const customId = window.prompt("Digite o ID do novo produto. Ex: tws-camera-kit");
+                  if (!customId) return;
+                  handleNewPage(slugifyClient(customId));
+                }}
+                className="rounded-2xl border border-dashed border-primary/30 p-3 text-left text-sm font-semibold text-primary hover:bg-primary/5"
+              >
+                + Criar documentação para outro produto
+              </button>
+            </div>
+
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-bold text-foreground/90">Páginas</h2>
               {loading && <span className="text-xs text-muted-foreground">Carregando...</span>}
             </div>
-            <div className="max-h-[calc(100vh-220px)] overflow-y-auto space-y-2 pr-1">
-              {pages.map((page) => (
+
+            <div className="max-h-[calc(100vh-470px)] overflow-y-auto space-y-2 pr-1">
+              {selectedProductPages.length === 0 && (
+                <p className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+                  Este produto ainda não tem páginas. Clique em “Nova página neste produto”.
+                </p>
+              )}
+
+              {selectedProductPages.map((page) => (
                 <button
                   key={page.id}
                   onClick={() => setSelected(page)}
@@ -4689,9 +4824,29 @@ function DocsAdminPage() {
           </aside>
 
           <section className="rounded-[26px] border border-border bg-card p-5 lg:p-6 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
+            <div className="mb-5 rounded-2xl border border-primary/15 bg-primary/5 p-4">
+              <p className="text-sm font-semibold text-foreground/85">Produto selecionado</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {getDocsProductLabel(selected.productId || selectedProductId)} · ID: {selected.productId || selectedProductId}
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <label className="space-y-2">
-                <span className={labelClass}>ID</span>
+                <span className={labelClass}>Produto ID</span>
+                <input
+                  value={selected.productId ?? selectedProductId}
+                  onChange={(e) => {
+                    const productId = slugifyClient(e.target.value);
+                    setSelectedProductId(productId);
+                    setSelected({ ...selected, productId });
+                  }}
+                  placeholder="ex: tws-identity-forge"
+                  className={fieldClass}
+                />
+              </label>
+              <label className="space-y-2">
+                <span className={labelClass}>ID da página</span>
                 <input value={selected.id} onChange={(e) => setSelected({ ...selected, id: e.target.value })} className={fieldClass} />
               </label>
               <label className="space-y-2">
