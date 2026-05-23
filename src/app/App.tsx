@@ -3715,7 +3715,12 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             <button onClick={() => setSelected(emptyAdminProduct())} className="rounded-full border border-primary/30 px-4 h-10 text-sm font-semibold text-primary">
               Novo produto
             </button>
-            <button onClick={handleLogout} className="rounded-full bg-primary px-4 h-10 text-sm font-semibold text-primary-foreground">
+            <button
+              onClick={handleLogout}
+              className="inline-flex h-9 items-center gap-1 rounded-full px-3 text-xs font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
+              title="Sair"
+            >
+              <LogOut size={12} />
               Sair
             </button>
           </div>
@@ -3753,10 +3758,11 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
 
             <button
               onClick={handleLogout}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-red-500/20 px-4 text-sm font-semibold text-red-500 hover:bg-red-500/5"
+              className="inline-flex h-9 items-center gap-1 rounded-full px-3 text-xs font-semibold text-foreground/45 transition-all hover:bg-background/60 hover:text-red-500"
+              title="Sair"
             >
-              <LogOut size={15} />
-              Sair do admin
+              <LogOut size={12} />
+              Sair
             </button>
           </div>
         </div>
