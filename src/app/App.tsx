@@ -26,9 +26,12 @@ type ProductMedia = {
 interface Product {
   id: string;
   name: string;
+  nameEn?: string;
   category: Exclude<Category, "Todos">;
   description: string;
+  descriptionEn?: string;
   fullDescription: string;
+  fullDescriptionEn?: string;
   price: number;
   priceCurrency?: CurrencyCode;
   priceSource?: "tebex" | "fallback";
@@ -37,7 +40,9 @@ interface Product {
   packageId?: string;
   docsUrl?: string;
   features: string[];
+  featuresEn?: string[];
   requirements: string[];
+  requirementsEn?: string[];
   media?: ProductMedia[];
   gradientFrom: string;
   gradientTo: string;
@@ -1244,12 +1249,27 @@ function normalizeProductFromApi(item: any): Product {
       ? JSON.parse(item.requirements)
       : [];
 
+  const featuresEn = Array.isArray(item.featuresEn ?? item.features_en)
+    ? (item.featuresEn ?? item.features_en)
+    : typeof (item.featuresEn ?? item.features_en) === "string" && (item.featuresEn ?? item.features_en).trim()
+      ? JSON.parse(item.featuresEn ?? item.features_en)
+      : [];
+
+  const requirementsEn = Array.isArray(item.requirementsEn ?? item.requirements_en)
+    ? (item.requirementsEn ?? item.requirements_en)
+    : typeof (item.requirementsEn ?? item.requirements_en) === "string" && (item.requirementsEn ?? item.requirements_en).trim()
+      ? JSON.parse(item.requirementsEn ?? item.requirements_en)
+      : [];
+
   return {
     id: item.id ?? item.slug ?? crypto.randomUUID(),
     name: item.name ?? "Produto sem nome",
+    nameEn: item.nameEn ?? item.name_en ?? "",
     category: item.category ?? "Scripts",
     description: item.description ?? "",
+    descriptionEn: item.descriptionEn ?? item.description_en ?? "",
     fullDescription: item.fullDescription ?? item.full_description ?? item.description ?? "",
+    fullDescriptionEn: item.fullDescriptionEn ?? item.full_description_en ?? item.descriptionEn ?? item.description_en ?? "",
     price: Number(item.price ?? 0),
     priceCurrency: normalizeCurrencyCode(item.priceCurrency ?? item.price_currency ?? PRODUCT_BASE_CURRENCY),
     priceSource: item.priceSource ?? item.price_source ?? "fallback",
@@ -1258,7 +1278,9 @@ function normalizeProductFromApi(item: any): Product {
     packageId: item.packageId ?? item.package_id ?? "",
     docsUrl: item.docsUrl ?? item.docs_url ?? "https://docs.thewantedsolestudio.workers.dev",
     features,
+    featuresEn,
     requirements,
+    requirementsEn,
     media,
     gradientFrom: item.gradientFrom ?? item.gradient_from ?? "#ece5d8",
     gradientTo: item.gradientTo ?? item.gradient_to ?? "#fffdf8",
@@ -1268,6 +1290,37 @@ function normalizeProductFromApi(item: any): Product {
     createdAt: item.createdAt ?? item.created_at,
     updatedAt: item.updatedAt ?? item.updated_at
   };
+}
+
+function getLocalizedProduct(product: Product, language: SiteLanguage) {
+  const useEnglish = language === "en_US";
+
+  const name =
+    useEnglish && product.nameEn?.trim()
+      ? product.nameEn
+      : product.name;
+
+  const description =
+    useEnglish && product.descriptionEn?.trim()
+      ? product.descriptionEn
+      : product.description;
+
+  const fullDescription =
+    useEnglish && product.fullDescriptionEn?.trim()
+      ? product.fullDescriptionEn
+      : product.fullDescription || description;
+
+  const features =
+    useEnglish && product.featuresEn && product.featuresEn.length > 0
+      ? product.featuresEn
+      : product.features;
+
+  const requirements =
+    useEnglish && product.requirementsEn && product.requirementsEn.length > 0
+      ? product.requirementsEn
+      : product.requirements;
+
+  return { name, description, fullDescription, features, requirements };
 }
 
 async function fetchPublicProducts() {
@@ -2085,9 +2138,10 @@ function WhySection({ language }: { language: SiteLanguage }) {
 
 // ─── Product Card ─────────────────────────────────────────────────────────────
 
-function ProductCard({ product, currency, onSelect }: { product: Product; currency: CurrencyCode; onSelect: (p: Product) => void }) {
+function ProductCard({ product, currency, language, onSelect }: { product: Product; currency: CurrencyCode; language: SiteLanguage; onSelect: (p: Product) => void }) {
   const Icon = ICON_MAP[product.iconName] ?? Package;
   const status = STATUS_CONFIG[product.status];
+  const localized = getLocalizedProduct(product, language);
 
   return (
     <motion.div
@@ -2141,7 +2195,7 @@ function ProductCard({ product, currency, onSelect }: { product: Product; curren
             group-hover:text-primary transition-colors duration-200"
           style={{ fontFamily: "'Raleway', sans-serif" }}
         >
-          {product.name}
+          {localized.name}
         </h3>
 
         {/* Description */}
@@ -2149,7 +2203,7 @@ function ProductCard({ product, currency, onSelect }: { product: Product; curren
           className="text-xs text-muted-foreground leading-relaxed flex-1"
           style={{ fontFamily: "'DM Sans', sans-serif" }}
         >
-          {product.description}
+          {localized.description}
         </p>
 
         {/* Footer */}
@@ -2201,12 +2255,14 @@ function ProductsSection({
   loading,
   error,
   currency,
+  language,
   onSelectProduct
 }: {
   products: Product[];
   loading: boolean;
   error: string | null;
   currency: CurrencyCode;
+  language: SiteLanguage;
   onSelectProduct: (p: Product) => void;
 }) {
   const [search, setSearch] = useState("");
@@ -2219,7 +2275,8 @@ function ProductsSection({
     .filter((p) => {
       const matchCat = category === "Todos" || p.category === category;
       const q = search.toLowerCase();
-      const matchSearch = !q || p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
+      const localized = getLocalizedProduct(p, language);
+      const matchSearch = !q || localized.name.toLowerCase().includes(q) || localized.description.toLowerCase().includes(q);
       const matchVisible = p.visible !== false;
       return matchCat && matchSearch && matchVisible;
     })
@@ -2321,7 +2378,7 @@ function ProductsSection({
         ) : filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} currency={currency} onSelect={onSelectProduct} />
+              <ProductCard key={product.id} product={product} currency={currency} language={language} onSelect={onSelectProduct} />
             ))}
           </div>
         ) : (
@@ -2531,8 +2588,9 @@ function ProductMediaGallery({ product }: { product: Product }) {
 
 
 
-function ProductPage({ product, currency }: { product: Product; currency: CurrencyCode }) {
+function ProductPage({ product, currency, language }: { product: Product; currency: CurrencyCode; language: SiteLanguage }) {
   const status = STATUS_CONFIG[product.status];
+  const localized = getLocalizedProduct(product, language);
 
   async function handleAddToCart() {
     try {
@@ -2578,18 +2636,18 @@ function ProductPage({ product, currency }: { product: Product; currency: Curren
             </div>
 
             <h1 className="text-2xl font-bold text-foreground/95 mb-2" style={{ fontFamily: "'Raleway', sans-serif" }}>
-              {product.name}
+              {localized.name}
             </h1>
 
             <p className="mb-4 text-sm text-muted-foreground leading-6">
-              {product.fullDescription || product.description}
+              {localized.fullDescription || localized.description}
             </p>
 
             <div className="space-y-4">
               <div>
                 <h2 className="text-[10px] font-semibold tracking-widest uppercase text-primary/70 mb-2">Recursos Principais</h2>
                 <ul className="space-y-2">
-                  {product.features.map((feat) => (
+                  {localized.features.map((feat) => (
                     <li key={feat} className="flex items-start gap-2.5 text-xs text-foreground/75 leading-5">
                       <Check size={12} className="text-primary mt-1 shrink-0" />
                       {feat}
@@ -2601,7 +2659,7 @@ function ProductPage({ product, currency }: { product: Product; currency: Curren
               <div>
                 <h2 className="text-[10px] font-semibold tracking-widest uppercase text-primary/70 mb-2">Requisitos</h2>
                 <ul className="space-y-2">
-                  {product.requirements.map((req) => (
+                  {localized.requirements.map((req) => (
                     <li key={req} className="flex items-start gap-2.5 text-xs text-muted-foreground leading-5">
                       <ChevronRight size={11} className="text-muted-foreground mt-1.5 shrink-0" />
                       {req}
@@ -2650,8 +2708,9 @@ function ProductPage({ product, currency }: { product: Product; currency: Curren
   );
 }
 
-function ProductDetail({ product, currency, onClose }: { product: Product; currency: CurrencyCode; onClose: () => void }) {
+function ProductDetail({ product, currency, language, onClose }: { product: Product; currency: CurrencyCode; language: SiteLanguage; onClose: () => void }) {
   const status = STATUS_CONFIG[product.status];
+  const localized = getLocalizedProduct(product, language);
   const [cartBusy, setCartBusy] = useState(false);
   const [buyBusy, setBuyBusy] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
@@ -2754,13 +2813,13 @@ function ProductDetail({ product, currency, onClose }: { product: Product; curre
                   className="text-2xl font-bold text-foreground/90 mb-3"
                   style={{ fontFamily: "'Raleway', sans-serif" }}
                 >
-                  {product.name}
+                  {localized.name}
                 </h2>
                 <p
                   className="max-w-3xl text-base text-muted-foreground leading-8"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
-                  {product.fullDescription}
+                  {localized.fullDescription}
                 </p>
               </div>
 
@@ -2773,7 +2832,7 @@ function ProductDetail({ product, currency, onClose }: { product: Product; curre
                   Recursos Principais
                 </h3>
                 <ul className="space-y-3">
-                  {product.features.map((feat) => (
+                  {localized.features.map((feat) => (
                     <li key={feat} className="flex items-start gap-3">
                       <Check size={14} className="text-primary mt-1 shrink-0" />
                       <span
@@ -2796,7 +2855,7 @@ function ProductDetail({ product, currency, onClose }: { product: Product; curre
                   Requisitos
                 </h3>
                 <ul className="space-y-3">
-                  {product.requirements.map((req) => (
+                  {localized.requirements.map((req) => (
                     <li key={req} className="flex items-start gap-3">
                       <ChevronRight size={13} className="text-muted-foreground mt-1.5 shrink-0" />
                       <span
@@ -3156,9 +3215,12 @@ function emptyAdminProduct(): Product {
   return {
     id: `new-${Date.now()}`,
     name: "",
+    nameEn: "",
     category: "Scripts",
     description: "",
+    descriptionEn: "",
     fullDescription: "",
+    fullDescriptionEn: "",
     price: 0,
     priceCurrency: PRODUCT_BASE_CURRENCY,
     priceSource: "fallback",
@@ -3167,7 +3229,9 @@ function emptyAdminProduct(): Product {
     packageId: "",
     docsUrl: "https://docs.thewantedsolestudio.workers.dev",
     features: [],
+    featuresEn: [],
     requirements: [],
+    requirementsEn: [],
     media: [],
     gradientFrom: "#ece5d8",
     gradientTo: "#fffdf8",
@@ -3189,7 +3253,9 @@ function ProductAdminForm({
   saving: boolean;
 }) {
   const featuresText = product.features.join("\n");
+  const featuresEnText = (product.featuresEn ?? []).join("\n");
   const requirementsText = product.requirements.join("\n");
+  const requirementsEnText = (product.requirementsEn ?? []).join("\n");
   const mediaText = (product.media ?? []).map((item) => item.src).join("\n");
 
   const update = (patch: Partial<Product>) => onChange({ ...product, ...patch });
@@ -3250,6 +3316,42 @@ function ProductAdminForm({
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Descrição completa</span>
           <textarea value={product.fullDescription} onChange={(e) => update({ fullDescription: e.target.value })} rows={4} className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary/40" />
         </label>
+
+        <div className="lg:col-span-2 mt-2 rounded-2xl border border-primary/15 bg-primary/5 p-4">
+          <div className="mb-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary/80">Versão em Inglês</p>
+            <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+              Quando o cliente selecionar EN, o site usa estes campos para o produto.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <label className="space-y-2 lg:col-span-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Name EN</span>
+              <input value={product.nameEn ?? ""} onChange={(e) => update({ nameEn: e.target.value })} className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary/40" />
+            </label>
+
+            <label className="space-y-2 lg:col-span-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Short Description EN</span>
+              <input value={product.descriptionEn ?? ""} onChange={(e) => update({ descriptionEn: e.target.value })} className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary/40" />
+            </label>
+
+            <label className="space-y-2 lg:col-span-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Full Description EN</span>
+              <textarea value={product.fullDescriptionEn ?? ""} onChange={(e) => update({ fullDescriptionEn: e.target.value })} rows={4} className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary/40" />
+            </label>
+
+            <label className="space-y-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Features EN, one per line</span>
+              <textarea value={featuresEnText} onChange={(e) => update({ featuresEn: e.target.value.split("\\n").map((line) => line.trim()).filter(Boolean) })} rows={5} className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary/40" />
+            </label>
+
+            <label className="space-y-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Requirements EN, one per line</span>
+              <textarea value={requirementsEnText} onChange={(e) => update({ requirementsEn: e.target.value.split("\\n").map((line) => line.trim()).filter(Boolean) })} rows={5} className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary/40" />
+            </label>
+          </div>
+        </div>
 
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Package ID Tebex</span>
@@ -4624,7 +4726,7 @@ export default function App() {
       );
     }
 
-    return renderPageWithNavbar(<ProductPage product={matchedProduct} currency={currency} />);
+    return renderPageWithNavbar(<ProductPage product={matchedProduct} currency={currency} language={language} />);
   }
 
   if (pathname === "/login") {
@@ -4681,6 +4783,7 @@ export default function App() {
         loading={productsLoading}
         error={productsError}
         currency={currency}
+        language={language}
         onSelectProduct={setSelectedProduct}
       />
 
@@ -4697,6 +4800,7 @@ export default function App() {
         <ProductDetail
           product={selectedProduct}
           currency={currency}
+          language={language}
           onClose={() => setSelectedProduct(null)}
         />
       )}

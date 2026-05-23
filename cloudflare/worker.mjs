@@ -50,16 +50,21 @@ function rowToProduct(row) {
   return {
     id: row.id,
     name: row.name,
+    nameEn: row.name_en || "",
     category: row.category,
     description: row.description,
+    descriptionEn: row.description_en || "",
     fullDescription: row.full_description,
+    fullDescriptionEn: row.full_description_en || "",
     price: row.price,
     status: row.status,
     tebexUrl: row.tebex_url,
     packageId: row.package_id,
     docsUrl: row.docs_url,
     features: JSON.parse(row.features || "[]"),
+    featuresEn: JSON.parse(row.features_en || "[]"),
     requirements: JSON.parse(row.requirements || "[]"),
+    requirementsEn: JSON.parse(row.requirements_en || "[]"),
     media: JSON.parse(row.media || "[]"),
     gradientFrom: row.gradient_from,
     gradientTo: row.gradient_to,
@@ -151,16 +156,21 @@ async function upsertProduct(env, payload, forcedId = null) {
   const product = {
     id,
     name: payload.name || "Produto sem nome",
+    name_en: payload.nameEn || payload.name_en || "",
     category: payload.category || "Scripts",
     description: payload.description || "",
+    description_en: payload.descriptionEn || payload.description_en || "",
     full_description: payload.fullDescription || payload.full_description || payload.description || "",
+    full_description_en: payload.fullDescriptionEn || payload.full_description_en || payload.descriptionEn || payload.description_en || "",
     price: Number(payload.price || 0),
     status: payload.status || "novo",
     tebex_url: payload.tebexUrl || payload.tebex_url || "",
     package_id: payload.packageId || payload.package_id || "",
     docs_url: payload.docsUrl || payload.docs_url || "https://docs.thewantedsolestudio.workers.dev",
     features: safeJson(payload.features, []),
+    features_en: safeJson(payload.featuresEn || payload.features_en, []),
     requirements: safeJson(payload.requirements, []),
+    requirements_en: safeJson(payload.requirementsEn || payload.requirements_en, []),
     media: safeJson(payload.media, []),
     gradient_from: payload.gradientFrom || payload.gradient_from || "#ece5d8",
     gradient_to: payload.gradientTo || payload.gradient_to || "#fffdf8",
@@ -173,23 +183,28 @@ async function upsertProduct(env, payload, forcedId = null) {
 
   await env.DB.prepare(`
     INSERT INTO products (
-      id, name, category, description, full_description, price, status,
-      tebex_url, package_id, docs_url, features, requirements, media,
+      id, name, name_en, category, description, description_en, full_description, full_description_en, price, status,
+      tebex_url, package_id, docs_url, features, features_en, requirements, requirements_en, media,
       gradient_from, gradient_to, icon_name, visible, featured, created_at, updated_at
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
       name = excluded.name,
+      name_en = excluded.name_en,
       category = excluded.category,
       description = excluded.description,
+      description_en = excluded.description_en,
       full_description = excluded.full_description,
+      full_description_en = excluded.full_description_en,
       price = excluded.price,
       status = excluded.status,
       tebex_url = excluded.tebex_url,
       package_id = excluded.package_id,
       docs_url = excluded.docs_url,
       features = excluded.features,
+      features_en = excluded.features_en,
       requirements = excluded.requirements,
+      requirements_en = excluded.requirements_en,
       media = excluded.media,
       gradient_from = excluded.gradient_from,
       gradient_to = excluded.gradient_to,
@@ -198,9 +213,9 @@ async function upsertProduct(env, payload, forcedId = null) {
       featured = excluded.featured,
       updated_at = excluded.updated_at
   `).bind(
-    product.id, product.name, product.category, product.description, product.full_description,
+    product.id, product.name, product.name_en, product.category, product.description, product.description_en, product.full_description, product.full_description_en,
     product.price, product.status, product.tebex_url, product.package_id, product.docs_url,
-    product.features, product.requirements, product.media, product.gradient_from, product.gradient_to,
+    product.features, product.features_en, product.requirements, product.requirements_en, product.media, product.gradient_from, product.gradient_to,
     product.icon_name, product.visible, product.featured, product.created_at, product.updated_at
   ).run();
 

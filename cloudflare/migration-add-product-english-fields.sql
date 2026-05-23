@@ -1,0 +1,5 @@
+ALTER TABLE products ADD COLUMN name_en TEXT NOT NULL DEFAULT '';
+ALTER TABLE products ADD COLUMN description_en TEXT NOT NULL DEFAULT '';
+ALTER TABLE products ADD COLUMN full_description_en TEXT NOT NULL DEFAULT '';
+ALTER TABLE products ADD COLUMN features_en TEXT NOT NULL DEFAULT '[]';
+ALTER TABLE products ADD COLUMN requirements_en TEXT NOT NULL DEFAULT '[]';
