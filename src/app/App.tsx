@@ -4719,9 +4719,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                   >
                     <span className="min-w-0">
                       <span className="block truncate text-[11px] font-bold uppercase tracking-[0.14em]">{product.label}</span>
-                      <span className="block text-[10px] text-muted-foreground">
-                        {productPages.length} {isEnglish ? "pages" : productPages.length === 1 ? "página" : "páginas"}
-                      </span>
+
                     </span>
                     <ChevronDown size={14} className={`shrink-0 transition-transform ${productExpanded ? "rotate-180" : ""}`} />
                   </button>
@@ -4751,9 +4749,6 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                             >
                               <span className="min-w-0">
                                 <span className="block truncate text-[10px] font-bold uppercase tracking-[0.16em]">{category}</span>
-                                <span className="block text-[10px] text-muted-foreground">
-                                  {rows.length} {isEnglish ? "pages" : rows.length === 1 ? "página" : "páginas"}
-                                </span>
                               </span>
                               <ChevronDown size={13} className={`shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
                             </button>
@@ -4864,9 +4859,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                           <span className="text-sm font-bold uppercase tracking-[0.14em] text-primary">{product.label}</span>
                           <ChevronRight size={16} className="text-primary" />
                         </div>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                          {productPages.length} {isEnglish ? "pages available" : productPages.length === 1 ? "página disponível" : "páginas disponíveis"}
-                        </p>
+
                       </button>
                     );
                   })}
