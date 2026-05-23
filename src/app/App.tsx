@@ -727,18 +727,65 @@ function getBasketRowName(row: any) {
   );
 }
 
-function getBasketRowPrice(row: any) {
-  const price =
-    row?.total_price ??
-    row?.totalPrice ??
-    row?.price?.amount ??
-    row?.price ??
-    row?.package?.price?.amount ??
-    row?.package?.price ??
-    row?.base_price ??
-    0;
+function normalizeMoneyValue(value: any) {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") {
+    const normalized = value.replace(/[^\d.,-]/g, "").replace(",", ".");
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  if (value && typeof value === "object") {
+    return normalizeMoneyValue(value.amount ?? value.total ?? value.value ?? value.price);
+  }
+  return 0;
+}
 
-  return typeof price === "number" ? price : Number(price) || 0;
+function getBasketRowPrice(row: any, basket?: any) {
+  const directCandidates = [
+    row?.total_price,
+    row?.totalPrice,
+    row?.row_price,
+    row?.rowPrice,
+    row?.price,
+    row?.price?.amount,
+    row?.base_price,
+    row?.basePrice,
+    row?.package_price,
+    row?.packagePrice,
+    row?.package?.total_price,
+    row?.package?.totalPrice,
+    row?.package?.price,
+    row?.package?.price?.amount,
+    row?.package?.base_price,
+    row?.package?.basePrice,
+    row?.package?.pricing?.price,
+    row?.package?.pricing?.amount,
+    row?.package?.prices?.price,
+    row?.package?.prices?.amount
+  ];
+
+  for (const candidate of directCandidates) {
+    const parsed = normalizeMoneyValue(candidate);
+    if (parsed > 0) return parsed;
+  }
+
+  const quantity = Number(row?.quantity ?? row?.qty ?? 1) || 1;
+  const basketItems = getBasketItems(basket);
+
+  // Se a Tebex não devolver preço por linha, mas devolver total do basket,
+  // usamos o total como fallback quando há só um item na cesta.
+  if (basketItems.length === 1) {
+    return getBasketTotal(basket);
+  }
+
+  // Fallback dividido para evitar mostrar $0.00 quando a cesta tem múltiplos itens,
+  // mas a Tebex não enviou preço individual no payload público.
+  const basketTotal = getBasketTotal(basket);
+  if (basketTotal > 0 && basketItems.length > 0) {
+    return basketTotal / basketItems.length / quantity;
+  }
+
+  return 0;
 }
 
 function getBasketTotal(basket: any) {
@@ -2923,7 +2970,7 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
             return (
               <div key={rowKey} className="grid grid-cols-[1fr_160px_140px] text-sm text-foreground/75 border-t border-border first:border-t-0">
                 <div className="px-5 py-4 border-r border-border">{getBasketRowName(row)}</div>
-                <div className="px-5 py-4 border-r border-border">{formatCurrencyValue(getBasketRowPrice(row), basketCurrency)}</div>
+                <div className="px-5 py-4 border-r border-border">{formatCurrencyValue(getBasketRowPrice(row, basket), basketCurrency)}</div>
                 <div className="px-5 py-3">
                   <button
                     type="button"
@@ -3344,7 +3391,7 @@ const orders = summary?.orders ?? [];
                       <div key={rowKey} className="grid grid-cols-[130px_1fr_140px_130px] text-sm text-foreground/75 border-t border-border first:border-t-0">
                         <div className="px-5 py-4 border-r border-border">{row?.type ?? "package"}</div>
                         <div className="px-5 py-4 border-r border-border">{getBasketRowName(row)}</div>
-                        <div className="px-5 py-4 border-r border-border">{formatCurrencyValue(getBasketRowPrice(row), basketCurrency)}</div>
+                        <div className="px-5 py-4 border-r border-border">{formatCurrencyValue(getBasketRowPrice(row, basket), basketCurrency)}</div>
                         <div className="px-5 py-3">
                           <button
                             type="button"
