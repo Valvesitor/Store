@@ -4747,13 +4747,13 @@ function DocsAdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background px-6 py-10">
+    <main className="bg-transparent px-0 py-0">
       <div className="mx-auto max-w-[1500px]">
-        <section className="mb-6 rounded-[30px] border border-border bg-card p-7 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+        <section className="mb-4 rounded-[24px] border border-border bg-card p-5 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <SectionTag>Admin Docs</SectionTag>
-              <h1 className="mt-4 text-3xl lg:text-5xl font-bold text-foreground/95">Editor da documentação</h1>
+              <h1 className="mt-2 text-2xl lg:text-3xl font-bold text-foreground/95">Editor da documentação</h1>
               <p className="mt-2 text-sm text-muted-foreground">Separe a documentação por produto. Cada produto pode ter suas próprias páginas, categorias, PT e EN.</p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -5109,14 +5109,14 @@ function ProductAdminForm({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[28px] border border-border bg-card p-6 lg:p-7 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+      <div className="rounded-[24px] border border-border bg-card p-4 lg:p-5 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div>
             <SectionTag>Editor de produto</SectionTag>
-            <h2 className="mt-3 text-2xl lg:text-3xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            <h2 className="mt-2 text-xl lg:text-2xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
               {product.id.startsWith("new-") ? "Novo produto" : product.name || "Editar produto"}
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">
               Clique nas categorias do formulário. Agora somente a área selecionada aparece no centro.
             </p>
           </div>
@@ -5131,7 +5131,7 @@ function ProductAdminForm({
         </div>
       </div>
 
-      <div className="overflow-x-auto pb-1">
+      <div className="overflow-x-auto pb-1 -mt-2">
         <div className="flex min-w-max gap-3">
           {sectionButtons.map((section) => {
             const open = activeSection === section.id;
@@ -5700,7 +5700,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="h-[calc(100vh-4rem)] overflow-hidden bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <div className="hidden">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
@@ -5733,22 +5733,22 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
         </div>
       </div>
 
-      <main className="max-w-[1500px] mx-auto px-6 lg:px-8 py-10">
-        <div className="mb-8 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+      <main className="mx-auto flex h-full max-w-[1500px] flex-col overflow-hidden px-4 py-4 lg:px-6 lg:py-5">
+        <div className="mb-3 shrink-0 rounded-[24px] border border-border bg-card px-5 py-4 shadow-[0_12px_38px_rgba(32,32,32,0.05)] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <SectionTag>Admin Dashboard</SectionTag>
-            <h1 className="mt-4 text-4xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            <h1 className="mt-2 text-2xl lg:text-3xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
               {activeAdminSection === "products" && "Produtos"}
               {activeAdminSection === "docs" && "Documentação"}
               {activeAdminSection === "coupons" && "Cupom / Gift Card"}
             </h1>
-            <p className="mt-3 text-muted-foreground max-w-2xl">
+            <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
               {activeAdminSection === "products" && "Cadastre, edite e publique os produtos da vitrine."}
               {activeAdminSection === "docs" && "Crie e edite páginas de documentação separadas por produto."}
               {activeAdminSection === "coupons" && "Cadastre o nome público e o código original da Tebex para cupons e gift cards."}
             </p>
             {message && (
-              <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+              <div className="mt-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
                 {message}
               </div>
             )}
@@ -5795,9 +5795,9 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
           </div>
         </div>
 
-        <div className="mb-8 rounded-[28px] border border-border bg-card p-4 lg:p-5 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-primary/70">Categoria</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="mb-3 shrink-0 rounded-[22px] border border-border bg-card p-3 shadow-[0_12px_38px_rgba(32,32,32,0.05)]">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-primary/70">Categoria</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
             {[
               { id: "products" as const, label: "Produto", description: "Editor de produto", icon: Package },
               { id: "docs" as const, label: "Documentação", description: "Editor de docs", icon: BookOpen },
@@ -5811,18 +5811,18 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
                   key={section.id}
                   type="button"
                   onClick={() => setActiveAdminSection(section.id)}
-                  className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition-all ${
+                  className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition-all ${
                     active
                       ? "border-primary/35 bg-primary/10 text-primary shadow-[0_12px_30px_rgba(201,168,76,0.12)]"
                       : "border-border bg-background/60 text-foreground/70 hover:border-primary/20 hover:bg-primary/5"
                   }`}
                 >
-                  <span className={`flex h-11 w-11 items-center justify-center rounded-2xl ${active ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"}`}>
-                    <Icon size={18} />
+                  <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${active ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"}`}>
+                    <Icon size={16} />
                   </span>
                   <span>
                     <strong className="block text-sm">{section.label}</strong>
-                    <span className="mt-0.5 block text-xs text-muted-foreground">{section.description}</span>
+                    <span className="mt-0.5 block text-[11px] text-muted-foreground">{section.description}</span>
                   </span>
                 </button>
               );
@@ -5830,9 +5830,10 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
           </div>
         </div>
 
+        <div className="min-h-0 flex-1 overflow-hidden">
         {activeAdminSection === "products" && (
-        <div className="grid grid-cols-1 2xl:grid-cols-[360px_minmax(0,1fr)] gap-8 lg:gap-10 items-start">
-          <aside className="rounded-[28px] border border-border bg-card p-5 lg:p-6 shadow-[0_22px_80px_rgba(32,32,32,0.08)] 2xl:sticky 2xl:top-6">
+        <div className="grid h-full min-h-0 grid-cols-1 2xl:grid-cols-[340px_minmax(0,1fr)] gap-4 lg:gap-5 items-start">
+          <aside className="flex h-full min-h-0 flex-col rounded-[24px] border border-border bg-card p-4 shadow-[0_14px_42px_rgba(32,32,32,0.06)]">
             <div className="flex items-center justify-between gap-3 mb-5">
               <div>
                 <h2 className="font-bold text-foreground/90">Produtos</h2>
@@ -5861,14 +5862,14 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
               </div>
             </div>
 
-            <div className="space-y-3 max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
+            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
               {products.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Nenhum produto salvo ainda.</p>
               ) : products.map((product) => (
                 <button
                   key={product.id}
                   onClick={() => setSelected(product)}
-                  className={`w-full text-left rounded-2xl border p-4 transition-all ${
+                  className={`w-full text-left rounded-2xl border p-3 transition-all ${
                     selected.id === product.id ? "border-primary/50 bg-primary/10" : "border-border hover:border-primary/25"
                   }`}
                 >
@@ -5894,7 +5895,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             </div>
           </aside>
 
-          <div>
+          <div className="h-full min-h-0 overflow-y-auto pr-1">
             <ProductAdminForm
               product={selected}
               onChange={setSelected}
@@ -5906,14 +5907,17 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
         )}
 
         {activeAdminSection === "docs" && (
-          <div className="rounded-[28px] border border-border bg-card/40 p-0 shadow-[0_18px_55px_rgba(32,32,32,0.04)]">
+          <div className="h-full min-h-0 overflow-y-auto rounded-[24px] border border-border bg-card/40 p-0 shadow-[0_14px_42px_rgba(32,32,32,0.04)]">
             <DocsAdminPage />
           </div>
         )}
 
         {activeAdminSection === "coupons" && (
-          <CreatorCodeAdminPanel token={token} />
+          <div className="h-full min-h-0 overflow-y-auto pr-1">
+            <CreatorCodeAdminPanel token={token} />
+          </div>
         )}
+        </div>
       </main>
     </div>
   );
