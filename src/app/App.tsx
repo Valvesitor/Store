@@ -2529,7 +2529,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
 
   return (
     <div className="min-h-screen bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      <div className="sticky top-0 z-40 border-b border-border bg-background/92 backdrop-blur-md">
+      <div className="hidden">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
             <span className="text-base font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
@@ -2636,7 +2636,7 @@ function LoginPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
 
   return (
     <div className="min-h-screen bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      <div className="sticky top-0 z-40 border-b border-border bg-background/92 backdrop-blur-md">
+      <div className="hidden">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
             <span className="text-base font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
@@ -2784,7 +2784,7 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
 
   return (
     <div className="min-h-screen bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      <div className="sticky top-0 z-40 border-b border-border bg-background/92 backdrop-blur-md">
+      <div className="hidden">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
             <span className="text-base font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
@@ -3027,7 +3027,7 @@ const orders = summary?.orders ?? [];
 
   return (
     <div className="min-h-screen bg-[#f7f5f0] text-foreground" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      <div className="sticky top-0 z-40 border-b border-border bg-background/92 backdrop-blur-md">
+      <div className="hidden">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
             <span className="text-base font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
@@ -3398,20 +3398,50 @@ export default function App() {
     });
   }, []);
 
+  const navigateFromPage = (section: string) => {
+    if (section === "hero") {
+      window.location.href = "/";
+      return;
+    }
+
+    window.location.href = `/#${section}`;
+  };
+
+  const renderPageWithNavbar = (content: React.ReactNode) => (
+    <div
+      className="min-h-screen bg-background text-foreground antialiased"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+    >
+      <Navbar
+        onNavigate={navigateFromPage}
+        activeSection={activeSection}
+        onLogin={() => { window.location.href = "/login"; }}
+        onCart={() => { window.location.href = "/checkout"; }}
+        language={language}
+        onLanguageChange={setLanguage}
+        currency={currency}
+        onCurrencyChange={setCurrency}
+      />
+      <div className="pt-16">
+        {content}
+      </div>
+    </div>
+  );
+
   if (pathname === "/login") {
-    return <LoginPage currency={currency} onCurrencyChange={setCurrency} />;
+    return renderPageWithNavbar(<LoginPage currency={currency} onCurrencyChange={setCurrency} />);
   }
 
   if (pathname === "/checkout") {
-    return <CheckoutPage currency={currency} onCurrencyChange={setCurrency} />;
+    return renderPageWithNavbar(<CheckoutPage currency={currency} onCurrencyChange={setCurrency} />);
   }
 
   if (pathname === "/account") {
-    return <AccountPage currency={currency} onCurrencyChange={setCurrency} />;
+    return renderPageWithNavbar(<AccountPage currency={currency} onCurrencyChange={setCurrency} />);
   }
 
   if (pathname === "/admin") {
-    return <AdminPage currency={currency} onCurrencyChange={setCurrency} />;
+    return renderPageWithNavbar(<AdminPage currency={currency} onCurrencyChange={setCurrency} />);
   }
 
   return (
