@@ -627,10 +627,12 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Discord": "Discord",
   "The Wanted": "The Wanted",
   "Sole Studio": "Sole Studio",
+  "© 2026 The Wanted Sole Studio — Todos os direitos reservados.": "© 2026 The Wanted Sole Studio — All rights reserved.",
 
   "RedM · Scripts & Custom Peds": "RedM · Scripts & Custom Peds",
   "The Wanted Sole Studio": "The Wanted Sole Studio",
   "Scripts exclusivos, custom peds e sistemas premium desenvolvidos para servidores RedM que exigem performance, originalidade e identidade própria.": "Exclusive scripts, custom peds and premium systems built for RedM servers that require performance, originality and unique identity.",
+  "Scripts exclusivos, custom peds e sistemas premium para servidores RedM. Qualidade, originalidade e identidade própria.": "Exclusive scripts, custom peds and premium systems for RedM servers. Quality, originality and unique identity.",
   "Ver Produtos": "View Products",
   "Acessar Discord": "Join Discord",
   "100% Original": "100% Original",
@@ -5383,13 +5385,6 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
     { label: "Privacy Policy", href: "/privacy-policy" },
   ];
 
-  const quickLinks = [
-    { label: "Início", action: () => onNavigate("hero") },
-    { label: "Scripts", action: () => onNavigate("products") },
-    { label: "Documentação", href: "/docs" },
-    { label: "Discord", href: "https://discord.gg/qE29trG84u" },
-  ];
-
   const tebexLinks = [
     { label: "Impressum", href: "https://checkout.tebex.io/impressum" },
     { label: "Terms & Conditions", href: "https://checkout.tebex.io/terms" },
@@ -5422,8 +5417,8 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
   return (
     <footer className="border-t border-border py-14 px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.4fr)_0.8fr_0.8fr_0.8fr] gap-10 items-start">
-          <div className="max-w-xs">
+        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.45fr)_0.85fr_0.85fr] gap-10 lg:gap-14 items-start">
+          <div className="max-w-sm">
             <div className="mb-3">
               <span
                 className="text-lg font-bold tracking-[0.2em] uppercase block"
@@ -5442,8 +5437,7 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
               className="text-xs text-muted-foreground leading-relaxed"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
-              Scripts exclusivos, custom peds e sistemas premium para servidores RedM.
-              Qualidade, originalidade e identidade própria.
+              Scripts exclusivos, custom peds e sistemas premium para servidores RedM. Qualidade, originalidade e identidade própria.
             </p>
           </div>
 
@@ -5456,17 +5450,8 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
             </nav>
           </div>
 
-          <div>
+          <div className="md:justify-self-start">
             <p className="text-sm uppercase tracking-wide text-muted-foreground mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Links
-            </p>
-            <nav className="flex flex-col items-start gap-2">
-              {quickLinks.map((link) => renderLink(link, "text-sm text-muted-foreground hover:text-foreground/90 transition-colors text-left"))}
-            </nav>
-          </div>
-
-          <div>
-            <p className="text-sm text-muted-foreground mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               Tebex
             </p>
             <nav className="flex flex-col items-start gap-2">
