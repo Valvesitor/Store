@@ -733,6 +733,7 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Digite seu cupom": "Enter your coupon",
   "Digite seu coupon/gift card": "Enter your coupon/gift card",
   "Coupon/Gift Card removido da cesta.": "Coupon/Gift Card removed from cart.",
+  "Coupon/Gift Card removido da cesta. Se o checkout da Tebex estiver aberto, feche e abra novamente para atualizar o valor.": "Coupon/Gift Card removed from cart. If the Tebex checkout is already open, close and reopen it to refresh the value.",
   "Aplicar cupom": "Apply coupon",
   "Histórico de compras": "Purchase history",
   "Pedidos reais chegam aqui pelo webhook da Tebex no Worker.": "Real orders arrive here through the Tebex webhook in the Worker.",
@@ -1545,6 +1546,33 @@ async function applyCreatorCodeToBasket(basketIdent: string, originalCode: strin
   throw new Error(errors.find(Boolean) ?? "Nao foi possivel aplicar o coupon/gift card.");
 }
 
+function basketPayloadContainsCode(payload: any, codeToFind: string): boolean {
+  const normalizedCode = codeToFind.trim().toLowerCase();
+  if (!normalizedCode) return false;
+
+  const seen = new WeakSet<object>();
+
+  const search = (value: any): boolean => {
+    if (value == null) return false;
+
+    if (typeof value === "string" || typeof value === "number") {
+      return String(value).toLowerCase().includes(normalizedCode);
+    }
+
+    if (typeof value !== "object") return false;
+    if (seen.has(value)) return false;
+    seen.add(value);
+
+    if (Array.isArray(value)) {
+      return value.some(search);
+    }
+
+    return Object.values(value).some(search);
+  };
+
+  return search(payload);
+}
+
 async function removeCreatorCodeFromBasket(basketIdent: string, codeToRemove = "") {
   const webstoreToken = getTebexWebstoreToken();
   const normalizedCode = codeToRemove.trim();
@@ -1554,6 +1582,11 @@ async function removeCreatorCodeFromBasket(basketIdent: string, codeToRemove = "
       endpoint: `/accounts/${webstoreToken}/baskets/${basketIdent}/coupons/remove`,
       body: null,
       label: "coupon"
+    },
+    {
+      endpoint: `/accounts/${webstoreToken}/baskets/${basketIdent}/coupons/remove`,
+      body: normalizedCode ? { coupon_code: normalizedCode } : null,
+      label: "coupon com código"
     },
     {
       endpoint: `/accounts/${webstoreToken}/baskets/${basketIdent}/giftcards/remove`,
@@ -1568,6 +1601,7 @@ async function removeCreatorCodeFromBasket(basketIdent: string, codeToRemove = "
   ];
 
   const errors: string[] = [];
+  let lastBasket: any | null = null;
 
   for (const attempt of attempts) {
     const response = await tebexFetch(attempt.endpoint, {
@@ -1577,11 +1611,24 @@ async function removeCreatorCodeFromBasket(basketIdent: string, codeToRemove = "
     });
 
     if (response.ok || response.status === 204 || response.status === 404) {
-      return fetchTebexBasket(basketIdent);
+      const refreshedBasket = await fetchTebexBasket(basketIdent);
+      lastBasket = refreshedBasket;
+
+      // Se sabemos qual código foi aplicado, só mostra sucesso quando ele sumir do payload do basket.
+      // Isso evita a mensagem falsa de "removido" quando a Tebex respondeu 200 mas manteve o desconto.
+      if (!normalizedCode || !basketPayloadContainsCode(refreshedBasket, normalizedCode)) {
+        return refreshedBasket;
+      }
+
+      continue;
     }
 
     const payload = await response.json().catch(() => null);
     errors.push(payload?.message ?? payload?.detail ?? attempt.label);
+  }
+
+  if (lastBasket) {
+    throw new Error("A Tebex respondeu a remoção, mas o coupon/gift card ainda aparece na cesta. Feche o checkout aberto e tente remover novamente antes de finalizar.");
   }
 
   throw new Error(errors.find(Boolean) ?? "Nao foi possivel remover o coupon/gift card.");
@@ -5865,7 +5912,7 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
       const tebexCode = matchedCode?.originalCode ?? typedCode;
       const updated = await removeCreatorCodeFromBasket(basketIdent, tebexCode);
       setBasket(updated);
-      setCreatorCodeMessage("Coupon/Gift Card removido da cesta.");
+      setCreatorCodeMessage("Coupon/Gift Card removido da cesta. Se o checkout da Tebex estiver aberto, feche e abra novamente para atualizar o valor.");
       setCouponCode("");
     } catch (error) {
       console.error(error);
