@@ -756,7 +756,7 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "URL Tebex": "Tebex URL",
   "Features, uma por linha": "Features, one per line",
   "Requisitos, um por linha": "Requirements, one per line",
-  "Imagens/vídeos, uma URL por linha": "Images/videos, one URL per line",
+  "Ícone do card + galeria, uma URL por linha": "Images/videos, one URL per line",
   "Visível na loja": "Visible in store",
   "Destaque": "Featured",
   "Produto salvo e publicado com sucesso.": "Product saved and published successfully.",
@@ -2474,7 +2474,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
   const [failedMedia, setFailedMedia] = useState<Record<string, boolean>>({});
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const Icon = ICON_MAP[product.iconName] ?? Package;
-  const media = (product.media ?? []).map((item) => {
+  const media = (product.media ?? []).slice(1).map((item) => {
     const normalizedType = item.type === "youtube" || isYouTubeUrl(item.src)
       ? "youtube"
       : item.type === "video"
@@ -2533,7 +2533,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
               Galeria do Produto
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Adicione imagens e vídeos no painel admin.
+              A primeira mídia é usada como ícone do card. Adicione mais URLs para aparecerem na galeria.
             </p>
           </div>
         </div>
@@ -2705,7 +2705,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
             }) : (
               <div className="flex h-full items-center gap-2 text-xs text-muted-foreground">
                 <ImageIcon size={14} />
-                Galeria pronta para receber imagens e vídeos deste produto.
+                A primeira URL é usada como ícone do card. As próximas aparecem na galeria.
               </div>
             )}
           </div>
@@ -3698,7 +3698,7 @@ function ProductAdminForm({
               Galeria e preview
             </h3>
             <p className="mt-1 text-xs text-muted-foreground">
-              Coloque uma URL por linha. A primeira mídia vira o destaque principal do produto.
+              Coloque uma URL por linha. A primeira URL vira o ícone/imagem do card. As próximas URLs aparecem na galeria do produto.
             </p>
           </div>
 
@@ -3725,11 +3725,12 @@ function ProductAdminForm({
                 <li>• Use imagens horizontais para melhor enquadramento.</li>
                 <li>• Links do YouTube viram vídeo automaticamente.</li>
                 <li>• Arquivos .mp4, .webm e .mov viram vídeo direto.</li>
-                <li>• A primeira URL será o preview inicial.</li>
+                <li>• A primeira URL será usada somente como imagem/ícone do card.</li>
               </ul>
               <div className="mt-4 rounded-xl border border-border bg-card p-3">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Total de mídias</p>
-                <p className="mt-1 text-lg font-bold text-primary">{product.media?.length ?? 0}</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Galeria</p>
+                <p className="mt-1 text-lg font-bold text-primary">{Math.max((product.media?.length ?? 0) - 1, 0)}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">{product.media?.length ?? 0} URLs no total</p>
               </div>
             </div>
           </div>
