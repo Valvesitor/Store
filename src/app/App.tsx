@@ -401,8 +401,10 @@ function formatProductPrice(price: number, currency: CurrencyCode, sourceCurrenc
 }
 
 function getStoredCurrency(): CurrencyCode {
+  ensureDefaultSitePreferences();
+
   const value = window.localStorage.getItem(SITE_CURRENCY_KEY);
-  return CURRENCIES.includes(value as CurrencyCode) ? (value as CurrencyCode) : "USD";
+  return CURRENCIES.includes(value as CurrencyCode) ? (value as CurrencyCode) : DEFAULT_SITE_CURRENCY;
 }
 
 function storeCurrency(currency: CurrencyCode) {
@@ -554,6 +556,15 @@ function isYouTubeUrl(url: string) {
   return Boolean(getYouTubeVideoId(url));
 }
 
+function isDiscordMediaUrl(url: string) {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    return hostname.includes("discordapp.com") || hostname.includes("discordapp.net") || hostname.includes("discord.com");
+  } catch {
+    return /discord(app|cdn|usercontent|media)/i.test(url);
+  }
+}
+
 function getYouTubeEmbedUrl(url: string) {
   const videoId = getYouTubeVideoId(url);
   return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
@@ -567,8 +578,24 @@ function getYouTubeThumbnail(url: string) {
 const TEBEX_BASKET_KEY = "tws_tebex_basket";
 const SITE_LANGUAGE_KEY = "tws_site_language";
 const SITE_CURRENCY_KEY = "tws_site_currency";
+const SITE_DEFAULTS_VERSION_KEY = "tws_site_defaults_version";
+const SITE_DEFAULTS_VERSION = "2026-english-usd-default";
+const DEFAULT_SITE_LANGUAGE: SiteLanguage = "en_US";
+const DEFAULT_SITE_CURRENCY: CurrencyCode = "USD";
 const CURRENCIES: CurrencyCode[] = ["USD", "BRL", "EUR", "GBP", "AUD", "CAD", "DKK", "NOK", "NZD", "SEK", "PLN"];
-let tebexCheckoutLocale: SiteLanguage = "pt_BR";
+let tebexCheckoutLocale: SiteLanguage = DEFAULT_SITE_LANGUAGE;
+
+function ensureDefaultSitePreferences() {
+  if (typeof window === "undefined") return;
+
+  const currentVersion = window.localStorage.getItem(SITE_DEFAULTS_VERSION_KEY);
+
+  if (currentVersion !== SITE_DEFAULTS_VERSION) {
+    window.localStorage.setItem(SITE_LANGUAGE_KEY, DEFAULT_SITE_LANGUAGE);
+    window.localStorage.setItem(SITE_CURRENCY_KEY, DEFAULT_SITE_CURRENCY);
+    window.localStorage.setItem(SITE_DEFAULTS_VERSION_KEY, SITE_DEFAULTS_VERSION);
+  }
+}
 
 function getStoredTebexBasket() {
   return window.localStorage.getItem(TEBEX_BASKET_KEY);
@@ -600,7 +627,10 @@ function getTebexAccountName(basket: any) {
 }
 
 function getStoredSiteLanguage(): SiteLanguage {
-  return window.localStorage.getItem(SITE_LANGUAGE_KEY) === "en_US" ? "en_US" : "pt_BR";
+  ensureDefaultSitePreferences();
+
+  const value = window.localStorage.getItem(SITE_LANGUAGE_KEY);
+  return value === "pt_BR" || value === "en_US" ? value : DEFAULT_SITE_LANGUAGE;
 }
 
 function storeSiteLanguage(language: SiteLanguage) {
@@ -2628,23 +2658,34 @@ function ProductMediaGallery({ product }: { product: Product }) {
     return { ...item, type: normalizedType as ProductMedia["type"] };
   });
 
-  const activeMedia = media[activeIndex] ?? media[0];
+  const galleryMedia = media.filter((item) => !failedMedia[item.src]);
+  const activeMedia = galleryMedia[activeIndex] ?? galleryMedia[0];
   const activeIsYouTube = activeMedia ? activeMedia.type === "youtube" : false;
   const activeYouTubeEmbedUrl = activeMedia ? getYouTubeEmbedUrl(activeMedia.src) : "";
-  const hasActiveMedia = !!(activeMedia && !failedMedia[activeMedia.src]);
-  const canNavigate = media.length > 1;
+  const hasActiveMedia = !!activeMedia;
+  const canNavigate = galleryMedia.length > 1;
 
   function goToMedia(direction: "prev" | "next") {
-    if (media.length === 0) return;
+    if (galleryMedia.length === 0) return;
 
     setActiveIndex((current) => {
       if (direction === "prev") {
-        return current === 0 ? media.length - 1 : current - 1;
+        return current === 0 ? galleryMedia.length - 1 : current - 1;
       }
 
-      return current === media.length - 1 ? 0 : current + 1;
+      return current === galleryMedia.length - 1 ? 0 : current + 1;
     });
   }
+
+  useEffect(() => {
+    if (galleryMedia.length > 0 && activeIndex >= galleryMedia.length) {
+      setActiveIndex(galleryMedia.length - 1);
+    }
+
+    if (galleryMedia.length === 0 && activeIndex !== 0) {
+      setActiveIndex(0);
+    }
+  }, [activeIndex, galleryMedia.length]);
 
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -2664,7 +2705,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [lightboxOpen, media.length]);
+  }, [lightboxOpen, galleryMedia.length]);
 
   const renderMainMedia = (isLightbox = false) => {
     if (!hasActiveMedia || !activeMedia) {
@@ -2763,18 +2804,18 @@ function ProductMediaGallery({ product }: { product: Product }) {
             )}
           </div>
 
-          {media.length > 0 && (
+          {galleryMedia.length > 0 && (
             <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-primary/20 bg-card/90 px-3 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur-sm">
               <span>{activeIndex + 1}</span>
               <span>/</span>
-              <span>{media.length}</span>
+              <span>{galleryMedia.length}</span>
             </div>
           )}
         </div>
 
         <div className="relative z-20 h-[92px] shrink-0 border-t border-border bg-card/90 px-4 py-3 backdrop-blur-sm">
           <div className="flex h-full gap-2.5 overflow-hidden pb-1">
-            {media.length > 0 ? media.map((item, index) => {
+            {galleryMedia.length > 0 ? galleryMedia.map((item, index) => {
               const isActive = index === activeIndex;
               const isFailed = failedMedia[item.src];
               const itemIsYouTube = item.type === "youtube" || isYouTubeUrl(item.src);
@@ -2830,7 +2871,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
             }) : (
               <div className="flex h-full items-center gap-2 text-xs text-muted-foreground">
                 <ImageIcon size={14} />
-                A primeira URL é usada como ícone do card. As próximas aparecem na galeria.
+                As mídias quebradas foram ocultadas. Use URLs públicas permanentes para a galeria.
               </div>
             )}
           </div>
@@ -2884,7 +2925,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
               </button>
 
               <div className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
-                {activeIndex + 1} / {media.length}
+                {activeIndex + 1} / {galleryMedia.length}
               </div>
 
               <button
@@ -5529,6 +5570,8 @@ function ProductAdminForm({
   const status = STATUS_CONFIG[product.status];
   const iconPreview = getProductThumbnail(product);
   const galleryCount = Math.max((product.media?.length ?? 0) - 1, 0);
+  const discordMediaCount = (product.media ?? []).filter((item) => isDiscordMediaUrl(item.src)).length;
+  const hasDiscordMedia = discordMediaCount > 0;
 
   const update = (patch: Partial<Product>) => onChange({ ...product, ...patch });
 
@@ -5701,8 +5744,18 @@ function ProductAdminForm({
                   })}
                   rows={10}
                   className={textarea}
-                  placeholder={"https://cdn.../thumb.png\nhttps://youtube.com/watch?v=...\nhttps://cdn.../screenshot2.png"}
+                  placeholder={"/products/tws-identity-forge/thumb.webp\nhttps://youtube.com/watch?v=...\n/products/tws-identity-forge/screenshot2.webp"}
                 />
+
+                <div className="mt-3 rounded-2xl border border-amber-500/25 bg-amber-500/5 px-4 py-3 text-xs leading-5 text-muted-foreground">
+                  <strong className="block text-amber-700">Importante sobre imagens do Discord</strong>
+                  Links do Discord/CDN podem expirar ou funcionar só para quem abriu no Discord. Para o cliente ver sempre, salve a imagem no projeto e use um caminho fixo, exemplo: <code className="rounded bg-background px-1 py-0.5">/products/tws-identity-forge/preview.webp</code>.
+                  {hasDiscordMedia && (
+                    <span className="mt-2 block font-semibold text-amber-700">
+                      Este produto ainda tem {discordMediaCount} URL(s) do Discord. Troque por imagem hospedada no site.
+                    </span>
+                  )}
+                </div>
               </label>
               <div className="space-y-3">
                 <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
@@ -5712,6 +5765,7 @@ function ProductAdminForm({
                     <li>• Linha 2+ → galeria</li>
                     <li>• YouTube → player embutido</li>
                     <li>• .mp4 / .webm / .mov → vídeo</li>
+                    <li>• Evite Discord/CDN → links temporários</li>
                   </ul>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
