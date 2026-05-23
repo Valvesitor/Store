@@ -1,0 +1,676 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  Search, Menu, X, ExternalLink, BookOpen,
+  MessageCircle, Star, Zap, Shield, Crown, ArrowRight,
+  Package, Users, Palette, Code2, ChevronDown, Check,
+  ChevronRight, Sparkles, LayoutGrid, Filter, LogIn, ShoppingCart,
+  Play, Image as ImageIcon, User, LogOut, Github, Plus
+} from "lucide-react";
+import * as AccordionPrimitive from "@radix-ui/react-accordion";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type Category = "Todos" | "Scripts" | "Custom Peds" | "Systems" | "Outfit / Creator" | "Add-ons" | "Free Resources";
+type SortOrder = "recent" | "popular" | "price-asc" | "price-desc";
+type ProductStatus = "novo" | "atualizado" | "popular" | "em-breve";
+type SiteLanguage = "pt_BR" | "en_US";
+type CurrencyCode = "AUD" | "BRL" | "CAD" | "DKK" | "EUR" | "NOK" | "NZD" | "GBP" | "SEK" | "USD" | "PLN";
+type ProductMedia = {
+  type: "image" | "video" | "youtube";
+  src: string;
+  poster?: string;
+  alt: string;
+};
+
+interface Product {
+  id: string;
+  name: string;
+  nameEn?: string;
+  category: Exclude<Category, "Todos">;
+  description: string;
+  descriptionEn?: string;
+  fullDescription: string;
+  fullDescriptionEn?: string;
+  price: number;
+  priceCurrency?: CurrencyCode;
+  priceSource?: "tebex" | "fallback";
+  status: ProductStatus;
+  tebexUrl: string;
+  packageId?: string;
+  docsUrl?: string;
+  features: string[];
+  featuresEn?: string[];
+  requirements: string[];
+  requirementsEn?: string[];
+  media?: ProductMedia[];
+  gradientFrom: string;
+  gradientTo: string;
+  iconName: string;
+  visible?: boolean;
+  featured?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface CreatorCode {
+  id: string;
+  label: string;
+  originalCode: string;
+  visible: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+
+interface DocsPageRecord {
+  id: string;
+  productId?: string;
+  category: string;
+  title: string;
+  titleEn?: string;
+  slug: string;
+  orderIndex: number;
+  contentPt: string;
+  contentEn?: string;
+  visible: boolean;
+  updatedAt?: string;
+}
+
+declare global {
+  interface Window {
+    Tebex?: {
+      checkout: {
+        init: (config: {
+          ident: string;
+          locale?: string;
+          theme?: "light" | "dark" | "auto" | "default";
+          colors?: Array<{ name: "primary" | "secondary"; color: string }>;
+          closeOnPaymentComplete?: boolean;
+        }) => void;
+        launch: () => void;
+      };
+    };
+  }
+}
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+
+const PRODUCTS: Product[] = [
+  {
+    id: "tws-identity-forge",
+    name: "TWS Identity Forge",
+    category: "Systems",
+    description: "Sistema premium para criação, edição e gerenciamento de identidade visual/personagens para RedM.",
+    fullDescription: "Sistema premium para criação, edição e gerenciamento de identidade visual, personagens e outfits para RedM. Interface moderna com organização por projetos, sistema de favoritos, preview em tempo real e recursos avançados de customização. Desenvolvido para servidores que exigem performance e originalidade.",
+    price:650.00,
+    status: "popular",
+    tebexUrl: "https://the-wanted-sole-studio-webstore.tebex.io/package/7457637",
+    packageId: "7457637",
+    docsUrl: "https://docs.thewantedsolestudio.workers.dev",
+    features: [
+      "Interface moderna e intuitiva",
+      "Sistema otimizado para alta performance",
+      "Configuração simples via arquivo de config",
+      "Suporte completo a RedM e frameworks compatíveis",
+      "Documentação inclusa e detalhada",
+      "Organização por projetos e favoritos",
+      "Preview em tempo real de personagens",
+      "Suporte dedicado via Discord"
+    ],
+    requirements: [
+      "Servidor RedM atualizado",
+      "Framework compatível (detalhado na documentação)",
+      "Dependências listadas na documentação oficial"
+    ],
+    media: [
+      {
+        type: "image",
+        src: "/products/tws-identity-forge/logo.png",
+        alt: "Preview principal do TWS Identity Forge"
+      },
+      {
+        type: "image",
+        src: "/products/tws-identity-forge/preview-2.webp",
+        alt: "Tela de customizacao do TWS Identity Forge"
+      },
+      {
+        // Aceita .mp4 local, .mp4 externo ou YouTube.
+        // Para YouTube, troque type para "youtube" e cole a URL normal ou embed no src.
+        type: "youtube",
+        src: "https://www.youtube.com/watch?v=R8lHaEZYpCU",
+        poster: "/products/tws-identity-forge/video-poster.webp",
+        alt: "Video demonstrativo do TWS Identity Forge"
+      }
+    ],
+    gradientFrom: "#ece5d8",
+    gradientTo: "#fffdf8",
+    iconName: "Crown"
+  },
+/*
+  {
+    id: "tws-economy-plus",
+    name: "TWS Economy Plus",
+    category: "Scripts",
+    description: "Sistema de economia avançado com bancos, mercados, impostos e painel administrativo completo.",
+    fullDescription: "Sistema de economia completo para servidores RedM. Inclui banco, mercado dinâmico, sistema de impostos configurável, logs administrativos detalhados e interface de gerenciamento premium. Anti-exploit integrado e notificações em tempo real para uma experiência imersiva.",
+    price: 89.9,
+    status: "atualizado",
+    tebexUrl: "#",
+    docsUrl: "https://docs.thewantedsolestudio.workers.dev",
+    features: [
+      "Sistema bancário completo",
+      "Mercado dinâmico configurável",
+      "Sistema de impostos por zona",
+      "Logs administrativos detalhados",
+      "Interface de gerenciamento premium",
+      "Anti-exploit integrado",
+      "Notificações em tempo real",
+      "Suporte a múltiplas moedas"
+    ],
+    requirements: [
+      "Servidor RedM",
+      "Base de dados MySQL/MariaDB",
+      "Framework listado na documentação"
+    ],
+    media: [],
+    gradientFrom: "#ebe3d3",
+    gradientTo: "#fffdf8",
+    iconName: "Star"
+  },
+  {
+    id: "tws-outfit-manager",
+    name: "TWS Outfit Manager",
+    category: "Outfit / Creator",
+    description: "Gerencie e organize outfits com interface limpa, múltiplos perfis por jogador e sistema de favoritos.",
+    fullDescription: "Sistema completo de gerenciamento de outfits para servidores RedM. Organize, salve e carregue roupas de personagens com facilidade. Suporte a múltiplos perfis por jogador, integração com custom peds e interface elegante.",
+    price: 49.9,
+    status: "novo",
+    tebexUrl: "#",
+    docsUrl: "https://docs.thewantedsolestudio.workers.dev",
+    features: [
+      "Gerenciamento completo de outfits",
+      "Múltiplos perfis por jogador",
+      "Salvar e carregar outfits instantaneamente",
+      "Interface limpa e elegante",
+      "Sistema de favoritos",
+      "Compatível com custom peds"
+    ],
+    requirements: [
+      "Servidor RedM",
+      "Framework QBCore ou ESX compatível",
+      "Dependências detalhadas na documentação"
+    ],
+    media: [],
+    gradientFrom: "#e9e4de",
+    gradientTo: "#fffdf8",
+    iconName: "Palette"
+  },
+  {
+    id: "tws-ped-pack-vol1",
+    name: "TWS Custom Ped Pack Vol.1",
+    category: "Custom Peds",
+    description: "Pack exclusivo com custom peds de alta qualidade, texturas otimizadas e compatibilidade total com RedM.",
+    fullDescription: "Primeiro volume do pack exclusivo de custom peds da The Wanted Sole Studio. Modelos de alta qualidade com texturas otimizadas, perfeitamente compatíveis com servidores RedM. Sem impacto negativo na performance do servidor.",
+    price: 39.9,
+    status: "popular",
+    tebexUrl: "#",
+    features: [
+      "Modelos de alta qualidade",
+      "Texturas otimizadas e comprimidas",
+      "Totalmente compatível com RedM",
+      "Sem impacto na performance",
+      "Inclui arquivos de instalação",
+      "Suporte técnico via Discord"
+    ],
+    requirements: [
+      "Servidor RedM",
+      "Resource de custom peds configurado",
+      "StreamLoader compatível"
+    ],
+    media: [],
+    gradientFrom: "#e1e4dd",
+    gradientTo: "#fffdf8",
+    iconName: "Users"
+  },
+  {
+    id: "tws-notification-system",
+    name: "TWS Notification System",
+    category: "Add-ons",
+    description: "Sistema de notificações elegante e completamente customizável para servidores RedM.",
+    fullDescription: "Sistema de notificações premium com design elegante, múltiplos tipos de alerta, posicionamento configurável e animações suaves. Substitui sistemas de notificação padrão com uma experiência visual superior.",
+    price: 24.9,
+    status: "novo",
+    tebexUrl: "#",
+    features: [
+      "Design elegante e premium",
+      "Múltiplos tipos de notificação",
+      "Posição e duração configuráveis",
+      "Animações suaves",
+      "Sons customizáveis",
+      "Fácil integração com outros scripts"
+    ],
+    requirements: [
+      "Servidor RedM",
+      "Framework compatível"
+    ],
+    media: [],
+    gradientFrom: "#e2e2e2",
+    gradientTo: "#fffdf8",
+    iconName: "Zap"
+  },
+  {
+    id: "tws-starter-pack",
+    name: "TWS Starter Pack",
+    category: "Free Resources",
+    description: "Pack gratuito com recursos essenciais para quem está iniciando um servidor RedM.",
+    fullDescription: "Pack gratuito com recursos essenciais para quem está começando um servidor RedM. Inclui scripts básicos, documentação completa e suporte inicial via Discord. A melhor forma de começar com qualidade.",
+    price: 0,
+    priceCurrency: PRODUCT_BASE_CURRENCY,
+    priceSource: "fallback",
+    status: "novo",
+    tebexUrl: "#",
+    features: [
+      "Scripts básicos inclusos",
+      "Documentação completa",
+      "Suporte inicial via Discord",
+      "Atualizações gratuitas",
+      "Fácil instalação passo a passo"
+    ],
+    requirements: [
+      "Servidor RedM básico"
+    ],
+    media: [],
+    gradientFrom: "#ece6dc",
+    gradientTo: "#fffdf8",
+    iconName: "Package"
+  }
+*/
+];
+
+const CATEGORIES: Category[] = ["Todos", "Scripts", "Custom Peds", "Systems", "Outfit / Creator", "Add-ons", "Free Resources"];
+
+const WHY_FEATURES = [
+  {
+    icon: Crown,
+    title: "Exclusividade Total",
+    description: "Nenhum produto genérico. Cada script ou ped é pensado para servidores que querem se destacar da concorrência."
+  },
+  {
+    icon: Shield,
+    title: "Qualidade Garantida",
+    description: "Produtos testados, organizados e desenvolvidos com foco em estabilidade, performance e segurança."
+  },
+  {
+    icon: MessageCircle,
+    title: "Suporte de Verdade",
+    description: "Suporte via Discord para dúvidas, instalação, atualizações e acompanhamento contínuo."
+  },
+  {
+    icon: Star,
+    title: "Identidade Premium",
+    description: "Design, sistemas e recursos feitos para dar personalidade única e diferenciada ao seu servidor RedM."
+  }
+];
+
+const FAQ_ITEMS = [
+  {
+    q: "Os produtos são para RedM?",
+    a: "Sim. O foco principal da The Wanted Sole Studio é conteúdo premium exclusivo para RedM. Todos os scripts, peds e sistemas são desenvolvidos e testados especificamente para servidores RedM."
+  },
+  {
+    q: "A compra é feita pelo site?",
+    a: "O site apresenta os produtos e seus detalhes, mas o pagamento é processado de forma segura pela plataforma Tebex. Você será redirecionado ao clicar em Comprar."
+  },
+  {
+    q: "Recebo suporte após comprar?",
+    a: "Sim. O suporte técnico é feito pelo Discord oficial da The Wanted Sole Studio. Nossa equipe está disponível para ajudar com dúvidas, instalação e problemas."
+  },
+  {
+    q: "Posso revender ou compartilhar os arquivos?",
+    a: "Não. A licença é individual por servidor e não permite revenda, redistribuição, vazamento ou compartilhamento dos arquivos. Violações resultam em cancelamento imediato da licença."
+  },
+  {
+    q: "Os scripts recebem atualizações?",
+    a: "Sim. Produtos ativos podem receber melhorias, correções de bugs e novas funcionalidades conforme necessidade. Compradores recebem atualizações gratuitamente."
+  },
+  {
+    q: "Posso pedir um projeto customizado?",
+    a: "Sim. Abra um ticket no Discord para verificar disponibilidade, prazo e orçamento para desenvolvimento de scripts ou recursos personalizados."
+  }
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const ICON_MAP: Record<string, React.ElementType> = {
+  Crown, Palette, Users, Star, Zap, Package, Code2, Shield, Sparkles
+};
+
+const STATUS_CONFIG: Record<ProductStatus, { label: string; cls: string }> = {
+  novo: { label: "Novo", cls: "bg-emerald-950 text-emerald-400 border border-emerald-800/50" },
+  atualizado: { label: "Atualizado", cls: "bg-sky-950 text-sky-400 border border-sky-800/50" },
+  popular: { label: "Popular", cls: "bg-amber-950 text-amber-400 border border-amber-800/50" },
+  "em-breve": { label: "Em Breve", cls: "bg-zinc-900 text-zinc-400 border border-zinc-700/50" }
+};
+
+const PRODUCT_BASE_CURRENCY: CurrencyCode = "USD";
+const PRODUCT_CURRENCY_RATES: Record<CurrencyCode, number> = {
+  USD: 1,
+  BRL: 5.05,
+  EUR: 0.92,
+  GBP: 0.78,
+  AUD: 1.52,
+  CAD: 1.36,
+  DKK: 6.86,
+  NOK: 10.60,
+  NZD: 1.66,
+  SEK: 10.40,
+  PLN: 3.95
+};
+
+function getCurrencyLocale(currency: CurrencyCode | string) {
+  if (currency === "BRL") return "pt-BR";
+  if (currency === "DKK" || currency === "NOK" || currency === "SEK") return "da-DK";
+  if (currency === "PLN") return "pl-PL";
+  return "en-US";
+}
+
+function normalizeCurrencyCode(value?: string | null): CurrencyCode {
+  const upper = String(value ?? PRODUCT_BASE_CURRENCY).toUpperCase();
+  return CURRENCIES.includes(upper as CurrencyCode) ? (upper as CurrencyCode) : PRODUCT_BASE_CURRENCY;
+}
+
+function convertProductPrice(price: number, targetCurrency: CurrencyCode, sourceCurrency: CurrencyCode = PRODUCT_BASE_CURRENCY) {
+  if (price === 0) return 0;
+  if (sourceCurrency === targetCurrency) return price;
+
+  const priceInUsd = price / PRODUCT_CURRENCY_RATES[sourceCurrency];
+  return priceInUsd * PRODUCT_CURRENCY_RATES[targetCurrency];
+}
+
+function formatPrice(price: number, currency: CurrencyCode = PRODUCT_BASE_CURRENCY) {
+  if (price === 0) return "Grátis";
+  return new Intl.NumberFormat(getCurrencyLocale(currency), {
+    style: "currency",
+    currency
+  }).format(price);
+}
+
+function formatProductPrice(price: number, currency: CurrencyCode, sourceCurrency: CurrencyCode = PRODUCT_BASE_CURRENCY) {
+  return formatPrice(convertProductPrice(price, currency, sourceCurrency), currency);
+}
+
+function getStoredCurrency(): CurrencyCode {
+  const value = window.localStorage.getItem(SITE_CURRENCY_KEY);
+  return CURRENCIES.includes(value as CurrencyCode) ? (value as CurrencyCode) : "USD";
+}
+
+function storeCurrency(currency: CurrencyCode) {
+  window.localStorage.setItem(SITE_CURRENCY_KEY, currency);
+}
+
+function formatCurrencyValue(amount?: number, currency: CurrencyCode | string = "EUR") {
+  if (typeof amount !== "number" || Number.isNaN(amount)) return "—";
+  return new Intl.NumberFormat(getCurrencyLocale(currency), {
+    style: "currency",
+    currency
+  }).format(amount);
+}
+
+function parseTebexMoney(value: any) {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value === "string") {
+    const normalized = value.replace(/[^\d.,-]/g, "").replace(",", ".");
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  if (value && typeof value === "object") {
+    return parseTebexMoney(value.amount ?? value.total ?? value.value ?? value.price);
+  }
+  return 0;
+}
+
+function getTebexPackagePrice(pkg: any) {
+  const candidates = [
+    pkg?.total_price,
+    pkg?.totalPrice,
+    pkg?.price,
+    pkg?.price?.amount,
+    pkg?.base_price,
+    pkg?.basePrice,
+    pkg?.pricing?.price,
+    pkg?.pricing?.amount,
+    pkg?.prices?.price,
+    pkg?.prices?.amount
+  ];
+
+  for (const candidate of candidates) {
+    const parsed = parseTebexMoney(candidate);
+    if (parsed > 0) return parsed;
+  }
+
+  return 0;
+}
+
+function getTebexPackageCurrency(pkg: any) {
+  return normalizeCurrencyCode(
+    pkg?.currency?.iso_4217 ??
+    pkg?.currency ??
+    pkg?.price?.currency ??
+    pkg?.pricing?.currency ??
+    pkg?.prices?.currency ??
+    PRODUCT_BASE_CURRENCY
+  );
+}
+
+async function fetchTebexPackagesForPricing() {
+  const webstoreToken = getTebexWebstoreToken();
+  const response = await tebexFetch(`/accounts/${webstoreToken}/packages`, {
+    headers: { "Accept": "application/json" }
+  });
+
+  if (!response.ok) {
+    throw new Error("Nao foi possivel carregar preços da Tebex.");
+  }
+
+  const payload = await response.json();
+  const packages = Array.isArray(payload) ? payload : payload?.data ?? payload?.packages ?? [];
+
+  return Array.isArray(packages) ? packages : [];
+}
+
+async function applyTebexPricesToProducts(products: Product[]) {
+  try {
+    const packages = await fetchTebexPackagesForPricing();
+    const packagesById = new Map<string, any>();
+
+    for (const pkg of packages) {
+      const id = String(pkg?.id ?? pkg?.package_id ?? pkg?.packageId ?? "");
+      if (id) packagesById.set(id, pkg);
+    }
+
+    return products.map((product) => {
+      const packageId = String(product.packageId ?? "");
+      const tebexPackage = packageId ? packagesById.get(packageId) : null;
+      const tebexPrice = tebexPackage ? getTebexPackagePrice(tebexPackage) : 0;
+
+      if (!tebexPackage || tebexPrice <= 0) {
+        return {
+          ...product,
+          priceCurrency: product.priceCurrency ?? PRODUCT_BASE_CURRENCY,
+          priceSource: "fallback" as const
+        };
+      }
+
+      return {
+        ...product,
+        price: tebexPrice,
+        priceCurrency: getTebexPackageCurrency(tebexPackage),
+        priceSource: "tebex" as const
+      };
+    });
+  } catch (error) {
+    console.error(error);
+    return products.map((product) => ({
+      ...product,
+      priceCurrency: product.priceCurrency ?? PRODUCT_BASE_CURRENCY,
+      priceSource: "fallback" as const
+    }));
+  }
+}
+
+// ─── Shared UI ────────────────────────────────────────────────────────────────
+
+function isValidUrl(url: string) {
+  return url.startsWith("http://") || url.startsWith("https://");
+}
+
+function getYouTubeVideoId(url: string) {
+  try {
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname.replace("www.", "");
+
+    if (hostname === "youtu.be") {
+      return parsedUrl.pathname.split("/").filter(Boolean)[0] ?? "";
+    }
+
+    if (hostname === "youtube.com" || hostname === "m.youtube.com" || hostname === "music.youtube.com") {
+      if (parsedUrl.pathname.startsWith("/watch")) {
+        return parsedUrl.searchParams.get("v") ?? "";
+      }
+
+      if (parsedUrl.pathname.startsWith("/embed/") || parsedUrl.pathname.startsWith("/shorts/")) {
+        return parsedUrl.pathname.split("/").filter(Boolean)[1] ?? "";
+      }
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+function isYouTubeUrl(url: string) {
+  return Boolean(getYouTubeVideoId(url));
+}
+
+function isDiscordMediaUrl(url: string) {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    return hostname.includes("discordapp.com") || hostname.includes("discordapp.net") || hostname.includes("discord.com");
+  } catch {
+    return /discord(app|cdn|usercontent|media)/i.test(url);
+  }
+}
+
+function getYouTubeEmbedUrl(url: string) {
+  const videoId = getYouTubeVideoId(url);
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+}
+
+function getYouTubeThumbnail(url: string) {
+  const videoId = getYouTubeVideoId(url);
+  return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : "";
+}
+
+const TEBEX_BASKET_KEY = "tws_tebex_basket";
+const SITE_LANGUAGE_KEY = "tws_site_language";
+const SITE_CURRENCY_KEY = "tws_site_currency";
+const CURRENCIES: CurrencyCode[] = ["USD", "BRL", "EUR", "GBP", "AUD", "CAD", "DKK", "NOK", "NZD", "SEK", "PLN"];
+let tebexCheckoutLocale: SiteLanguage = "pt_BR";
+
+function getStoredTebexBasket() {
+  return window.localStorage.getItem(TEBEX_BASKET_KEY);
+}
+
+function storeTebexBasket(basketIdent: string) {
+  window.localStorage.setItem(TEBEX_BASKET_KEY, basketIdent);
+  window.dispatchEvent(new Event("tws:tebex-session-changed"));
+}
+
+function clearTebexSession() {
+  window.localStorage.removeItem(TEBEX_BASKET_KEY);
+  window.dispatchEvent(new Event("tws:tebex-session-changed"));
+}
+
+function getTebexAccountName(basket: any) {
+  const username =
+    basket?.username?.name ??
+    basket?.username?.username ??
+    basket?.username ??
+    basket?.customer?.username ??
+    basket?.account?.username ??
+    basket?.username_id ??
+    "";
+
+  return typeof username === "string" || typeof username === "number"
+    ? String(username)
+    : "";
+}
+
+function getStoredSiteLanguage(): SiteLanguage {
+  return window.localStorage.getItem(SITE_LANGUAGE_KEY) === "en_US" ? "en_US" : "pt_BR";
+}
+
+function storeSiteLanguage(language: SiteLanguage) {
+  tebexCheckoutLocale = language;
+  window.localStorage.setItem(SITE_LANGUAGE_KEY, language);
+}
+
+function normalizeTranslationText(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+const EN_TRANSLATIONS: Record<string, string> = {
+  "Início": "Home",
+  "Docs": "Docs",
+  "Script": "Script",
+  "Home": "Home",
+  "Scripts": "Scripts",
+  "Custom Peds": "Custom Peds",
+  "Documentação": "Documentation",
+  "About": "About",
+  "Login": "Login",
+  "Carrinho": "Cart",
+  "Sair": "Logout",
+  "Discord": "Discord",
+  "The Wanted": "The Wanted",
+  "Sole Studio": "Sole Studio",
+  "© 2026 The Wanted Sole Studio — Todos os direitos reservados.": "© 2026 The Wanted Sole Studio — All rights reserved.",
+
+  "RedM · Scripts & Custom Peds": "RedM · Scripts & Custom Peds",
+  "The Wanted Sole Studio": "The Wanted Sole Studio",
+  "Scripts exclusivos, custom peds e sistemas premium desenvolvidos para servidores RedM que exigem performance, originalidade e identidade própria.": "Exclusive scripts, custom peds and premium systems built for RedM servers that require performance, originality and unique identity.",
+  "Scripts exclusivos, custom peds e sistemas premium para servidores RedM. Qualidade, originalidade e identidade própria.": "Exclusive scripts, custom peds and premium systems for RedM servers. Quality, originality and unique identity.",
+  "Ver Produtos": "View Products",
+  "Acessar Discord": "Join Discord",
+  "100% Original": "100% Original",
+  "RedM": "RedM",
+  "Suporte Dedicado": "Dedicated Support",
+  "Qualidade Elite": "Elite Quality",
+  "Explorar": "Explore",
+
+  "Por que nos escolher": "Why choose us",
+  "O Studio por trás do melhor conteúdo para RedM": "The studio behind premium RedM content",
+  "Exclusividade Total": "Total Exclusivity",
+  "Nenhum produto genérico. Cada script ou ped é pensado para servidores que querem se destacar da concorrência.": "No generic products. Each script or ped is designed for servers that want to stand out from competitors.",
+  "Qualidade Garantida": "Guaranteed Quality",
+  "Produtos testados, organizados e desenvolvidos com foco em estabilidade, performance e segurança.": "Products tested, organized and developed with stability, performance and security in mind.",
+  "Suporte de Verdade": "Real Support",
+  "Suporte via Discord para dúvidas, instalação, atualizações e acompanhamento contínuo.": "Discord support for questions, installation, updates and ongoing assistance.",
+  "Identidade Premium": "Premium Identity",
+  "Design, sistemas e recursos feitos para dar personalidade única e diferenciada ao seu servidor RedM.": "Design, systems and resources made to give your RedM server a unique premium identity.",
+
+  "Vitrine": "Showcase",
+  "Scripts & Recursos": "Scripts & Resources",
+  "Produtos publicados pelo painel admin aparecem automaticamente aqui. Pagamento via Tebex.": "Products published from the admin panel appear here automatically. Payment via Tebex.",
+  "Buscar produto...": "Search product...",
+  "Mais recentes": "Newest",
+  "Mais populares": "Most popular",
+  "Menor preço": "Lowest price",
+  "Maior preço": "Highest price",
+  "Nenhum produto encontrado para essa busca.": "No product found for this search.",
+  "Todos": "All",
+  "Systems": "Systems",
+  "Outfit / Creator": "Outfit / Creator",
+  "Add-ons": "Add-ons"
