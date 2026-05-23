@@ -2351,32 +2351,48 @@ function ProductMediaGallery({ product }: { product: Product }) {
         : "image";
     return { ...item, type: normalizedType as ProductMedia["type"] };
   });
+
   const activeMedia = media[activeIndex] ?? media[0];
   const activeIsYouTube = activeMedia ? activeMedia.type === "youtube" : false;
   const activeYouTubeEmbedUrl = activeMedia ? getYouTubeEmbedUrl(activeMedia.src) : "";
   const hasActiveMedia = !!(activeMedia && !failedMedia[activeMedia.src]);
+  const canNavigate = media.length > 1;
+
+  function goToMedia(direction: "prev" | "next") {
+    if (media.length === 0) return;
+
+    setActiveIndex((current) => {
+      if (direction === "prev") {
+        return current === 0 ? media.length - 1 : current - 1;
+      }
+
+      return current === media.length - 1 ? 0 : current + 1;
+    });
+  }
 
   return (
     <div
-      className="h-full min-h-0 bg-background"
+      className="relative h-full min-h-[680px] overflow-hidden bg-background"
       style={{ background: `linear-gradient(135deg, ${product.gradientFrom}, ${product.gradientTo})` }}
     >
-      <div className="relative h-[calc(100%-88px)] min-h-[360px] overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: "radial-gradient(circle at 1px 1px, rgba(201,168,76,0.12) 1px, transparent 0)",
-            backgroundSize: "24px 24px"
-          }}
-        />
+      <div
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage: "radial-gradient(circle at 1px 1px, rgba(201,168,76,0.12) 1px, transparent 0)",
+          backgroundSize: "24px 24px"
+        }}
+      />
+
+      <div className="relative z-10 flex h-full min-h-[680px] items-center justify-center p-6 lg:p-10">
         {hasActiveMedia && activeMedia.type === "image" && (
           <img
             src={activeMedia.src}
             alt={activeMedia.alt}
             onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
-            className="relative z-10 h-full w-full object-contain"
+            className="max-h-[calc(100vh-190px)] min-h-[520px] w-full object-contain"
           />
         )}
+
         {hasActiveMedia && activeMedia.type === "video" && !activeIsYouTube && (
           <video
             src={activeMedia.src}
@@ -2384,20 +2400,24 @@ function ProductMediaGallery({ product }: { product: Product }) {
             controls
             playsInline
             onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
-            className="relative z-10 h-full w-full object-contain bg-black"
+            className="max-h-[calc(100vh-190px)] min-h-[520px] w-full rounded-xl bg-black object-contain"
           />
         )}
+
         {hasActiveMedia && activeIsYouTube && (
-          <iframe
-            src={activeYouTubeEmbedUrl}
-            title={activeMedia.alt}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-            className="relative z-10 h-full w-full bg-black"
-          />
+          <div className="aspect-video w-full max-w-5xl overflow-hidden rounded-xl bg-black shadow-[0_24px_80px_rgba(32,32,32,0.18)]">
+            <iframe
+              src={activeYouTubeEmbedUrl}
+              title={activeMedia.alt}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="h-full w-full"
+            />
+          </div>
         )}
+
         {!hasActiveMedia && (
-          <div className="relative z-10 flex h-full flex-col items-center justify-center gap-4 text-center">
+          <div className="flex h-full min-h-[520px] flex-col items-center justify-center gap-4 text-center">
             <div className="p-5 rounded-sm border border-primary/25 bg-primary/10">
               <Icon size={34} className="text-primary" />
             </div>
@@ -2412,61 +2432,34 @@ function ProductMediaGallery({ product }: { product: Product }) {
           </div>
         )}
       </div>
-      <div className="flex h-[88px] gap-3 overflow-x-auto border-t border-border px-6 py-4 scrollbar-none bg-card/90 backdrop-blur-sm">
-        {media.length > 0 ? media.map((item, index) => {
-          const isActive = index === activeIndex;
-          const isFailed = failedMedia[item.src];
-          const itemIsYouTube = item.type === "youtube" || isYouTubeUrl(item.src);
-          const thumbSrc = item.poster || (itemIsYouTube ? getYouTubeThumbnail(item.src) : "");
-          return (
-            <button
-              key={`${item.src}-${index}`}
-              type="button"
-              onClick={() => setActiveIndex(index)}
-              title={item.alt}
-              className={`relative h-14 w-20 shrink-0 overflow-hidden rounded-sm border bg-card transition-all ${
-                isActive ? "border-primary shadow-[0_0_18px_rgba(201,168,76,0.22)]" : "border-border hover:border-primary/40"
-              }`}
-            >
-              {!isFailed && item.type === "image" && (
-                <img
-                  src={item.src}
-                  alt={item.alt}
-                  onError={() => setFailedMedia((prev) => ({ ...prev, [item.src]: true }))}
-                  className="h-full w-full object-cover"
-                />
-              )}
-              {!isFailed && (item.type === "video" || itemIsYouTube) && (
-                <div className="relative h-full w-full">
-                  {thumbSrc && !failedMedia[thumbSrc] ? (
-                    <img
-                      src={thumbSrc}
-                      alt=""
-                      onError={() => setFailedMedia((prev) => ({ ...prev, [thumbSrc]: true }))}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-primary/10" />
-                  )}
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/35">
-                    <Play size={18} className="text-primary" />
-                  </div>
-                </div>
-              )}
-              {isFailed && (
-                <div className="flex h-full w-full items-center justify-center bg-primary/5 text-primary/70">
-                  {item.type === "video" || itemIsYouTube ? <Play size={18} /> : <ImageIcon size={18} />}
-                </div>
-              )}
-            </button>
-          );
-        }) : (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <ImageIcon size={14} />
-            Galeria pronta para receber imagens e video deste produto.
+
+      {canNavigate && (
+        <>
+          <button
+            type="button"
+            onClick={() => goToMedia("prev")}
+            className="absolute left-4 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/85 text-primary shadow-[0_12px_30px_rgba(32,32,32,0.12)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground"
+            aria-label="Imagem anterior"
+          >
+            <ChevronRight size={22} className="rotate-180" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => goToMedia("next")}
+            className="absolute right-4 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/85 text-primary shadow-[0_12px_30px_rgba(32,32,32,0.12)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground"
+            aria-label="Próxima imagem"
+          >
+            <ChevronRight size={22} />
+          </button>
+
+          <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-primary/20 bg-card/85 px-4 py-2 text-xs font-semibold text-muted-foreground backdrop-blur-sm">
+            <span>{activeIndex + 1}</span>
+            <span>/</span>
+            <span>{media.length}</span>
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
@@ -2495,7 +2488,7 @@ function ProductPage({ product, currency }: { product: Product; currency: Curren
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-16">
+    <main className="max-w-[1500px] mx-auto px-6 py-12">
       <div className="mb-6">
         <a href="/#products" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80">
           <ChevronRight size={14} className="rotate-180" />
@@ -2503,70 +2496,87 @@ function ProductPage({ product, currency }: { product: Product; currency: Curren
         </a>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_520px] gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.55fr)_520px] gap-8 items-start">
         <div className="rounded-[28px] border border-border bg-card overflow-hidden shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
           <ProductMediaGallery product={product} />
         </div>
 
-        <aside className="rounded-[28px] border border-border bg-card p-8 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
-          <div className="flex items-center gap-2 mb-4 flex-wrap">
-            <span className={`px-2 py-0.5 rounded-sm text-[10px] font-semibold tracking-wider uppercase ${status.cls}`}>
-              {status.label}
-            </span>
-            <span className="px-2 py-0.5 rounded-sm text-[10px] tracking-wider uppercase border border-border text-muted-foreground">
-              {product.category}
-            </span>
-          </div>
-
-          <h1 className="text-3xl lg:text-4xl font-bold text-foreground/95 mb-4" style={{ fontFamily: "'Raleway', sans-serif" }}>
-            {product.name}
-          </h1>
-
-          <p className="text-base text-muted-foreground leading-8 mb-6">
-            {product.fullDescription || product.description}
-          </p>
-
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 mb-7">
-            <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1">Valor</p>
-            <p className="text-3xl font-bold text-primary" style={{ fontFamily: "'Cinzel', serif" }}>
-              {formatProductPrice(product.price, currency, product.priceCurrency)}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-            <button onClick={handleAddToCart} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-primary/25 px-5 text-sm font-semibold text-primary hover:bg-primary/5">
-              <ShoppingCart size={16} />
-              Adicionar
-            </button>
-            <button onClick={handleBuyNow} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground">
-              Comprar
-              <ArrowRight size={15} />
-            </button>
-          </div>
-
-          <div className="space-y-7">
-            <div>
-              <h2 className="text-xs font-semibold tracking-widest uppercase text-primary/70 mb-4">Recursos Principais</h2>
-              <ul className="space-y-3">
-                {product.features.map((feat) => (
-                  <li key={feat} className="flex items-start gap-3 text-sm text-foreground/75 leading-7">
-                    <Check size={14} className="text-primary mt-1 shrink-0" />
-                    {feat}
-                  </li>
-                ))}
-              </ul>
+        <aside className="rounded-[28px] border border-border bg-card shadow-[0_22px_80px_rgba(32,32,32,0.08)] overflow-hidden xl:sticky xl:top-24">
+          <div className="p-8 pb-6">
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <span className={`px-2 py-0.5 rounded-sm text-[10px] font-semibold tracking-wider uppercase ${status.cls}`}>
+                {status.label}
+              </span>
+              <span className="px-2 py-0.5 rounded-sm text-[10px] tracking-wider uppercase border border-border text-muted-foreground">
+                {product.category}
+              </span>
             </div>
 
-            <div>
-              <h2 className="text-xs font-semibold tracking-widest uppercase text-primary/70 mb-4">Requisitos</h2>
-              <ul className="space-y-3">
-                {product.requirements.map((req) => (
-                  <li key={req} className="flex items-start gap-3 text-sm text-muted-foreground leading-7">
-                    <ChevronRight size={13} className="text-muted-foreground mt-1.5 shrink-0" />
-                    {req}
-                  </li>
-                ))}
-              </ul>
+            <h1 className="text-3xl lg:text-4xl font-bold text-foreground/95 mb-4" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              {product.name}
+            </h1>
+
+            <p className="text-base text-muted-foreground leading-8 mb-7">
+              {product.fullDescription || product.description}
+            </p>
+
+            <div className="space-y-7">
+              <div>
+                <h2 className="text-xs font-semibold tracking-widest uppercase text-primary/70 mb-4">Recursos Principais</h2>
+                <ul className="space-y-3">
+                  {product.features.map((feat) => (
+                    <li key={feat} className="flex items-start gap-3 text-sm text-foreground/75 leading-7">
+                      <Check size={14} className="text-primary mt-1 shrink-0" />
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h2 className="text-xs font-semibold tracking-widest uppercase text-primary/70 mb-4">Requisitos</h2>
+                <ul className="space-y-3">
+                  {product.requirements.map((req) => (
+                    <li key={req} className="flex items-start gap-3 text-sm text-muted-foreground leading-7">
+                      <ChevronRight size={13} className="text-muted-foreground mt-1.5 shrink-0" />
+                      {req}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="rounded-2xl border border-border bg-muted/30 p-4">
+                <div className="flex items-start gap-3">
+                  <Shield size={15} className="text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs font-semibold text-foreground/70 mb-1 tracking-wide">Licença de Uso</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      A compra concede licença de uso por servidor. É proibida revenda, redistribuição,
+                      vazamento, compartilhamento ou engenharia reversa dos arquivos.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-primary/20 bg-card/95 p-5">
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 mb-4">
+              <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1">Preço</p>
+              <p className="text-3xl font-bold text-primary" style={{ fontFamily: "'Cinzel', serif" }}>
+                {formatProductPrice(product.price, currency, product.priceCurrency)}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button onClick={handleAddToCart} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-primary/25 px-5 text-sm font-semibold text-primary hover:bg-primary/5">
+                <ShoppingCart size={16} />
+                Adicionar
+              </button>
+              <button onClick={handleBuyNow} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground">
+                Comprar
+                <ArrowRight size={15} />
+              </button>
             </div>
           </div>
         </aside>
@@ -4370,7 +4380,8 @@ export default function App() {
   const scrollTo = useCallback((id: string) => {
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      const top = el.getBoundingClientRect().top + window.scrollY - 76;
+      window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
     }
   }, []);
 
@@ -4399,6 +4410,24 @@ export default function App() {
   useEffect(() => {
     storeCurrency(currency);
   }, [currency]);
+
+  useEffect(() => {
+    if (pathname !== "/") return;
+
+    const handleHashScroll = () => {
+      const id = window.location.hash.replace("#", "");
+      if (!id) return;
+
+      window.requestAnimationFrame(() => {
+        window.setTimeout(() => scrollTo(id), 80);
+      });
+    };
+
+    handleHashScroll();
+    window.addEventListener("hashchange", handleHashScroll);
+
+    return () => window.removeEventListener("hashchange", handleHashScroll);
+  }, [pathname, productsLoading, scrollTo]);
 
   useEffect(() => {
     let cancelled = false;
