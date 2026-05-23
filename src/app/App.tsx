@@ -3446,6 +3446,7 @@ function ProductAdminForm({
   saving: boolean;
 }) {
   const [previewFailed, setPreviewFailed] = useState(false);
+  const [activeSection, setActiveSection] = useState<"product" | "tebex" | "pt" | "en" | "media">("product");
   const featuresText = product.features.join("\n");
   const featuresEnText = (product.featuresEn ?? []).join("\n");
   const requirementsText = product.requirements.join("\n");
@@ -3462,6 +3463,61 @@ function ProductAdminForm({
   const textareaClass = `${fieldClass} min-h-[145px] resize-y`;
   const labelClass = "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
   const panelClass = "rounded-[28px] border border-border bg-card p-5 lg:p-6 shadow-[0_18px_55px_rgba(32,32,32,0.05)]";
+  const sectionButtons = [
+    { id: "product" as const, number: "01", label: "Produto", hint: "Nome, categoria e docs" },
+    { id: "tebex" as const, number: "02", label: "Tebex", hint: "Preço e integração" },
+    { id: "pt" as const, number: "03", label: "Português", hint: "Conteúdo principal" },
+    { id: "en" as const, number: "04", label: "English", hint: "Versão em inglês" },
+    { id: "media" as const, number: "05", label: "Mídia", hint: "Ícone e galeria" }
+  ];
+
+  function renderAccordionHeader(
+    id: "product" | "tebex" | "pt" | "en" | "media",
+    number: string,
+    title: string,
+    subtitle: string,
+    light = false
+  ) {
+    const open = activeSection === id;
+
+    return (
+      <button
+        type="button"
+        onClick={() => setActiveSection(id)}
+        className={`flex w-full items-center justify-between gap-4 rounded-2xl border px-4 py-4 text-left transition-all ${
+          light
+            ? open
+              ? "border-primary/30 bg-white/55"
+              : "border-primary/10 bg-white/35 hover:border-primary/25 hover:bg-white/50"
+            : open
+              ? "border-primary/25 bg-primary/5"
+              : "border-border bg-background/45 hover:border-primary/20 hover:bg-primary/5"
+        }`}
+      >
+        <div className="min-w-0">
+          <div className="flex items-center gap-3">
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+              open ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+            }`}>
+              {number}
+            </span>
+            <div className="min-w-0">
+              <p className={`text-base font-bold ${open ? "text-primary" : "text-foreground/90"}`} style={{ fontFamily: "'Raleway', sans-serif" }}>
+                {title}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-all ${
+          open ? "border-primary/25 bg-primary/10 text-primary" : "border-border text-muted-foreground"
+        }`}>
+          <ChevronRight size={16} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+        </div>
+      </button>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -3473,7 +3529,7 @@ function ProductAdminForm({
               {product.id.startsWith("new-") ? "Novo produto" : product.name || "Editar produto"}
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              O preview fica fixo ao lado. O formulário abaixo está separado por finalidade para facilitar publicação e revisão.
+              Clique nas categorias do formulário para abrir somente a parte que você quer editar, sem deixar tudo em scroll.
             </p>
           </div>
 
@@ -3487,25 +3543,65 @@ function ProductAdminForm({
         </div>
       </div>
 
+      <div className="overflow-x-auto pb-1">
+        <div className="flex min-w-max gap-3">
+          {sectionButtons.map((section) => {
+            const open = activeSection === section.id;
+            return (
+              <button
+                key={section.id}
+                type="button"
+                onClick={() => setActiveSection(section.id)}
+                className={`rounded-2xl border px-4 py-3 text-left transition-all ${
+                  open
+                    ? "border-primary/30 bg-primary/10 shadow-[0_12px_30px_rgba(201,168,76,0.12)]"
+                    : "border-border bg-card hover:border-primary/20 hover:bg-primary/5"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold ${
+                    open ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+                  }`}>
+                    {section.number}
+                  </span>
+                  <div>
+                    <p className={`text-sm font-bold ${open ? "text-primary" : "text-foreground/90"}`}>
+                      {section.label}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">{section.hint}</p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 2xl:grid-cols-[220px_minmax(0,1fr)_340px] gap-6 items-start">
         <aside className="hidden 2xl:block sticky top-6 space-y-4">
           <div className="rounded-[24px] border border-border bg-card p-4 shadow-[0_14px_45px_rgba(32,32,32,0.04)]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Fluxo</p>
             <nav className="mt-4 space-y-2">
-              {[
-                ["01", "Produto"],
-                ["02", "Tebex"],
-                ["03", "Português"],
-                ["04", "English"],
-                ["05", "Mídia"]
-              ].map(([number, label]) => (
-                <div key={label} className="flex items-center gap-3 rounded-2xl border border-border bg-background/55 px-3 py-3">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
-                    {number}
-                  </span>
-                  <span className="text-sm font-semibold text-foreground/75">{label}</span>
-                </div>
-              ))}
+              {sectionButtons.map((section) => {
+                const open = activeSection === section.id;
+                return (
+                  <button
+                    type="button"
+                    key={section.id}
+                    onClick={() => setActiveSection(section.id)}
+                    className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-all ${
+                      open ? "border-primary/25 bg-primary/8" : "border-border bg-background/55 hover:border-primary/15 hover:bg-primary/5"
+                    }`}
+                  >
+                    <span className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold ${
+                      open ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+                    }`}>
+                      {section.number}
+                    </span>
+                    <span className={`text-sm font-semibold ${open ? "text-primary" : "text-foreground/75"}`}>{section.label}</span>
+                  </button>
+                );
+              })}
             </nav>
           </div>
 
@@ -3517,202 +3613,175 @@ function ProductAdminForm({
           </div>
         </aside>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <section className={panelClass}>
-            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">01 · Produto</p>
-                <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                  Identidade visual e categoria
-                </h3>
+            {renderAccordionHeader("product", "01", "Produto", "Nome, categoria, etiqueta e documentação")}
+            {activeSection === "product" && (
+              <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+                <label className="space-y-2 xl:col-span-2">
+                  <span className={labelClass}>Nome do produto</span>
+                  <input value={product.name} onChange={(e) => update({ name: e.target.value })} className={fieldClass} />
+                </label>
+
+                <label className="space-y-2">
+                  <span className={labelClass}>Categoria</span>
+                  <select value={product.category} onChange={(e) => update({ category: e.target.value as Product["category"] })} className={fieldClass}>
+                    {CATEGORIES.filter((item) => item !== "Todos").map((item) => <option key={item} value={item}>{item}</option>)}
+                  </select>
+                </label>
+
+                <label className="space-y-2">
+                  <span className={labelClass}>Etiqueta</span>
+                  <select value={product.status} onChange={(e) => update({ status: e.target.value as ProductStatus })} className={fieldClass}>
+                    <option value="novo">Novo</option>
+                    <option value="popular">Popular</option>
+                    <option value="atualizado">Atualizado</option>
+                    <option value="em-breve">Em breve</option>
+                  </select>
+                </label>
+
+                <label className="space-y-2">
+                  <span className={labelClass}>Ícone fallback</span>
+                  <input value={product.iconName ?? ""} onChange={(e) => update({ iconName: e.target.value })} placeholder="Package, Crown..." className={fieldClass} />
+                </label>
+
+                <label className="space-y-2 xl:col-span-3">
+                  <span className={labelClass}>URL Documentação</span>
+                  <input value={product.docsUrl ?? ""} onChange={(e) => update({ docsUrl: e.target.value })} placeholder="https://docs..." className={fieldClass} />
+                </label>
               </div>
-              <p className="text-xs text-muted-foreground">Define como o produto aparece na vitrine.</p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
-              <label className="space-y-2 xl:col-span-2">
-                <span className={labelClass}>Nome do produto</span>
-                <input value={product.name} onChange={(e) => update({ name: e.target.value })} className={fieldClass} />
-              </label>
-
-              <label className="space-y-2">
-                <span className={labelClass}>Categoria</span>
-                <select value={product.category} onChange={(e) => update({ category: e.target.value as Product["category"] })} className={fieldClass}>
-                  {CATEGORIES.filter((item) => item !== "Todos").map((item) => <option key={item} value={item}>{item}</option>)}
-                </select>
-              </label>
-
-              <label className="space-y-2">
-                <span className={labelClass}>Etiqueta</span>
-                <select value={product.status} onChange={(e) => update({ status: e.target.value as ProductStatus })} className={fieldClass}>
-                  <option value="novo">Novo</option>
-                  <option value="popular">Popular</option>
-                  <option value="atualizado">Atualizado</option>
-                  <option value="em-breve">Em breve</option>
-                </select>
-              </label>
-
-              <label className="space-y-2">
-                <span className={labelClass}>Ícone fallback</span>
-                <input value={product.iconName ?? ""} onChange={(e) => update({ iconName: e.target.value })} placeholder="Package, Crown..." className={fieldClass} />
-              </label>
-
-              <label className="space-y-2 xl:col-span-3">
-                <span className={labelClass}>URL Documentação</span>
-                <input value={product.docsUrl ?? ""} onChange={(e) => update({ docsUrl: e.target.value })} placeholder="https://docs..." className={fieldClass} />
-              </label>
-            </div>
+            )}
           </section>
 
           <section className={panelClass}>
-            <div className="mb-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">02 · Tebex</p>
-              <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                Pagamento e preço
-              </h3>
-            </div>
+            {renderAccordionHeader("tebex", "02", "Tebex", "Preço fallback, Package ID e URL Tebex")}
+            {activeSection === "tebex" && (
+              <div className="mt-5 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <label className="space-y-2">
+                  <span className={labelClass}>Package ID Tebex</span>
+                  <input value={product.packageId ?? ""} onChange={(e) => update({ packageId: e.target.value })} placeholder="7457637" className={fieldClass} />
+                </label>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <label className="space-y-2">
-                <span className={labelClass}>Package ID Tebex</span>
-                <input value={product.packageId ?? ""} onChange={(e) => update({ packageId: e.target.value })} placeholder="7457637" className={fieldClass} />
-              </label>
+                <label className="space-y-2">
+                  <span className={labelClass}>Preço fallback</span>
+                  <input type="number" step="0.01" value={product.price} onChange={(e) => update({ price: Number(e.target.value), priceSource: "fallback" })} className={fieldClass} />
+                </label>
 
-              <label className="space-y-2">
-                <span className={labelClass}>Preço fallback</span>
-                <input type="number" step="0.01" value={product.price} onChange={(e) => update({ price: Number(e.target.value), priceSource: "fallback" })} className={fieldClass} />
-              </label>
+                <label className="space-y-2 lg:col-span-1">
+                  <span className={labelClass}>URL Tebex</span>
+                  <input value={product.tebexUrl} onChange={(e) => update({ tebexUrl: e.target.value })} placeholder="https://.../package/..." className={fieldClass} />
+                </label>
 
-              <label className="space-y-2 lg:col-span-1">
-                <span className={labelClass}>URL Tebex</span>
-                <input value={product.tebexUrl} onChange={(e) => update({ tebexUrl: e.target.value })} placeholder="https://.../package/..." className={fieldClass} />
-              </label>
-
-              <div className="lg:col-span-3 rounded-2xl border border-primary/15 bg-primary/5 p-4">
-                <p className="text-xs font-semibold text-foreground/80">Preço automático</p>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  Se o Package ID estiver correto, o site puxa o valor direto da Tebex. O fallback só entra se a Tebex não retornar preço.
-                </p>
+                <div className="lg:col-span-3 rounded-2xl border border-primary/15 bg-primary/5 p-4">
+                  <p className="text-xs font-semibold text-foreground/80">Preço automático</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Se o Package ID estiver correto, o site puxa o valor direto da Tebex. O fallback só entra se a Tebex não retornar preço.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </section>
 
           <section className={panelClass}>
-            <div className="mb-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">03 · Português</p>
-              <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                Texto principal do produto
-              </h3>
-            </div>
+            {renderAccordionHeader("pt", "03", "Português", "Descrição, recursos e requisitos")}
+            {activeSection === "pt" && (
+              <div className="mt-5 grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <label className="space-y-2 xl:col-span-2">
+                  <span className={labelClass}>Descrição curta</span>
+                  <input value={product.description} onChange={(e) => update({ description: e.target.value })} className={fieldClass} />
+                </label>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              <label className="space-y-2 xl:col-span-2">
-                <span className={labelClass}>Descrição curta</span>
-                <input value={product.description} onChange={(e) => update({ description: e.target.value })} className={fieldClass} />
-              </label>
+                <label className="space-y-2 xl:col-span-2">
+                  <span className={labelClass}>Descrição completa</span>
+                  <textarea value={product.fullDescription} onChange={(e) => update({ fullDescription: e.target.value })} rows={5} className={textareaClass} />
+                </label>
 
-              <label className="space-y-2 xl:col-span-2">
-                <span className={labelClass}>Descrição completa</span>
-                <textarea value={product.fullDescription} onChange={(e) => update({ fullDescription: e.target.value })} rows={5} className={textareaClass} />
-              </label>
+                <label className="space-y-2">
+                  <span className={labelClass}>Recursos, um por linha</span>
+                  <textarea value={featuresText} onChange={(e) => update({ features: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
+                </label>
 
-              <label className="space-y-2">
-                <span className={labelClass}>Recursos, um por linha</span>
-                <textarea value={featuresText} onChange={(e) => update({ features: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
-              </label>
-
-              <label className="space-y-2">
-                <span className={labelClass}>Requisitos, um por linha</span>
-                <textarea value={requirementsText} onChange={(e) => update({ requirements: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
-              </label>
-            </div>
+                <label className="space-y-2">
+                  <span className={labelClass}>Requisitos, um por linha</span>
+                  <textarea value={requirementsText} onChange={(e) => update({ requirements: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
+                </label>
+              </div>
+            )}
           </section>
 
           <section className="rounded-[28px] border border-primary/20 bg-primary/5 p-5 lg:p-6 shadow-[0_18px_55px_rgba(32,32,32,0.05)]">
-            <div className="mb-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/80">04 · English</p>
-              <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                Product English version
-              </h3>
-              <p className="mt-1 text-xs text-muted-foreground">Empty English fields use Portuguese as fallback.</p>
-            </div>
+            {renderAccordionHeader("en", "04", "English", "Name, description, features and requirements", true)}
+            {activeSection === "en" && (
+              <div className="mt-5 grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <label className="space-y-2 xl:col-span-2">
+                  <span className={labelClass}>Name EN</span>
+                  <input value={product.nameEn ?? ""} onChange={(e) => update({ nameEn: e.target.value })} className={fieldClass} />
+                </label>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              <label className="space-y-2 xl:col-span-2">
-                <span className={labelClass}>Name EN</span>
-                <input value={product.nameEn ?? ""} onChange={(e) => update({ nameEn: e.target.value })} className={fieldClass} />
-              </label>
+                <label className="space-y-2 xl:col-span-2">
+                  <span className={labelClass}>Short Description EN</span>
+                  <input value={product.descriptionEn ?? ""} onChange={(e) => update({ descriptionEn: e.target.value })} className={fieldClass} />
+                </label>
 
-              <label className="space-y-2 xl:col-span-2">
-                <span className={labelClass}>Short Description EN</span>
-                <input value={product.descriptionEn ?? ""} onChange={(e) => update({ descriptionEn: e.target.value })} className={fieldClass} />
-              </label>
+                <label className="space-y-2 xl:col-span-2">
+                  <span className={labelClass}>Full Description EN</span>
+                  <textarea value={product.fullDescriptionEn ?? ""} onChange={(e) => update({ fullDescriptionEn: e.target.value })} rows={5} className={textareaClass} />
+                </label>
 
-              <label className="space-y-2 xl:col-span-2">
-                <span className={labelClass}>Full Description EN</span>
-                <textarea value={product.fullDescriptionEn ?? ""} onChange={(e) => update({ fullDescriptionEn: e.target.value })} rows={5} className={textareaClass} />
-              </label>
+                <label className="space-y-2">
+                  <span className={labelClass}>Features EN, one per line</span>
+                  <textarea value={featuresEnText} onChange={(e) => update({ featuresEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
+                </label>
 
-              <label className="space-y-2">
-                <span className={labelClass}>Features EN, one per line</span>
-                <textarea value={featuresEnText} onChange={(e) => update({ featuresEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
-              </label>
-
-              <label className="space-y-2">
-                <span className={labelClass}>Requirements EN, one per line</span>
-                <textarea value={requirementsEnText} onChange={(e) => update({ requirementsEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
-              </label>
-            </div>
+                <label className="space-y-2">
+                  <span className={labelClass}>Requirements EN, one per line</span>
+                  <textarea value={requirementsEnText} onChange={(e) => update({ requirementsEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={textareaClass} />
+                </label>
+              </div>
+            )}
           </section>
 
           <section className={panelClass}>
-            <div className="mb-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">05 · Mídia</p>
-              <h3 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                Ícone do card e galeria
-              </h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Primeira URL = card da vitrine. Segunda em diante = galeria.
-              </p>
-            </div>
+            {renderAccordionHeader("media", "05", "Mídia", "Ícone do card, links e galeria")}
+            {activeSection === "media" && (
+              <div className="mt-5 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_290px] gap-5">
+                <label className="space-y-2 block">
+                  <span className={labelClass}>URLs de mídia, uma por linha</span>
+                  <textarea
+                    value={mediaText}
+                    onChange={(e) => update({
+                      media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
+                        type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
+                        src,
+                        alt: product.name || "Preview do produto"
+                      }))
+                    })}
+                    rows={9}
+                    className={textareaClass}
+                  />
+                </label>
 
-            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_290px] gap-5">
-              <label className="space-y-2 block">
-                <span className={labelClass}>URLs de mídia, uma por linha</span>
-                <textarea
-                  value={mediaText}
-                  onChange={(e) => update({
-                    media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
-                      type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
-                      src,
-                      alt: product.name || "Preview do produto"
-                    }))
-                  })}
-                  rows={9}
-                  className={textareaClass}
-                />
-              </label>
-
-              <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
-                <p className="text-sm font-semibold text-foreground/85">Como usar</p>
-                <ul className="mt-3 space-y-2 text-xs leading-5 text-muted-foreground">
-                  <li>• Linha 1: imagem do card.</li>
-                  <li>• Linha 2+: galeria do produto.</li>
-                  <li>• YouTube vira vídeo.</li>
-                  <li>• .mp4, .webm e .mov viram vídeo direto.</li>
-                </ul>
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <div className="rounded-xl border border-border bg-card p-3">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">URLs</p>
-                    <p className="mt-1 text-lg font-bold text-primary">{product.media?.length ?? 0}</p>
-                  </div>
-                  <div className="rounded-xl border border-border bg-card p-3">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Galeria</p>
-                    <p className="mt-1 text-lg font-bold text-primary">{galleryCount}</p>
+                <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
+                  <p className="text-sm font-semibold text-foreground/85">Como usar</p>
+                  <ul className="mt-3 space-y-2 text-xs leading-5 text-muted-foreground">
+                    <li>• Linha 1: imagem do card.</li>
+                    <li>• Linha 2+: galeria do produto.</li>
+                    <li>• YouTube vira vídeo.</li>
+                    <li>• .mp4, .webm e .mov viram vídeo direto.</li>
+                  </ul>
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <div className="rounded-xl border border-border bg-card p-3">
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">URLs</p>
+                      <p className="mt-1 text-lg font-bold text-primary">{product.media?.length ?? 0}</p>
+                    </div>
+                    <div className="rounded-xl border border-border bg-card p-3">
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Galeria</p>
+                      <p className="mt-1 text-lg font-bold text-primary">{galleryCount}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </section>
         </div>
 
