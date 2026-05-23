@@ -76,7 +76,30 @@ function rowToProduct(row) {
   };
 }
 
+
+async function ensureProductEnglishColumns(env) {
+  const columns = [
+    ["name_en", "TEXT NOT NULL DEFAULT ''"],
+    ["description_en", "TEXT NOT NULL DEFAULT ''"],
+    ["full_description_en", "TEXT NOT NULL DEFAULT ''"],
+    ["features_en", "TEXT NOT NULL DEFAULT '[]'"],
+    ["requirements_en", "TEXT NOT NULL DEFAULT '[]'"]
+  ];
+
+  for (const [column, definition] of columns) {
+    try {
+      await env.DB.prepare(`ALTER TABLE products ADD COLUMN ${column} ${definition}`).run();
+    } catch (error) {
+      const message = String(error?.message || error || "").toLowerCase();
+      if (!message.includes("duplicate column") && !message.includes("already exists")) {
+        console.error(`Unable to ensure products.${column}`, error);
+      }
+    }
+  }
+}
+
 async function listProducts(env, includeHidden = false) {
+  await ensureProductEnglishColumns(env);
   const where = includeHidden ? "" : "WHERE visible = 1";
   const query = `
     SELECT * FROM products
@@ -149,6 +172,7 @@ async function upsertCreatorCode(env, payload, forcedId = null) {
 }
 
 async function upsertProduct(env, payload, forcedId = null) {
+  await ensureProductEnglishColumns(env);
   const id = forcedId || payload.id || slugify(payload.name);
   const now = new Date().toISOString();
   const existing = await env.DB.prepare("SELECT id, created_at FROM products WHERE id = ?").bind(id).first();
