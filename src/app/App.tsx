@@ -373,7 +373,7 @@ function formatProductPrice(price: number, currency: CurrencyCode, sourceCurrenc
 
 function getStoredCurrency(): CurrencyCode {
   const value = window.localStorage.getItem(SITE_CURRENCY_KEY);
-  return CURRENCIES.includes(value as CurrencyCode) ? (value as CurrencyCode) : "EUR";
+  return CURRENCIES.includes(value as CurrencyCode) ? (value as CurrencyCode) : "USD";
 }
 
 function storeCurrency(currency: CurrencyCode) {
@@ -538,7 +538,7 @@ function getYouTubeThumbnail(url: string) {
 const TEBEX_BASKET_KEY = "tws_tebex_basket";
 const SITE_LANGUAGE_KEY = "tws_site_language";
 const SITE_CURRENCY_KEY = "tws_site_currency";
-const CURRENCIES: CurrencyCode[] = ["AUD", "BRL", "CAD", "DKK", "EUR", "NOK", "NZD", "GBP", "SEK", "USD", "PLN"];
+const CURRENCIES: CurrencyCode[] = ["USD", "BRL", "EUR", "GBP", "AUD", "CAD", "DKK", "NOK", "NZD", "SEK", "PLN"];
 let tebexCheckoutLocale: SiteLanguage = "pt_BR";
 
 function getStoredTebexBasket() {
@@ -665,8 +665,8 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Posso pedir um projeto customizado?": "Can I request a custom project?",
 
   "Login": "Login",
-  "Escolha como deseja entrar": "Choose how you want to sign in",
-  "Cliente entra pelo fluxo Tebex/CFX. Administrador entra com token protegido para publicar produtos.": "Customers sign in through the Tebex/CFX flow. Administrators use a protected token to publish products.",
+  "Acesse sua área": "Access your area",
+  "Entre como cliente para acessar sua cesta e pedidos, ou como administrador para gerenciar os produtos da loja.": "Sign in as a customer to access your cart and orders, or as an administrator to manage store products.",
   "Cliente / CFX": "Customer / CFX",
   "Acesse sua conta para ver cesta, checkout, pedidos comprados e suporte. O login usa a autorização da Tebex.": "Access your account to view cart, checkout, purchases and support. Login uses Tebex authorization.",
   "Entrar como cliente": "Sign in as customer",
@@ -691,8 +691,8 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Contact us": "Contact us",
 
   "Account": "Account",
-  "Sua conta Tebex dentro do seu website": "Your Tebex account inside your website",
-  "Inspirado na estrutura da Jumpon, mas com a identidade visual da The Wanted Sole Studio e fluxo ligado ao basket da Tebex.": "Inspired by Jumpon's structure, but with The Wanted Sole Studio visual identity and a flow connected to the Tebex basket.",
+  "Área do Cliente": "Customer Area",
+  "Gerencie sua cesta, acompanhe suas compras e finalize seus pedidos com segurança pela Tebex.": "Manage your cart, track your purchases and complete your orders securely through Tebex.",
   "Status da integração Tebex": "Tebex integration status",
   "Basket ID": "Basket ID",
   "Conta": "Account",
@@ -1491,6 +1491,16 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
               </button>
             ))}
           </div>
+          <select
+            value={currency}
+            onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)}
+            className="h-9 rounded-full border border-primary/20 bg-background/40 px-3 text-[11px] font-semibold tracking-wide text-foreground/70 outline-none transition-all hover:border-primary/35 hover:text-primary"
+            title="Moeda"
+          >
+            {CURRENCIES.map((item) => (
+              <option key={item} value={item}>{item}</option>
+            ))}
+          </select>
           {accountName ? (
             <div className="inline-flex h-9 items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2">
               <a
@@ -1603,6 +1613,16 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
                     </button>
                   ))}
                 </div>
+                <select
+                  value={currency}
+                  onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)}
+                  className="h-9 rounded-full border border-primary/20 bg-background/40 px-3 text-xs font-semibold text-foreground/70 outline-none"
+                  title="Moeda"
+                >
+                  {CURRENCIES.map((item) => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
               </div>
               <div className="flex gap-2">
                 {accountName ? (
@@ -3138,10 +3158,10 @@ function LoginPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
         <div className="text-center mb-10">
           <SectionTag>Login</SectionTag>
           <h1 className="mt-5 text-4xl lg:text-5xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
-            Escolha como deseja entrar
+            Acesse sua área
           </h1>
           <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-            Cliente entra pelo fluxo Tebex/CFX. Administrador entra com token protegido para publicar produtos.
+            Entre como cliente para acessar sua cesta e pedidos, ou como administrador para gerenciar os produtos da loja.
           </p>
         </div>
 
@@ -3601,10 +3621,10 @@ const orders = summary?.orders ?? [];
                     Account
                   </div>
                   <h1 className="text-3xl lg:text-4xl font-bold text-foreground/95 mb-2" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                    Sua conta Tebex dentro do seu website
+                    Área do Cliente
                   </h1>
                   <p className="text-sm lg:text-base text-muted-foreground max-w-2xl">
-                    Inspirado na estrutura da Jumpon, mas com a identidade visual da The Wanted Sole Studio e fluxo ligado ao basket da Tebex.
+                    Gerencie sua cesta, acompanhe suas compras e finalize seus pedidos com segurança pela Tebex.
                   </p>
                 </div>
 
