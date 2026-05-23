@@ -514,11 +514,13 @@ async function addPackageToTebexBasket(basketIdent: string, packageId: string) {
   });
 
   if (!packageResponse.ok) {
-    throw new Error("Nao foi possivel adicionar o produto ao carrinho.");
+    const errorPayload = await packageResponse.json().catch(() => null);
+    throw new Error(errorPayload?.message ?? errorPayload?.detail ?? "Nao foi possivel adicionar o produto ao carrinho.");
   }
 
-  const packagePayload = await packageResponse.json();
-  return packagePayload?.data?.ident ?? packagePayload?.ident ?? basketIdent;
+  // The add-package endpoint updates the basket server-side.
+  // Keep the original basket ident saved; do not replace it with the response body.
+  return basketIdent;
 }
 
 async function getTebexAuthUrl(basketIdent: string, packageId?: string, returnPath = window.location.pathname) {
@@ -598,10 +600,12 @@ async function addProductToTebexCart(product: Product) {
     const basketIdent = getStoredTebexBasket() ?? await createTebexBasket();
     storeTebexBasket(basketIdent);
 
-    const updatedBasketIdent = await addPackageToTebexBasket(basketIdent, product.packageId);
-    storeTebexBasket(updatedBasketIdent);
+    await addPackageToTebexBasket(basketIdent, product.packageId);
 
-    return updatedBasketIdent;
+    const refreshedBasket = await fetchTebexBasket(basketIdent);
+    window.dispatchEvent(new Event("tws:tebex-session-changed"));
+
+    return refreshedBasket;
   }
 
   if (isValidUrl(product.tebexUrl)) {
@@ -1798,6 +1802,7 @@ function ProductDetail({ product, currency, onClose }: { product: Product; curre
   const status = STATUS_CONFIG[product.status];
   const [cartBusy, setCartBusy] = useState(false);
   const [buyBusy, setBuyBusy] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -1807,8 +1812,17 @@ function ProductDetail({ product, currency, onClose }: { product: Product; curre
   async function handleAddToCart() {
     try {
       setCartBusy(true);
-      await addProductToTebexCart(product);
-      window.location.href = "/checkout";
+      setAddedToCart(false);
+
+      const basket = await addProductToTebexCart(product);
+
+      if (basket && Array.isArray((basket as any).rows) && (basket as any).rows.length === 0) {
+        window.alert("A cesta foi criada, mas a Tebex nao retornou o item no basket. Verifique se o Package ID do produto esta correto no admin.");
+        return;
+      }
+
+      setAddedToCart(true);
+      window.setTimeout(() => setAddedToCart(false), 2500);
     } catch (error) {
       console.error(error);
       window.alert(error instanceof Error ? error.message : "Nao foi possivel adicionar o produto ao carrinho.");
@@ -1987,7 +2001,11 @@ function ProductDetail({ product, currency, onClose }: { product: Product; curre
               <div className="flex flex-col gap-2 sm:flex-row">
                 <GhostButton onClick={handleAddToCart} className="justify-center">
                   <ShoppingCart size={14} />
-                  {cartBusy ? "Adicionando..." : "Adicionar"}
+                  {cartBusy ? "Adicionando..." : addedToCart ? "Adicionado" : "Adicionar"}
+                </GhostButton>
+                <GhostButton href="/checkout" className="justify-center">
+                  Ver cesta
+                  <ChevronRight size={13} />
                 </GhostButton>
                 <GoldButton onClick={handleBuyNow} className="justify-center">
                   {buyBusy ? "Abrindo..." : product.price === 0 ? "Download" : "Comprar"}
