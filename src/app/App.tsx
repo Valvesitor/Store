@@ -466,6 +466,234 @@ function storeSiteLanguage(language: SiteLanguage) {
   window.localStorage.setItem(SITE_LANGUAGE_KEY, language);
 }
 
+function normalizeTranslationText(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+const EN_TRANSLATIONS: Record<string, string> = {
+  "Início": "Home",
+  "Scripts": "Scripts",
+  "Custom Peds": "Custom Peds",
+  "Documentação": "Documentation",
+  "Login": "Login",
+  "Carrinho": "Cart",
+  "Sair": "Logout",
+  "Discord": "Discord",
+  "The Wanted": "The Wanted",
+  "Sole Studio": "Sole Studio",
+
+  "RedM · Scripts & Custom Peds": "RedM · Scripts & Custom Peds",
+  "The Wanted Sole Studio": "The Wanted Sole Studio",
+  "Scripts exclusivos, custom peds e sistemas premium desenvolvidos para servidores RedM que exigem performance, originalidade e identidade própria.": "Exclusive scripts, custom peds and premium systems built for RedM servers that require performance, originality and unique identity.",
+  "Ver Produtos": "View Products",
+  "Acessar Discord": "Join Discord",
+  "100% Original": "100% Original",
+  "RedM": "RedM",
+  "Suporte Dedicado": "Dedicated Support",
+  "Qualidade Elite": "Elite Quality",
+  "Explorar": "Explore",
+
+  "Por que nos escolher": "Why choose us",
+  "O Studio por trás do melhor conteúdo para RedM": "The studio behind premium RedM content",
+  "Exclusividade Total": "Total Exclusivity",
+  "Nenhum produto genérico. Cada script ou ped é pensado para servidores que querem se destacar da concorrência.": "No generic products. Each script or ped is designed for servers that want to stand out from competitors.",
+  "Qualidade Garantida": "Guaranteed Quality",
+  "Produtos testados, organizados e desenvolvidos com foco em estabilidade, performance e segurança.": "Products tested, organized and developed with stability, performance and security in mind.",
+  "Suporte de Verdade": "Real Support",
+  "Suporte via Discord para dúvidas, instalação, atualizações e acompanhamento contínuo.": "Discord support for questions, installation, updates and ongoing assistance.",
+  "Identidade Premium": "Premium Identity",
+  "Design, sistemas e recursos feitos para dar personalidade única e diferenciada ao seu servidor RedM.": "Design, systems and resources made to give your RedM server a unique premium identity.",
+
+  "Vitrine": "Showcase",
+  "Scripts & Recursos": "Scripts & Resources",
+  "Produtos publicados pelo painel admin aparecem automaticamente aqui. Pagamento via Tebex.": "Products published from the admin panel appear here automatically. Payment via Tebex.",
+  "Buscar produto...": "Search product...",
+  "Mais recentes": "Newest",
+  "Mais populares": "Most popular",
+  "Menor preço": "Lowest price",
+  "Maior preço": "Highest price",
+  "Nenhum produto encontrado para essa busca.": "No product found for this search.",
+  "Todos": "All",
+  "Systems": "Systems",
+  "Outfit / Creator": "Outfit / Creator",
+  "Add-ons": "Add-ons",
+  "Free Resources": "Free Resources",
+  "Popular": "Popular",
+  "Novo": "New",
+  "Atualizado": "Updated",
+  "Em breve": "Coming soon",
+  "Grátis": "Free",
+  "Comprar": "Buy",
+  "Adicionar": "Add",
+  "Adicionando...": "Adding...",
+  "Adicionado": "Added",
+  "Ver cesta": "View cart",
+  "Download": "Download",
+  "Abrindo...": "Opening...",
+  "Valor": "Price",
+  "Preço": "Price",
+
+  "Detalhes do Produto": "Product Details",
+  "Recursos Principais": "Main Features",
+  "Requisitos": "Requirements",
+  "Licença de Uso": "Usage License",
+  "A compra concede licença de uso por servidor. É proibida revenda, redistribuição, vazamento, compartilhamento ou engenharia reversa dos arquivos.": "The purchase grants a usage license per server. Resale, redistribution, leaks, sharing or reverse engineering of the files are forbidden.",
+
+  "Precisa de ajuda ou quer acompanhar novidades?": "Need help or want to follow updates?",
+  "Entre no Discord oficial da The Wanted Sole Studio para suporte técnico, atualizações, prévias de novos produtos e atendimento da comunidade.": "Join the official The Wanted Sole Studio Discord for technical support, updates, new product previews and community help.",
+  "Entrar no Discord": "Join Discord",
+  "Dúvidas Frequentes": "FAQ",
+  "Perguntas Frequentes": "Frequently Asked Questions",
+  "Os produtos são para RedM?": "Are the products for RedM?",
+  "A compra é feita pelo site?": "Is the purchase made through the website?",
+  "Recebo suporte após comprar?": "Do I receive support after purchase?",
+  "Posso revender ou compartilhar os arquivos?": "Can I resell or share the files?",
+  "Os scripts recebem atualizações?": "Do scripts receive updates?",
+  "Posso pedir um projeto customizado?": "Can I request a custom project?",
+
+  "Login": "Login",
+  "Escolha como deseja entrar": "Choose how you want to sign in",
+  "Cliente entra pelo fluxo Tebex/CFX. Administrador entra com token protegido para publicar produtos.": "Customers sign in through the Tebex/CFX flow. Administrators use a protected token to publish products.",
+  "Cliente / CFX": "Customer / CFX",
+  "Acesse sua conta para ver cesta, checkout, pedidos comprados e suporte. O login usa a autorização da Tebex.": "Access your account to view cart, checkout, purchases and support. Login uses Tebex authorization.",
+  "Entrar como cliente": "Sign in as customer",
+  "Administrador": "Administrator",
+  "Entre no painel admin para cadastrar, editar, publicar e ocultar produtos da loja.": "Enter the admin panel to create, edit, publish and hide store products.",
+  "Token admin": "Admin token",
+  "Entrar como admin": "Sign in as admin",
+
+  "Checkout": "Checkout",
+  "Sua Cesta": "Your Cart",
+  "Total": "Total",
+  "Nome": "Name",
+  "Ação": "Action",
+  "Remover": "Remove",
+  "Removendo...": "Removing...",
+  "Sua cesta está vazia.": "Your cart is empty.",
+  "Ver produtos": "View products",
+  "Finalizar compra": "Complete purchase",
+  "Checkout vazio": "Empty checkout",
+  "Carregando cesta...": "Loading cart...",
+  "Support on Discord": "Support on Discord",
+  "Contact us": "Contact us",
+
+  "Account": "Account",
+  "Sua conta Tebex dentro do seu website": "Your Tebex account inside your website",
+  "Inspirado na estrutura da Jumpon, mas com a identidade visual da The Wanted Sole Studio e fluxo ligado ao basket da Tebex.": "Inspired by Jumpon's structure, but with The Wanted Sole Studio visual identity and a flow connected to the Tebex basket.",
+  "Status da integração Tebex": "Tebex integration status",
+  "Basket ID": "Basket ID",
+  "Conta": "Account",
+  "Conta não conectada": "Account not connected",
+  "Conta Tebex conectada": "Tebex account connected",
+  "Conta / Tebex": "Account / Tebex",
+  "Total atual": "Current total",
+  "Cupom / creator code": "Coupon / creator code",
+  "Digite seu cupom": "Enter your coupon",
+  "Aplicar cupom": "Apply coupon",
+  "Histórico de compras": "Purchase history",
+  "Pedidos reais chegam aqui pelo webhook da Tebex no Worker.": "Real orders arrive here through the Tebex webhook in the Worker.",
+  "Nenhuma compra sincronizada ainda. Depois que a Tebex enviar o webhook de pagamento concluído, o pedido aparece aqui.": "No purchase synced yet. After Tebex sends the completed payment webhook, the order appears here.",
+  "Itens no carrinho / conta": "Cart / account items",
+  "Tipo": "Type",
+  "Nenhum item adicionado ainda.": "No item added yet.",
+  "Moeda": "Currency",
+  "Subtotal": "Subtotal",
+  "Sair da conta": "Logout",
+  "Atualizar": "Refresh",
+  "Reconectar Tebex": "Reconnect Tebex",
+  "Login com Tebex": "Login with Tebex",
+  "Conectando...": "Connecting...",
+  "Creator Code": "Creator Code",
+  "Headless API + Tebex.js": "Headless API + Tebex.js",
+
+  "Admin": "Admin",
+  "Admin Dashboard": "Admin Dashboard",
+  "Painel administrativo": "Admin panel",
+  "Publicação de produtos": "Product publishing",
+  "Cadastre produtos uma vez no admin. Eles aparecem automaticamente na vitrine pública, na categoria escolhida e com o package ID da Tebex.": "Register products once in admin. They automatically appear in the public showcase, in the chosen category and with the Tebex package ID.",
+  "Novo produto": "New product",
+  "Sair": "Logout",
+  "Produtos": "Products",
+  "Nenhum produto salvo ainda.": "No saved product yet.",
+  "Ocultar/remover": "Hide/remove",
+  "Publicar novo produto": "Publish new product",
+  "Editar produto": "Edit product",
+  "Salvar e publicar": "Save and publish",
+  "Salvando...": "Saving...",
+  "Nome": "Name",
+  "Categoria": "Category",
+  "Status": "Status",
+  "Descrição curta": "Short description",
+  "Descrição completa": "Full description",
+  "Package ID Tebex": "Tebex Package ID",
+  "URL Tebex": "Tebex URL",
+  "Features, uma por linha": "Features, one per line",
+  "Requisitos, um por linha": "Requirements, one per line",
+  "Imagens/vídeos, uma URL por linha": "Images/videos, one URL per line",
+  "Visível na loja": "Visible in store",
+  "Destaque": "Featured",
+  "Produto salvo e publicado com sucesso.": "Product saved and published successfully.",
+  "Produto removido da vitrine.": "Product removed from showcase.",
+  "Voltar para o site": "Back to site"
+};
+
+const PT_TRANSLATIONS: Record<string, string> = Object.fromEntries(
+  Object.entries(EN_TRANSLATIONS).map(([pt, en]) => [en, pt])
+);
+
+function translateStaticText(language: SiteLanguage) {
+  if (typeof document === "undefined") return;
+
+  const dictionary = language === "en_US" ? EN_TRANSLATIONS : PT_TRANSLATIONS;
+
+  const translateValue = (value: string) => {
+    const normalized = normalizeTranslationText(value);
+    return dictionary[normalized] ?? value;
+  };
+
+  const walker = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode(node) {
+        const parent = node.parentElement;
+        if (!parent) return NodeFilter.FILTER_REJECT;
+        if (["SCRIPT", "STYLE", "TEXTAREA", "INPUT", "OPTION"].includes(parent.tagName)) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        const value = normalizeTranslationText(node.textContent ?? "");
+        if (!value || value.length > 220) return NodeFilter.FILTER_REJECT;
+        return dictionary[value] ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      }
+    }
+  );
+
+  const textNodes: Text[] = [];
+  while (walker.nextNode()) {
+    textNodes.push(walker.currentNode as Text);
+  }
+
+  for (const node of textNodes) {
+    const current = normalizeTranslationText(node.textContent ?? "");
+    const next = dictionary[current];
+    if (next && node.textContent !== next) {
+      node.textContent = next;
+    }
+  }
+
+  document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input[placeholder], textarea[placeholder]").forEach((element) => {
+    const current = element.getAttribute("placeholder") ?? "";
+    const next = translateValue(current);
+    if (next !== current) element.setAttribute("placeholder", next);
+  });
+
+  document.querySelectorAll<HTMLOptionElement>("option").forEach((option) => {
+    const current = normalizeTranslationText(option.textContent ?? "");
+    const next = dictionary[current];
+    if (next && option.textContent !== next) option.textContent = next;
+  });
+}
+
 function getTebexWebstoreToken() {
   const webstoreToken = import.meta.env.VITE_TEBEX_WEBSTORE_TOKEN;
 
@@ -3452,6 +3680,23 @@ export default function App() {
     storeSiteLanguage(language);
     document.documentElement.lang = language === "pt_BR" ? "pt-BR" : "en";
   }, [language]);
+
+  useEffect(() => {
+    const applyTranslation = () => translateStaticText(language);
+    applyTranslation();
+
+    const observer = new MutationObserver(() => {
+      window.requestAnimationFrame(applyTranslation);
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+
+    return () => observer.disconnect();
+  }, [language, pathname, selectedProduct, activeSection]);
 
   useEffect(() => {
     storeCurrency(currency);
