@@ -1808,7 +1808,7 @@ function ProductDetail({ product, currency, onClose }: { product: Product; curre
     try {
       setCartBusy(true);
       await addProductToTebexCart(product);
-      window.location.href = "/account";
+      window.location.href = "/checkout";
     } catch (error) {
       console.error(error);
       window.alert(error instanceof Error ? error.message : "Nao foi possivel adicionar o produto ao carrinho.");
@@ -2626,13 +2626,19 @@ function LoginPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             </span>
             <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/50 -mt-0.5">Sole Studio</span>
           </a>
-          <select
-            value={currency}
-            onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)}
-            className="h-10 rounded-full border border-primary/20 bg-card px-4 text-xs font-semibold text-foreground/75 outline-none"
-          >
-            {CURRENCIES.map((item) => <option key={item} value={item}>{item}</option>)}
-          </select>
+          <div className="flex items-center gap-3">
+            <select
+              value={currency}
+              onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)}
+              className="h-10 rounded-full border border-primary/20 bg-card px-4 text-xs font-semibold text-foreground/75 outline-none"
+            >
+              {CURRENCIES.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+            <a href="/checkout" className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground">
+              <ShoppingCart size={14} />
+              Carrinho
+            </a>
+          </div>
         </div>
       </div>
 
@@ -3032,10 +3038,10 @@ const orders = summary?.orders ?? [];
             >
               {CURRENCIES.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
-            <button onClick={handleCheckout} className="inline-flex items-center gap-2 rounded-full bg-primary px-4 h-10 text-primary-foreground text-sm font-semibold">
+            <a href="/checkout" className="inline-flex items-center gap-2 rounded-full bg-primary px-4 h-10 text-primary-foreground text-sm font-semibold">
               <ShoppingCart size={15} />
               {formatCurrencyValue(basketTotal, basketCurrency)}
-            </button>
+            </a>
             {isLoggedIn && (
               <button onClick={handleLogout} className="inline-flex h-10 items-center gap-2 rounded-full border border-red-500/20 px-4 text-xs font-semibold text-red-500 hover:bg-red-500/5">
                 <LogOut size={14} />
@@ -3111,10 +3117,10 @@ const orders = summary?.orders ?? [];
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={handleCheckout} className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
+                  <a href="/checkout" className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
                     <ShoppingCart size={16} />
-                    {busy === "checkout" ? "Abrindo..." : "Checkout"}
-                  </button>
+                    Ver cesta
+                  </a>
                   <a href="https://docs.thewantedsolestudio.workers.dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-primary/20 px-5 py-3 text-sm font-semibold text-primary">
                     <BookOpen size={16} />
                     Docs
