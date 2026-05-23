@@ -2439,7 +2439,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
       className="relative flex h-[560px] flex-col overflow-hidden bg-background"
       style={{ background: `linear-gradient(135deg, ${product.gradientFrom}, ${product.gradientTo})` }}
     >
-      <div className="relative min-h-0 flex-1 overflow-hidden">
+      <div className="relative min-h-0 flex-1 overflow-visible px-14 sm:px-16 lg:px-[72px]">
         <div
           className="absolute inset-0 opacity-20"
           style={{
@@ -2454,7 +2454,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
               src={activeMedia.src}
               alt={activeMedia.alt}
               onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
-              className="max-h-full w-full object-contain"
+              className="max-h-full max-w-full object-contain"
             />
           )}
 
@@ -2465,7 +2465,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
               controls
               playsInline
               onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
-              className="max-h-full w-full rounded-xl bg-black object-contain shadow-[0_18px_55px_rgba(32,32,32,0.14)]"
+              className="max-h-full max-w-full rounded-xl bg-black object-contain shadow-[0_18px_55px_rgba(32,32,32,0.14)]"
             />
           )}
 
@@ -2503,7 +2503,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
             <button
               type="button"
               onClick={() => goToMedia("prev")}
-              className="absolute left-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/90 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground"
+              className="absolute left-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/95 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground sm:left-3 lg:left-4"
               aria-label="Imagem anterior"
             >
               <ChevronRight size={19} className="rotate-180" />
@@ -2512,7 +2512,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
             <button
               type="button"
               onClick={() => goToMedia("next")}
-              className="absolute right-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/90 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground"
+              className="absolute right-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/95 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground sm:right-3 lg:right-4"
               aria-label="Próxima imagem"
             >
               <ChevronRight size={19} />
