@@ -1547,30 +1547,41 @@ async function applyCreatorCodeToBasket(basketIdent: string, originalCode: strin
 
 async function removeCreatorCodeFromBasket(basketIdent: string, codeToRemove = "") {
   const webstoreToken = getTebexWebstoreToken();
-  const encodedCode = encodeURIComponent(codeToRemove.trim());
+  const normalizedCode = codeToRemove.trim();
 
-  const endpoints = [
-    `/accounts/${webstoreToken}/baskets/${basketIdent}/coupons`,
-    `/accounts/${webstoreToken}/baskets/${basketIdent}/giftcards`,
-    `/accounts/${webstoreToken}/baskets/${basketIdent}/creator-codes`,
-    ...(encodedCode ? [
-      `/accounts/${webstoreToken}/baskets/${basketIdent}/coupons/${encodedCode}`,
-      `/accounts/${webstoreToken}/baskets/${basketIdent}/giftcards/${encodedCode}`,
-      `/accounts/${webstoreToken}/baskets/${basketIdent}/creator-codes/${encodedCode}`
-    ] : [])
+  const attempts = [
+    {
+      endpoint: `/accounts/${webstoreToken}/baskets/${basketIdent}/coupons/remove`,
+      body: null,
+      label: "coupon"
+    },
+    {
+      endpoint: `/accounts/${webstoreToken}/baskets/${basketIdent}/giftcards/remove`,
+      body: normalizedCode ? { card_number: normalizedCode } : null,
+      label: "gift card"
+    },
+    {
+      endpoint: `/accounts/${webstoreToken}/baskets/${basketIdent}/creator-codes/remove`,
+      body: null,
+      label: "creator code"
+    }
   ];
 
   const errors: string[] = [];
 
-  for (const endpoint of endpoints) {
-    const response = await tebexFetch(endpoint, { method: "DELETE" });
+  for (const attempt of attempts) {
+    const response = await tebexFetch(attempt.endpoint, {
+      method: "POST",
+      headers: attempt.body ? { "Content-Type": "application/json" } : undefined,
+      body: attempt.body ? JSON.stringify(attempt.body) : undefined
+    });
 
     if (response.ok || response.status === 204 || response.status === 404) {
       return fetchTebexBasket(basketIdent);
     }
 
     const payload = await response.json().catch(() => null);
-    errors.push(payload?.message ?? payload?.detail ?? endpoint);
+    errors.push(payload?.message ?? payload?.detail ?? attempt.label);
   }
 
   throw new Error(errors.find(Boolean) ?? "Nao foi possivel remover o coupon/gift card.");
