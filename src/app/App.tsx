@@ -2549,7 +2549,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
           onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
           className={isLightbox
             ? "max-h-[82vh] max-w-[86vw] rounded-xl object-contain shadow-[0_35px_120px_rgba(0,0,0,0.55)]"
-            : "max-h-full max-w-full cursor-zoom-in object-contain"
+            : "h-full w-full cursor-zoom-in object-contain"
           }
         />
       );
@@ -2565,7 +2565,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
           onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
           className={isLightbox
             ? "max-h-[82vh] max-w-[86vw] rounded-xl bg-black object-contain shadow-[0_35px_120px_rgba(0,0,0,0.55)]"
-            : "max-h-full max-w-full rounded-xl bg-black object-contain shadow-[0_18px_55px_rgba(32,32,32,0.14)]"
+            : "h-full w-full rounded-xl bg-black object-contain shadow-[0_18px_55px_rgba(32,32,32,0.14)]"
           }
         />
       );
@@ -2574,7 +2574,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
     return (
       <div className={isLightbox
         ? "aspect-video w-[86vw] max-w-6xl overflow-hidden rounded-xl bg-black shadow-[0_35px_120px_rgba(0,0,0,0.55)]"
-        : "aspect-video w-full max-w-5xl overflow-hidden rounded-xl bg-black shadow-[0_18px_55px_rgba(32,32,32,0.14)]"
+        : "h-full w-full overflow-hidden rounded-xl bg-black shadow-[0_18px_55px_rgba(32,32,32,0.14)]"
       }>
         <iframe
           src={activeYouTubeEmbedUrl}
@@ -2593,7 +2593,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
         className="relative flex h-[560px] flex-col overflow-hidden bg-background"
         style={{ background: `linear-gradient(135deg, ${product.gradientFrom}, ${product.gradientTo})` }}
       >
-        <div className="relative min-h-0 flex-1 overflow-visible px-14 sm:px-16 lg:px-[72px]">
+        <div className="relative min-h-0 flex-1 overflow-hidden px-4 sm:px-5 lg:px-6">
           <div
             className="absolute inset-0 opacity-20"
             style={{
@@ -2618,32 +2618,12 @@ function ProductMediaGallery({ product }: { product: Product }) {
             )}
           </div>
 
-          {canNavigate && (
-            <>
-              <button
-                type="button"
-                onClick={() => goToMedia("prev")}
-                className="absolute left-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/95 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground sm:left-3 lg:left-4"
-                aria-label="Imagem anterior"
-              >
-                <ChevronRight size={19} className="rotate-180" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => goToMedia("next")}
-                className="absolute right-2 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/95 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground sm:right-3 lg:right-4"
-                aria-label="Próxima imagem"
-              >
-                <ChevronRight size={19} />
-              </button>
-
-              <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-primary/20 bg-card/90 px-3 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur-sm">
-                <span>{activeIndex + 1}</span>
-                <span>/</span>
-                <span>{media.length}</span>
-              </div>
-            </>
+          {media.length > 0 && (
+            <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-primary/20 bg-card/90 px-3 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur-sm">
+              <span>{activeIndex + 1}</span>
+              <span>/</span>
+              <span>{media.length}</span>
+            </div>
           )}
         </div>
 
@@ -4116,48 +4096,13 @@ function ProductAdminForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 2xl:grid-cols-[220px_minmax(0,1fr)_340px] gap-6 items-start">
-        <aside className="hidden 2xl:block sticky top-6 space-y-4">
-          <div className="rounded-[24px] border border-border bg-card p-4 shadow-[0_14px_45px_rgba(32,32,32,0.04)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Fluxo</p>
-            <nav className="mt-4 space-y-2">
-              {sectionButtons.map((section) => {
-                const open = activeSection === section.id;
-                return (
-                  <button
-                    type="button"
-                    key={section.id}
-                    onClick={() => setActiveSection(section.id)}
-                    className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-all ${
-                      open ? "border-primary/25 bg-primary/10" : "border-border bg-background/55 hover:border-primary/15 hover:bg-primary/5"
-                    }`}
-                  >
-                    <span className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold ${
-                      open ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-                    }`}>
-                      {section.number}
-                    </span>
-                    <span className={`text-sm font-semibold ${open ? "text-primary" : "text-foreground/75"}`}>{section.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          <div className="rounded-[24px] border border-primary/15 bg-primary/5 p-4">
-            <p className="text-sm font-semibold text-foreground/85">Regra importante</p>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">
-              A primeira URL da mídia é o ícone do card. As próximas aparecem na galeria do produto.
-            </p>
-          </div>
-        </aside>
-
-        <div className="min-h-[520px]">
+      <div className="grid grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
+        <div className="min-h-[520px] min-w-0">
           {activeSection === "product" && (
             <section className={panelClass}>
               {renderPanelTitle("01", "Produto", "Nome, categoria, etiqueta e documentação")}
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
-                <label className="space-y-2 xl:col-span-2">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-6 gap-4">
+                <label className="space-y-2 xl:col-span-5">
                   <span className={labelClass}>Nome do produto</span>
                   <input value={product.name} onChange={(e) => update({ name: e.target.value })} className={fieldClass} />
                 </label>
