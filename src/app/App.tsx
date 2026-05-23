@@ -2372,7 +2372,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
 
   return (
     <div
-      className="relative flex h-full min-h-[430px] flex-col overflow-hidden bg-background"
+      className="relative flex h-[560px] flex-col overflow-hidden bg-background"
       style={{ background: `linear-gradient(135deg, ${product.gradientFrom}, ${product.gradientTo})` }}
     >
       <div className="relative min-h-0 flex-1 overflow-hidden">
@@ -2384,7 +2384,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
           }}
         />
 
-        <div className="relative z-10 flex h-full min-h-0 items-center justify-center p-3 lg:p-4">
+        <div className="relative z-10 flex h-full min-h-0 items-center justify-center p-4 lg:p-5">
           {hasActiveMedia && activeMedia.type === "image" && (
             <img
               src={activeMedia.src}
@@ -2406,7 +2406,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
           )}
 
           {hasActiveMedia && activeIsYouTube && (
-            <div className="aspect-video w-full max-w-4xl overflow-hidden rounded-xl bg-black shadow-[0_18px_55px_rgba(32,32,32,0.14)]">
+            <div className="aspect-video w-full max-w-5xl overflow-hidden rounded-xl bg-black shadow-[0_18px_55px_rgba(32,32,32,0.14)]">
               <iframe
                 src={activeYouTubeEmbedUrl}
                 title={activeMedia.alt}
@@ -2439,22 +2439,22 @@ function ProductMediaGallery({ product }: { product: Product }) {
             <button
               type="button"
               onClick={() => goToMedia("prev")}
-              className="absolute left-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/90 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground"
+              className="absolute left-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/90 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground"
               aria-label="Imagem anterior"
             >
-              <ChevronRight size={18} className="rotate-180" />
+              <ChevronRight size={19} className="rotate-180" />
             </button>
 
             <button
               type="button"
               onClick={() => goToMedia("next")}
-              className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/90 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground"
+              className="absolute right-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-primary/25 bg-card/90 text-primary shadow-[0_10px_22px_rgba(32,32,32,0.10)] backdrop-blur-sm transition-all hover:bg-primary hover:text-primary-foreground"
               aria-label="Próxima imagem"
             >
-              <ChevronRight size={18} />
+              <ChevronRight size={19} />
             </button>
 
-            <div className="absolute bottom-2 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-primary/20 bg-card/90 px-3 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur-sm">
+            <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-primary/20 bg-card/90 px-3 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur-sm">
               <span>{activeIndex + 1}</span>
               <span>/</span>
               <span>{media.length}</span>
@@ -2463,7 +2463,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
         )}
       </div>
 
-      <div className="relative z-20 h-[88px] shrink-0 border-t border-border bg-card/90 px-4 py-3 backdrop-blur-sm">
+      <div className="relative z-20 h-[92px] shrink-0 border-t border-border bg-card/90 px-4 py-3 backdrop-blur-sm">
         <div className="flex h-full gap-2.5 overflow-x-auto pb-1 scrollbar-none">
           {media.length > 0 ? media.map((item, index) => {
             const isActive = index === activeIndex;
@@ -2477,7 +2477,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 title={item.alt}
-                className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border bg-background transition-all ${
+                className={`relative h-[68px] w-28 shrink-0 overflow-hidden rounded-lg border bg-background transition-all ${
                   isActive
                     ? "border-primary shadow-[0_0_14px_rgba(201,168,76,0.22)]"
                     : "border-border hover:border-primary/40"
@@ -2553,21 +2553,21 @@ function ProductPage({ product, currency }: { product: Product; currency: Curren
   }
 
   return (
-    <main className="mx-auto max-w-[1180px] px-5 py-3 xl:h-[calc(100vh-64px)] xl:overflow-hidden">
-      <div className="mb-2">
+    <main className="mx-auto max-w-[1320px] px-5 py-4">
+      <div className="mb-3">
         <a href="/#products" className="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary/80">
           <ChevronRight size={13} className="rotate-180" />
           Voltar para produtos
         </a>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,710px)_410px] gap-5 items-stretch xl:h-[calc(100vh-104px)] xl:min-h-[500px]">
-        <div className="min-h-[500px] overflow-hidden rounded-[22px] border border-border bg-card shadow-[0_18px_55px_rgba(32,32,32,0.07)]">
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,820px)_460px] gap-6 items-start">
+        <div className="overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_18px_55px_rgba(32,32,32,0.07)]">
           <ProductMediaGallery product={product} />
         </div>
 
-        <aside className="flex min-h-[500px] flex-col overflow-hidden rounded-[22px] border border-border bg-card shadow-[0_18px_55px_rgba(32,32,32,0.07)]">
-          <div className="min-h-0 flex-1 overflow-y-auto p-5 pb-4 pr-4">
+        <aside className="overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_18px_55px_rgba(32,32,32,0.07)]">
+          <div className="p-5 pb-4">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span className={`px-2 py-0.5 rounded-sm text-[9px] font-semibold tracking-wider uppercase ${status.cls}`}>
                 {status.label}
@@ -2581,9 +2581,9 @@ function ProductPage({ product, currency }: { product: Product; currency: Curren
               {product.name}
             </h1>
 
-            <div className="mb-4 max-h-24 overflow-y-auto pr-2 text-sm text-muted-foreground leading-6">
-              <p>{product.fullDescription || product.description}</p>
-            </div>
+            <p className="mb-4 text-sm text-muted-foreground leading-6">
+              {product.fullDescription || product.description}
+            </p>
 
             <div className="space-y-4">
               <div>
@@ -2609,23 +2609,23 @@ function ProductPage({ product, currency }: { product: Product; currency: Curren
                   ))}
                 </ul>
               </div>
-
-              <div className="rounded-xl border border-border bg-muted/30 p-3">
-                <div className="flex items-start gap-2.5">
-                  <Shield size={13} className="text-muted-foreground mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-[11px] font-semibold text-foreground/70 mb-1 tracking-wide">Licença de Uso</p>
-                    <p className="text-[11px] text-muted-foreground leading-5">
-                      A compra concede licença de uso por servidor. É proibida revenda, redistribuição,
-                      vazamento, compartilhamento ou engenharia reversa dos arquivos.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
-          <div className="shrink-0 border-t border-primary/20 bg-card/95 p-3.5">
+          <div className="border-t border-primary/20 bg-card/95 p-4">
+            <div className="mb-3 rounded-xl border border-border bg-muted/30 p-3">
+              <div className="flex items-start gap-2.5">
+                <Shield size={13} className="text-muted-foreground mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-[11px] font-semibold text-foreground/70 mb-1 tracking-wide">Licença de Uso</p>
+                  <p className="text-[11px] text-muted-foreground leading-5">
+                    A compra concede licença de uso por servidor. É proibida revenda, redistribuição,
+                    vazamento, compartilhamento ou engenharia reversa dos arquivos.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 mb-3">
               <p className="text-[9px] tracking-widest uppercase text-muted-foreground mb-1">Preço</p>
               <p className="text-2xl font-bold text-primary" style={{ fontFamily: "'Cinzel', serif" }}>
