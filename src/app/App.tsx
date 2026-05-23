@@ -1494,6 +1494,7 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accountName, setAccountName] = useState("");
+  const [adminLoggedIn, setAdminLoggedIn] = useState(false);
 
   const refreshNavbarAccount = useCallback(async () => {
     const basketIdent = getStoredTebexBasket();
@@ -1512,6 +1513,10 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
     }
   }, []);
 
+  const refreshNavbarAdmin = useCallback(() => {
+    setAdminLoggedIn(Boolean(getAdminToken()));
+  }, []);
+
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 30);
     window.addEventListener("scroll", handler, { passive: true });
@@ -1520,16 +1525,23 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
 
   useEffect(() => {
     refreshNavbarAccount();
+    refreshNavbarAdmin();
 
-    const handler = () => refreshNavbarAccount();
+    const handler = () => {
+      refreshNavbarAccount();
+      refreshNavbarAdmin();
+    };
+
     window.addEventListener("tws:tebex-session-changed", handler);
+    window.addEventListener("tws:admin-session-changed", handler);
     window.addEventListener("storage", handler);
 
     return () => {
       window.removeEventListener("tws:tebex-session-changed", handler);
+      window.removeEventListener("tws:admin-session-changed", handler);
       window.removeEventListener("storage", handler);
     };
-  }, [refreshNavbarAccount]);
+  }, [refreshNavbarAccount, refreshNavbarAdmin]);
 
   function handleNavbarLogout() {
     clearTebexSession();
@@ -1647,6 +1659,16 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
                 Sair
               </button>
             </div>
+          ) : adminLoggedIn ? (
+            <a
+              href="/admin"
+              className="inline-flex h-9 items-center gap-2 px-3 rounded-full text-xs font-semibold
+                border border-primary/20 bg-primary/5 text-primary hover:border-primary/35 hover:bg-primary/10 transition-all"
+              title="Abrir painel admin"
+            >
+              <Shield size={14} />
+              Admin
+            </a>
           ) : (
             <button
               type="button"
@@ -1772,6 +1794,16 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
                       Sair
                     </button>
                   </div>
+                ) : adminLoggedIn ? (
+                  <a
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full
+                      border border-primary/20 bg-primary/5 text-sm font-semibold text-primary"
+                  >
+                    <Shield size={14} />
+                    Admin
+                  </a>
                 ) : (
                   <button
                     type="button"
