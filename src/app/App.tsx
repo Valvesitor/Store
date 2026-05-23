@@ -4788,11 +4788,11 @@ function DocsAdminPage() {
 
   return (
     <main className="bg-transparent p-0">
-      <div className="grid min-h-[calc(100vh-245px)] grid-cols-1 overflow-hidden rounded-[26px] border border-border bg-background shadow-[0_18px_55px_rgba(32,32,32,0.06)] xl:grid-cols-[250px_310px_minmax(0,1fr)]">
+      <div className="grid h-[calc(100vh-175px)] grid-cols-1 overflow-hidden rounded-[24px] border border-border bg-background shadow-[0_18px_55px_rgba(32,32,32,0.06)] xl:grid-cols-[240px_300px_minmax(0,1fr)]">
         {/* GitBook-style left rail */}
-        <aside className="border-b border-border bg-card/80 p-4 xl:border-b-0 xl:border-r">
-          <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <aside className="border-b border-border bg-card/80 p-3 xl:border-b-0 xl:border-r">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <BookOpen size={18} />
             </div>
             <div>
@@ -4801,7 +4801,7 @@ function DocsAdminPage() {
             </div>
           </div>
 
-          <div className="mb-4">
+          <div className="mb-3">
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Spaces</p>
             <div className="space-y-1.5">
               {productOptions.map((product) => {
@@ -4834,7 +4834,7 @@ function DocsAdminPage() {
               if (!customId) return;
               handleNewPage(slugifyClient(customId));
             }}
-            className="mb-5 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary/35 bg-primary/5 px-3 py-2.5 text-xs font-bold text-primary transition-all hover:bg-primary/10"
+            className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary/35 bg-primary/5 px-3 py-2 text-[11px] font-bold text-primary transition-all hover:bg-primary/10"
           >
             <Plus size={14} />
             Novo space
@@ -4853,8 +4853,8 @@ function DocsAdminPage() {
         </aside>
 
         {/* Page tree */}
-        <aside className="flex min-h-0 flex-col border-b border-border bg-card/45 p-4 xl:border-b-0 xl:border-r">
-          <div className="mb-3 flex items-center justify-between gap-2">
+        <aside className="flex min-h-0 flex-col border-b border-border bg-card/45 p-3 xl:border-b-0 xl:border-r">
+          <div className="mb-2 flex items-center justify-between gap-2">
             <div>
               <p className="text-sm font-bold text-foreground/90">Páginas</p>
               <p className="text-[11px] text-muted-foreground">{getDocsProductLabel(selectedProductId)}</p>
@@ -4927,11 +4927,11 @@ function DocsAdminPage() {
 
         {/* Editor and preview */}
         <section className="flex min-h-0 flex-col bg-background">
-          <div className="border-b border-border bg-card px-4 py-3 lg:px-5">
+          <div className="border-b border-border bg-card px-3 py-2 lg:px-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/75">Editor GitBook</p>
-                <h2 className="mt-1 truncate text-xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                <h2 className="mt-0.5 truncate text-lg font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
                   {activeTitle || "Nova página"}
                 </h2>
               </div>
@@ -4981,9 +4981,9 @@ function DocsAdminPage() {
 
           <div className="min-h-0 flex-1 overflow-hidden">
             {docsViewMode === "editor" ? (
-              <div className="min-h-0 overflow-y-auto p-4 lg:p-5">
-                <div className="mb-4 grid grid-cols-1 gap-3 lg:grid-cols-12">
-                  <label className={`${panelClass} block p-3 lg:col-span-4`}>
+              <div className="min-h-0 overflow-y-auto p-3 lg:p-4">
+                <div className="mb-3 grid grid-cols-1 gap-2 lg:grid-cols-12">
+                  <label className={`${panelClass} block p-2.5 lg:col-span-4`}>
                     <span className={labelClass}>Produto ID</span>
                     <input
                       value={selected.productId ?? selectedProductId}
@@ -4997,7 +4997,7 @@ function DocsAdminPage() {
                     />
                   </label>
 
-                  <label className={`${panelClass} block p-3 lg:col-span-3`}>
+                  <label className={`${panelClass} block p-2.5 lg:col-span-3`}>
                     <span className={labelClass}>Slug</span>
                     <input
                       value={selected.slug}
@@ -5006,7 +5006,7 @@ function DocsAdminPage() {
                     />
                   </label>
 
-                  <label className={`${panelClass} block p-3 lg:col-span-3`}>
+                  <label className={`${panelClass} block p-2.5 lg:col-span-3`}>
                     <span className={labelClass}>Categoria</span>
                     <input
                       value={selected.category}
@@ -5016,7 +5016,7 @@ function DocsAdminPage() {
                   </label>
 
                   <div className="grid grid-cols-2 gap-3 lg:col-span-2">
-                    <label className={`${panelClass} block p-3`}>
+                    <label className={`${panelClass} block p-2.5`}>
                       <span className={labelClass}>Ordem</span>
                       <input
                         type="number"
@@ -5025,7 +5025,7 @@ function DocsAdminPage() {
                         className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
                       />
                     </label>
-                    <label className={`${panelClass} block p-3`}>
+                    <label className={`${panelClass} block p-2.5`}>
                       <span className={labelClass}>Status</span>
                       <select
                         value={selected.visible ? "1" : "0"}
@@ -5040,7 +5040,7 @@ function DocsAdminPage() {
                 </div>
 
                 <div className={`${panelClass} overflow-hidden`}>
-                  <div className="flex flex-col gap-3 border-b border-border bg-card px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex flex-col gap-2 border-b border-border bg-card px-4 py-2.5 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                       <p className="text-sm font-bold text-foreground/90">Conteúdo da página</p>
                       <p className="text-[11px] text-muted-foreground">Edite em Markdown. Clique em “Ver preview” para visualizar como ficou.</p>
@@ -5063,7 +5063,7 @@ function DocsAdminPage() {
                   </div>
 
                   <div className="grid grid-cols-1 gap-0 border-b border-border lg:grid-cols-2">
-                    <label className="border-b border-border p-4 lg:border-b-0 lg:border-r">
+                    <label className="border-b border-border p-3 lg:border-b-0 lg:border-r">
                       <span className={labelClass}>{editorLanguage === "pt" ? "Título PT" : "Título EN"}</span>
                       <input
                         value={editorLanguage === "pt" ? selected.title : selected.titleEn ?? ""}
@@ -5078,7 +5078,7 @@ function DocsAdminPage() {
                         className="mt-2 w-full bg-transparent text-xl font-bold outline-none text-foreground/95"
                       />
                     </label>
-                    <div className="p-4">
+                    <div className="p-3">
                       <span className={labelClass}>Caminho público</span>
                       <p className="mt-2 truncate rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground">
                         /docs?product={selected.productId || selectedProductId} · /{selected.slug || "slug"}
@@ -5091,7 +5091,7 @@ function DocsAdminPage() {
                     onChange={(e) => updateSelectedContent(e.target.value)}
                     rows={16}
                     spellCheck={false}
-                    className="h-[calc(100vh-650px)] min-h-[310px] w-full resize-none border-0 bg-[#16130f] p-5 font-mono text-[13px] leading-6 text-[#f6ecd8] outline-none"
+                    className="h-[calc(100vh-560px)] min-h-[260px] w-full resize-none border-0 border-t border-border bg-[#fffdf8] p-5 font-mono text-[13px] leading-6 text-foreground outline-none"
                     placeholder="# Título&#10;&#10;Escreva a documentação aqui..."
                   />
                 </div>
@@ -5928,7 +5928,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
       </nav>
 
       {/* ── Main content ── */}
-      <main className="flex-1 min-w-0 px-4 py-6 lg:px-8 lg:py-8 overflow-auto">
+      <main className="flex-1 min-w-0 overflow-hidden px-3 py-3 lg:px-6 lg:py-4">
 
         {/* Mobile section tabs */}
         <div className="lg:hidden mb-5 flex gap-2 overflow-x-auto pb-1">
@@ -5951,15 +5951,15 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
         </div>
 
         {/* Page header */}
-        <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <SectionTag>Admin Dashboard</SectionTag>
-            <h1 className="mt-3 text-2xl lg:text-3xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            <h1 className="mt-2 text-xl lg:text-2xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
               {activeAdminSection === "products" && "Produtos"}
               {activeAdminSection === "docs" && "Documentação"}
               {activeAdminSection === "coupons" && "Cupom / Gift Card"}
             </h1>
-            <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
+            <p className="mt-1 text-xs text-muted-foreground max-w-xl">
               {activeAdminSection === "products" && "Cadastre, edite e publique os produtos da vitrine."}
               {activeAdminSection === "docs" && "Crie e edite páginas de documentação separadas por produto."}
               {activeAdminSection === "coupons" && "Cadastre o nome público e o código original da Tebex para cupons e gift cards."}
@@ -6000,7 +6000,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
         </div>
 
         {message && (
-          <div className="mb-5 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+          <div className="mb-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-2 text-xs text-primary">
             {message}
           </div>
         )}
