@@ -4278,6 +4278,49 @@ function docsMarkdownToHtml(markdown: string) {
   return html;
 }
 
+
+function normalizeDocsCategoryName(category: string) {
+  const value = String(category ?? "").trim().toLowerCase();
+
+  if (["comeando", "come ando", "comecando", "começando", "getting started"].includes(value)) return "Começando";
+  if (["instalao", "instala o", "instalacao", "instalação", "installation"].includes(value)) return "Instalação";
+  if (["configurao", "configura o", "configuracao", "configuração", "configuration"].includes(value)) return "Configuração";
+  if (["uso do studio", "studio usage"].includes(value)) return "Uso do Studio";
+  if (["ferramentas", "tools"].includes(value)) return "Ferramentas";
+  if (["suporte", "support"].includes(value)) return "Suporte";
+  if (["referncia", "referencia", "referência", "reference"].includes(value)) return "Referência";
+
+  return category || "Geral";
+}
+
+function translateDocsCategory(category: string, isEnglish: boolean) {
+  const normalized = normalizeDocsCategoryName(category);
+
+  if (!isEnglish) return normalized;
+
+  const map: Record<string, string> = {
+    "Começando": "Getting started",
+    "Instalação": "Installation",
+    "Configuração": "Configuration",
+    "Uso do Studio": "Studio usage",
+    "Ferramentas": "Tools",
+    "Suporte": "Support",
+    "Referência": "Reference",
+    "Geral": "General"
+  };
+
+  return map[normalized] ?? normalized;
+}
+
+function getDocsTitle(page: DocsPageRecord, isEnglish: boolean) {
+  return isEnglish ? (page.titleEn || page.title) : page.title;
+}
+
+function getDocsContent(page: DocsPageRecord, isEnglish: boolean) {
+  return isEnglish ? (page.contentEn || page.contentPt) : page.contentPt;
+}
+
+
 function DocsContent({ content }: { content: string }) {
   return (
     <div
@@ -4310,21 +4353,23 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   }, []);
 
   const filteredPages = pages.filter((page) => {
-    const title = isEnglish ? page.titleEn || page.title : page.title;
-    const content = isEnglish ? page.contentEn || page.contentPt : page.contentPt;
-    const haystack = `${title} ${page.category} ${content}`.toLowerCase();
+    const title = getDocsTitle(page, isEnglish);
+    const content = getDocsContent(page, isEnglish);
+    const category = translateDocsCategory(page.category, isEnglish);
+    const haystack = `${title} ${category} ${content}`.toLowerCase();
     return !query.trim() || haystack.includes(query.trim().toLowerCase());
   });
 
   const selected = filteredPages.find((page) => page.id === selectedId) ?? filteredPages[0] ?? pages[0];
   const grouped = filteredPages.reduce<Record<string, DocsPageRecord[]>>((acc, page) => {
-    if (!acc[page.category]) acc[page.category] = [];
-    acc[page.category].push(page);
+    const category = translateDocsCategory(page.category, isEnglish);
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(page);
     return acc;
   }, {});
 
-  const selectedContent = selected ? (isEnglish ? selected.contentEn || selected.contentPt : selected.contentPt) : "";
-  const selectedTitle = selected ? (isEnglish ? selected.titleEn || selected.title : selected.title) : "";
+  const selectedContent = selected ? getDocsContent(selected, isEnglish) : "";
+  const selectedTitle = selected ? getDocsTitle(selected, isEnglish) : "";
 
   return (
     <main className="h-[calc(100vh-4rem)] overflow-hidden bg-background px-4 py-4 lg:px-6 lg:py-5">
@@ -4374,7 +4419,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                   <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{category}</p>
                   <div className="space-y-1">
                     {rows.map((page) => {
-                      const title = isEnglish ? page.titleEn || page.title : page.title;
+                      const title = getDocsTitle(page, isEnglish);
                       const active = selected?.id === page.id;
                       return (
                         <button
@@ -4397,7 +4442,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
               <>
                 <div className="mb-5 flex flex-wrap items-center gap-2">
                   <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-                    {selected.category}
+                    {translateDocsCategory(selected.category, isEnglish)}
                   </span>
                   <span className="text-xs text-muted-foreground">{selectedTitle}</span>
                 </div>
