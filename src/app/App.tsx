@@ -4640,6 +4640,7 @@ function DocsAdminPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [pageSearch, setPageSearch] = useState("");
   const [editorLanguage, setEditorLanguage] = useState<"pt" | "en">("pt");
+  const [docsViewMode, setDocsViewMode] = useState<"editor" | "preview">("editor");
 
   const isLogged = !!token;
   const productOptions = getDocsProductOptions(pages);
@@ -4709,6 +4710,7 @@ function DocsAdminPage() {
     setSelectedProductId(productId);
     setSelected(next);
     setEditorLanguage("pt");
+    setDocsViewMode("editor");
   }
 
   function updateSelectedContent(value: string) {
@@ -4786,7 +4788,7 @@ function DocsAdminPage() {
 
   return (
     <main className="bg-transparent p-0">
-      <div className="grid h-[calc(100vh-315px)] min-h-[560px] grid-cols-1 overflow-hidden rounded-[26px] border border-border bg-background shadow-[0_18px_55px_rgba(32,32,32,0.06)] xl:grid-cols-[240px_300px_minmax(0,1fr)]">
+      <div className="grid min-h-[calc(100vh-245px)] grid-cols-1 overflow-hidden rounded-[26px] border border-border bg-background shadow-[0_18px_55px_rgba(32,32,32,0.06)] xl:grid-cols-[250px_310px_minmax(0,1fr)]">
         {/* GitBook-style left rail */}
         <aside className="border-b border-border bg-card/80 p-4 xl:border-b-0 xl:border-r">
           <div className="mb-5 flex items-center gap-3">
@@ -4897,7 +4899,10 @@ function DocsAdminPage() {
                     return (
                       <button
                         key={page.id}
-                        onClick={() => setSelected(page)}
+                        onClick={() => {
+                          setSelected(page);
+                          setDocsViewMode("editor");
+                        }}
                         className={`group flex w-full items-start gap-2 rounded-xl border px-3 py-2.5 text-left transition-all ${
                           active
                             ? "border-primary/30 bg-primary/10 text-primary"
@@ -4932,12 +4937,22 @@ function DocsAdminPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setDocsViewMode((current) => current === "preview" ? "editor" : "preview")}
+                  className={`inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-xs font-bold transition-all ${
+                    docsViewMode === "preview"
+                      ? "border-primary/30 bg-primary/10 text-primary"
+                      : "border-border text-foreground/70 hover:bg-primary/5"
+                  }`}
+                >
+                  {docsViewMode === "preview" ? "Voltar editor" : "Ver preview"}
+                </button>
                 <a
                   href={`/docs?product=${selectedProductId}`}
                   className="inline-flex h-9 items-center gap-2 rounded-xl border border-border px-3 text-xs font-bold text-foreground/70 hover:bg-primary/5"
                 >
                   <ExternalLink size={13} />
-                  Ver docs
+                  Abrir docs
                 </a>
                 <button
                   onClick={handleSave}
@@ -4964,140 +4979,151 @@ function DocsAdminPage() {
             )}
           </div>
 
-          <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden 2xl:grid-cols-[minmax(0,1fr)_390px]">
-            <div className="min-h-0 overflow-y-auto p-4 lg:p-5">
-              <div className="mb-4 grid grid-cols-1 gap-3 lg:grid-cols-12">
-                <label className={`${panelClass} block p-3 lg:col-span-4`}>
-                  <span className={labelClass}>Produto ID</span>
-                  <input
-                    value={selected.productId ?? selectedProductId}
-                    onChange={(e) => {
-                      const productId = slugifyClient(e.target.value);
-                      setSelectedProductId(productId);
-                      setSelected({ ...selected, productId });
-                    }}
-                    placeholder="tws-identity-forge"
-                    className="mt-1 w-full bg-transparent text-sm font-semibold outline-none text-foreground/85"
-                  />
-                </label>
-
-                <label className={`${panelClass} block p-3 lg:col-span-3`}>
-                  <span className={labelClass}>Slug</span>
-                  <input
-                    value={selected.slug}
-                    onChange={(e) => setSelected({ ...selected, slug: e.target.value })}
-                    className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
-                  />
-                </label>
-
-                <label className={`${panelClass} block p-3 lg:col-span-3`}>
-                  <span className={labelClass}>Categoria</span>
-                  <input
-                    value={selected.category}
-                    onChange={(e) => setSelected({ ...selected, category: e.target.value })}
-                    className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
-                  />
-                </label>
-
-                <div className="grid grid-cols-2 gap-3 lg:col-span-2">
-                  <label className={`${panelClass} block p-3`}>
-                    <span className={labelClass}>Ordem</span>
+          <div className="min-h-0 flex-1 overflow-hidden">
+            {docsViewMode === "editor" ? (
+              <div className="min-h-0 overflow-y-auto p-4 lg:p-5">
+                <div className="mb-4 grid grid-cols-1 gap-3 lg:grid-cols-12">
+                  <label className={`${panelClass} block p-3 lg:col-span-4`}>
+                    <span className={labelClass}>Produto ID</span>
                     <input
-                      type="number"
-                      value={selected.orderIndex}
-                      onChange={(e) => setSelected({ ...selected, orderIndex: Number(e.target.value) })}
-                      className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
-                    />
-                  </label>
-                  <label className={`${panelClass} block p-3`}>
-                    <span className={labelClass}>Status</span>
-                    <select
-                      value={selected.visible ? "1" : "0"}
-                      onChange={(e) => setSelected({ ...selected, visible: e.target.value === "1" })}
-                      className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
-                    >
-                      <option value="1">Publicado</option>
-                      <option value="0">Oculto</option>
-                    </select>
-                  </label>
-                </div>
-              </div>
-
-              <div className={`${panelClass} overflow-hidden`}>
-                <div className="flex flex-col gap-3 border-b border-border bg-card px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
-                    <p className="text-sm font-bold text-foreground/90">Conteúdo da página</p>
-                    <p className="text-[11px] text-muted-foreground">Edite em Markdown, com preview ao lado.</p>
-                  </div>
-
-                  <div className="flex rounded-xl border border-border bg-background p-1">
-                    <button
-                      onClick={() => setEditorLanguage("pt")}
-                      className={`h-8 rounded-lg px-3 text-xs font-bold transition-all ${editorLanguage === "pt" ? "bg-primary text-primary-foreground" : "text-foreground/60 hover:text-foreground"}`}
-                    >
-                      PT-BR
-                    </button>
-                    <button
-                      onClick={() => setEditorLanguage("en")}
-                      className={`h-8 rounded-lg px-3 text-xs font-bold transition-all ${editorLanguage === "en" ? "bg-primary text-primary-foreground" : "text-foreground/60 hover:text-foreground"}`}
-                    >
-                      EN-US
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-0 border-b border-border lg:grid-cols-2">
-                  <label className="border-b border-border p-4 lg:border-b-0 lg:border-r">
-                    <span className={labelClass}>{editorLanguage === "pt" ? "Título PT" : "Título EN"}</span>
-                    <input
-                      value={editorLanguage === "pt" ? selected.title : selected.titleEn ?? ""}
+                      value={selected.productId ?? selectedProductId}
                       onChange={(e) => {
-                        if (editorLanguage === "pt") {
-                          setSelected({ ...selected, title: e.target.value });
-                        } else {
-                          setSelected({ ...selected, titleEn: e.target.value });
-                        }
+                        const productId = slugifyClient(e.target.value);
+                        setSelectedProductId(productId);
+                        setSelected({ ...selected, productId });
                       }}
-                      placeholder={editorLanguage === "pt" ? "Título da página" : "Page title"}
-                      className="mt-2 w-full bg-transparent text-xl font-bold outline-none text-foreground/95"
+                      placeholder="tws-identity-forge"
+                      className="mt-1 w-full bg-transparent text-sm font-semibold outline-none text-foreground/85"
                     />
                   </label>
-                  <div className="p-4">
-                    <span className={labelClass}>Caminho público</span>
-                    <p className="mt-2 truncate rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground">
-                      /docs?product={selected.productId || selectedProductId} · /{selected.slug || "slug"}
-                    </p>
+
+                  <label className={`${panelClass} block p-3 lg:col-span-3`}>
+                    <span className={labelClass}>Slug</span>
+                    <input
+                      value={selected.slug}
+                      onChange={(e) => setSelected({ ...selected, slug: e.target.value })}
+                      className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
+                    />
+                  </label>
+
+                  <label className={`${panelClass} block p-3 lg:col-span-3`}>
+                    <span className={labelClass}>Categoria</span>
+                    <input
+                      value={selected.category}
+                      onChange={(e) => setSelected({ ...selected, category: e.target.value })}
+                      className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
+                    />
+                  </label>
+
+                  <div className="grid grid-cols-2 gap-3 lg:col-span-2">
+                    <label className={`${panelClass} block p-3`}>
+                      <span className={labelClass}>Ordem</span>
+                      <input
+                        type="number"
+                        value={selected.orderIndex}
+                        onChange={(e) => setSelected({ ...selected, orderIndex: Number(e.target.value) })}
+                        className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
+                      />
+                    </label>
+                    <label className={`${panelClass} block p-3`}>
+                      <span className={labelClass}>Status</span>
+                      <select
+                        value={selected.visible ? "1" : "0"}
+                        onChange={(e) => setSelected({ ...selected, visible: e.target.value === "1" })}
+                        className="mt-1 w-full bg-transparent text-sm outline-none text-foreground/85"
+                      >
+                        <option value="1">Publicado</option>
+                        <option value="0">Oculto</option>
+                      </select>
+                    </label>
                   </div>
                 </div>
 
-                <textarea
-                  value={activeContent}
-                  onChange={(e) => updateSelectedContent(e.target.value)}
-                  rows={16}
-                  spellCheck={false}
-                  className="h-[calc(100vh-650px)] min-h-[310px] w-full resize-none border-0 bg-[#16130f] p-5 font-mono text-[13px] leading-6 text-[#f6ecd8] outline-none"
-                  placeholder="# Título&#10;&#10;Escreva a documentação aqui..."
-                />
-              </div>
-            </div>
+                <div className={`${panelClass} overflow-hidden`}>
+                  <div className="flex flex-col gap-3 border-b border-border bg-card px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-foreground/90">Conteúdo da página</p>
+                      <p className="text-[11px] text-muted-foreground">Edite em Markdown. Clique em “Ver preview” para visualizar como ficou.</p>
+                    </div>
 
-            <aside className="hidden min-h-0 border-l border-border bg-card/55 2xl:flex 2xl:flex-col">
-              <div className="border-b border-border px-4 py-3">
-                <p className="text-sm font-bold text-foreground/90">Preview</p>
-                <p className="text-[11px] text-muted-foreground">Visualização estilo cliente</p>
-              </div>
-              <div className="min-h-0 flex-1 overflow-y-auto p-5">
-                <article className="rounded-[22px] border border-border bg-background p-5">
-                  <div className="mb-4 flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-                      {selected.category || "Categoria"}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground">{editorLanguage === "pt" ? "PT-BR" : "EN-US"}</span>
+                    <div className="flex rounded-xl border border-border bg-background p-1">
+                      <button
+                        onClick={() => setEditorLanguage("pt")}
+                        className={`h-8 rounded-lg px-3 text-xs font-bold transition-all ${editorLanguage === "pt" ? "bg-primary text-primary-foreground" : "text-foreground/60 hover:text-foreground"}`}
+                      >
+                        PT-BR
+                      </button>
+                      <button
+                        onClick={() => setEditorLanguage("en")}
+                        className={`h-8 rounded-lg px-3 text-xs font-bold transition-all ${editorLanguage === "en" ? "bg-primary text-primary-foreground" : "text-foreground/60 hover:text-foreground"}`}
+                      >
+                        EN-US
+                      </button>
+                    </div>
                   </div>
-                  <DocsContent content={activeContent || "# Preview\n\nComece a escrever para visualizar."} />
-                </article>
+
+                  <div className="grid grid-cols-1 gap-0 border-b border-border lg:grid-cols-2">
+                    <label className="border-b border-border p-4 lg:border-b-0 lg:border-r">
+                      <span className={labelClass}>{editorLanguage === "pt" ? "Título PT" : "Título EN"}</span>
+                      <input
+                        value={editorLanguage === "pt" ? selected.title : selected.titleEn ?? ""}
+                        onChange={(e) => {
+                          if (editorLanguage === "pt") {
+                            setSelected({ ...selected, title: e.target.value });
+                          } else {
+                            setSelected({ ...selected, titleEn: e.target.value });
+                          }
+                        }}
+                        placeholder={editorLanguage === "pt" ? "Título da página" : "Page title"}
+                        className="mt-2 w-full bg-transparent text-xl font-bold outline-none text-foreground/95"
+                      />
+                    </label>
+                    <div className="p-4">
+                      <span className={labelClass}>Caminho público</span>
+                      <p className="mt-2 truncate rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground">
+                        /docs?product={selected.productId || selectedProductId} · /{selected.slug || "slug"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <textarea
+                    value={activeContent}
+                    onChange={(e) => updateSelectedContent(e.target.value)}
+                    rows={16}
+                    spellCheck={false}
+                    className="h-[calc(100vh-650px)] min-h-[310px] w-full resize-none border-0 bg-[#16130f] p-5 font-mono text-[13px] leading-6 text-[#f6ecd8] outline-none"
+                    placeholder="# Título&#10;&#10;Escreva a documentação aqui..."
+                  />
+                </div>
               </div>
-            </aside>
+            ) : (
+              <div className="min-h-0 overflow-y-auto bg-card/40 p-4 lg:p-6">
+                <div className="mx-auto max-w-5xl rounded-[26px] border border-border bg-background p-6 lg:p-9 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
+                  <div className="mb-6 flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <span className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                        Preview · {editorLanguage === "pt" ? "PT-BR" : "EN-US"}
+                      </span>
+                      <h1 className="mt-4 text-3xl font-bold text-foreground/95 lg:text-5xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                        {activeTitle || "Nova página"}
+                      </h1>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {selected.category || "Categoria"} · /{selected.slug || "slug"}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setDocsViewMode("editor")}
+                      className="inline-flex h-10 items-center justify-center rounded-xl border border-primary/25 px-4 text-sm font-bold text-primary hover:bg-primary/5"
+                    >
+                      Voltar para editar
+                    </button>
+                  </div>
+
+                  <DocsContent content={activeContent || "# Preview\n\nComece a escrever para visualizar."} />
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </div>
@@ -5925,15 +5951,15 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
         </div>
 
         {/* Page header */}
-        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <SectionTag>Admin Dashboard</SectionTag>
-            <h1 className="mt-2 text-2xl lg:text-3xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            <h1 className="mt-3 text-2xl lg:text-3xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
               {activeAdminSection === "products" && "Produtos"}
               {activeAdminSection === "docs" && "Documentação"}
               {activeAdminSection === "coupons" && "Cupom / Gift Card"}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground max-w-xl">
+            <p className="mt-1.5 text-sm text-muted-foreground max-w-xl">
               {activeAdminSection === "products" && "Cadastre, edite e publique os produtos da vitrine."}
               {activeAdminSection === "docs" && "Crie e edite páginas de documentação separadas por produto."}
               {activeAdminSection === "coupons" && "Cadastre o nome público e o código original da Tebex para cupons e gift cards."}
