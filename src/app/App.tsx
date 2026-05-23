@@ -1298,6 +1298,20 @@ function normalizeProductFromApi(item: any): Product {
   };
 }
 
+function getProductThumbnail(product: Product) {
+  const firstMedia = product.media?.[0];
+
+  if (!firstMedia?.src) return "";
+
+  const isYoutube = firstMedia.type === "youtube" || isYouTubeUrl(firstMedia.src);
+
+  if (isYoutube) return getYouTubeThumbnail(firstMedia.src);
+
+  if (firstMedia.type === "video") return firstMedia.poster || "";
+
+  return firstMedia.src;
+}
+
 function getLocalizedProduct(product: Product, language: SiteLanguage) {
   const useEnglish = language === "en_US";
 
@@ -2184,6 +2198,9 @@ function ProductCard({ product, currency, language, onSelect }: { product: Produ
   const Icon = ICON_MAP[product.iconName] ?? Package;
   const status = STATUS_CONFIG[product.status];
   const localized = getLocalizedProduct(product, language);
+  const [thumbnailFailed, setThumbnailFailed] = useState(false);
+  const thumbnailSrc = getProductThumbnail(product);
+  const showThumbnail = Boolean(thumbnailSrc) && !thumbnailFailed;
 
   return (
     <motion.div
@@ -2208,10 +2225,24 @@ function ProductCard({ product, currency, language, onSelect }: { product: Produ
             backgroundSize: "24px 24px"
           }}
         />
-        <div className="relative z-10 p-4 rounded-sm border border-primary/20 bg-primary/10
-          group-hover:border-primary/40 group-hover:bg-primary/15 transition-all duration-300">
-          <Icon size={24} className="text-primary" />
-        </div>
+
+        {showThumbnail ? (
+          <>
+            <img
+              src={thumbnailSrc}
+              alt={localized.name || product.name}
+              onError={() => setThumbnailFailed(true)}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/35 via-transparent to-transparent" />
+          </>
+        ) : (
+          <div className="relative z-10 p-4 rounded-sm border border-primary/20 bg-primary/10
+            group-hover:border-primary/40 group-hover:bg-primary/15 transition-all duration-300">
+            <Icon size={24} className="text-primary" />
+          </div>
+        )}
+
         {/* Corner accent */}
         <div className="absolute top-0 right-0 w-12 h-12 opacity-20"
           style={{ background: "radial-gradient(circle at top right, rgba(201,168,76,0.6), transparent)" }}
