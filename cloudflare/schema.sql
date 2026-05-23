@@ -92,3 +92,23 @@ INSERT OR IGNORE INTO products (
   datetime('now'),
   datetime('now')
 );
+
+
+-- Documentation pages
+CREATE TABLE IF NOT EXISTS docs_pages (
+  id TEXT PRIMARY KEY,
+  product_id TEXT NOT NULL DEFAULT 'tws-identity-forge',
+  category TEXT NOT NULL,
+  title TEXT NOT NULL,
+  title_en TEXT NOT NULL DEFAULT '',
+  slug TEXT NOT NULL UNIQUE,
+  order_index INTEGER NOT NULL DEFAULT 0,
+  content_pt TEXT NOT NULL DEFAULT '',
+  content_en TEXT NOT NULL DEFAULT '',
+  visible INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_docs_pages_visible_order ON docs_pages(visible, order_index);
+CREATE INDEX IF NOT EXISTS idx_docs_pages_category ON docs_pages(category, order_index);

@@ -62,6 +62,21 @@ interface CreatorCode {
   updatedAt?: string;
 }
 
+
+interface DocsPageRecord {
+  id: string;
+  productId?: string;
+  category: string;
+  title: string;
+  titleEn?: string;
+  slug: string;
+  orderIndex: number;
+  contentPt: string;
+  contentEn?: string;
+  visible: boolean;
+  updatedAt?: string;
+}
+
 declare global {
   interface Window {
     Tebex?: {
@@ -1679,7 +1694,7 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
     { label: "Início", id: "hero" },
     { label: "Scripts", id: "products" },
     { label: "Custom Peds", id: "custom-peds" },
-    { label: "Documentação", id: "docs", external: true, url: "https://docs.thewantedsolestudio.workers.dev" },
+    { label: "Documentação", id: "docs", external: true, url: "/docs" },
     /*{ label: "Licença", id: "faq" },*/
   ];
 
@@ -1710,8 +1725,8 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
               <a
                 key={link.id}
                 href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
+                target={link.url?.startsWith("/") ? undefined : "_blank"}
+                rel={link.url?.startsWith("/") ? undefined : "noopener noreferrer"}
                 className="px-3 py-2 text-sm text-foreground/50 hover:text-foreground/90 transition-colors duration-150"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
@@ -4086,6 +4101,518 @@ function AboutPage({ language }: { language: SiteLanguage }) {
 }
 
 
+
+const DOCS_FALLBACK_PAGES: DocsPageRecord[] = [{"id": "overview", "productId": "tws-identity-forge", "category": "Come Ando", "title": "TWS Identity Forge", "titleEn": "TWS Identity Forge", "slug": "overview", "orderIndex": 10, "contentPt": "# TWS Identity Forge\n\nO **TWS Identity Forge** é um sistema premium para RedM focado em criação, edição e organização de identidade visual, personagens, outfits e recursos MetaPed.\n\nEle foi feito para clientes que precisam montar, testar, salvar e reaplicar visuais com uma interface moderna, organizada e prática.\n\n## O que você consegue fazer\n\n- Abrir um Studio de edição dentro do jogo.\n- Visualizar e testar componentes MetaPed.\n- Trabalhar com roupas, acessórios, albedos, normals, materials e paletas.\n- Organizar projetos.\n- Salvar outfits em slots.\n- Usar favoritos.\n- Ajustar câmera, luz, preview e visualização.\n- Exportar ou importar dados quando disponível.\n- Usar idiomas configurados no resource.\n\n## Público recomendado\n\nEste guia é para o **cliente final**: dono de servidor, administrador, equipe de roupas/peds ou pessoa responsável por configurar e utilizar o produto no servidor.\n\nAqui não ficam instruções internas de venda, geração de licença, Cloudflare ou gerenciamento comercial.", "contentEn": "# TWS Identity Forge\n\n**TWS Identity Forge** is a premium RedM system focused on creating, editing, and organizing visual identity, characters, outfits, and MetaPed resources.\n\nIt was built for customers who need to build, test, save, and reapply looks through a modern, organized, and practical interface.\n\n## What you can do\n\n- Open an in-game editing Studio.\n- Preview and test MetaPed components.\n- Work with clothes, accessories, albedos, normals, materials, and palettes.\n- Organize projects.\n- Save outfits into slots.\n- Use favorites.\n- Adjust camera, lighting, preview, and visualization.\n- Export or import data when available.\n- Use configured resource languages.\n\n## Recommended audience\n\nThis guide is for the **end customer**: server owner, administrator, clothing/ped staff, or the person responsible for configuring and using the product on the server.\n\nIt does not include internal sales, license generation, Cloudflare, or commercial management instructions.", "visible": true}, {"id": "requirements", "productId": "tws-identity-forge", "category": "Come Ando", "title": "Requisitos", "titleEn": "Requirements", "slug": "requirements", "orderIndex": 20, "contentPt": "# Requisitos\n\nAntes de instalar, confira se o servidor atende aos requisitos básicos.\n\n## Servidor\n\n- Servidor **RedM** atualizado.\n- Permissão para adicionar resources.\n- Acesso ao `server.cfg`.\n- Acesso à pasta `resources`.\n- Framework/ambiente compatível com MetaPed.\n\n## Resource MetaPed\n\nO TWS Identity Forge precisa saber qual resource aplica outfits/MetaPed no seu servidor.\n\nNo arquivo `shared/config.lua`, configure:\n\n```lua\nConfig.MetapedResource = 'MetaPedAssets'\n```\n\nSe você usa outro resource, troque pelo nome correto.\n\n## Licença\n\nSe sua versão usa validação de licença, você precisa das informações fornecidas pela The Wanted Sole Studio:\n\n```cfg\nsetr tws_license_enabled \"1\"\nset tws_license_validate_url \"URL_FORNECIDA\"\nset tws_license_key \"SUA_CHAVE\"\nset tws_license_owner_steam \"steam:1100001xxxxxxxx\"\nset tws_license_hwid \"ID-UNICO-DO-SERVIDOR\"\n```\n\nSem a licença correta, o Studio pode não abrir.", "contentEn": "# Requirements\n\nBefore installing, make sure your server meets the basic requirements.\n\n## Server\n\n- Updated **RedM** server.\n- Permission to add resources.\n- Access to `server.cfg`.\n- Access to the `resources` folder.\n- MetaPed-compatible framework/environment.\n\n## MetaPed resource\n\nTWS Identity Forge must know which resource applies outfits/MetaPed on your server.\n\nIn `shared/config.lua`, configure:\n\n```lua\nConfig.MetapedResource = 'MetaPedAssets'\n```\n\nIf you use another resource, replace it with the correct name.\n\n## License\n\nIf your version uses license validation, you need the information provided by The Wanted Sole Studio:\n\n```cfg\nsetr tws_license_enabled \"1\"\nset tws_license_validate_url \"PROVIDED_URL\"\nset tws_license_key \"YOUR_KEY\"\nset tws_license_owner_steam \"steam:1100001xxxxxxxx\"\nset tws_license_hwid \"UNIQUE_SERVER_ID\"\n```\n\nWithout a valid license, the Studio may not open.", "visible": true}, {"id": "installation", "productId": "tws-identity-forge", "category": "Instala O", "title": "Instalação", "titleEn": "Installation", "slug": "installation", "orderIndex": 30, "contentPt": "# Instalação\n\n## 1. Adicione o resource\n\nColoque a pasta do resource dentro da pasta de resources do seu servidor.\n\nExemplo:\n\n```txt\nresources/[local]/TWS_Identity_Forge\n```\n\n## 2. Garanta o nome correto\n\nO nome da pasta precisa ser o mesmo usado no `server.cfg`.\n\nSe a pasta se chama:\n\n```txt\nTWS_Identity_Forge\n```\n\nentão no `server.cfg` use:\n\n```cfg\nensure TWS_Identity_Forge\n```\n\n## 3. Configure a licença\n\nSe a versão recebida exige licença, adicione as linhas fornecidas pela The Wanted Sole Studio no `server.cfg`.\n\n## 4. Configure o MetaPed Resource\n\nAbra:\n\n```txt\nshared/config.lua\n```\n\ne ajuste:\n\n```lua\nConfig.MetapedResource = 'MetaPedAssets'\n```\n\n## 5. Reinicie o servidor\n\nDepois de instalar e configurar, reinicie o servidor ou dê ensure no resource.\n\n```cfg\nensure TWS_Identity_Forge\n```", "contentEn": "# Installation\n\n## 1. Add the resource\n\nPlace the resource folder inside your server resources folder.\n\nExample:\n\n```txt\nresources/[local]/TWS_Identity_Forge\n```\n\n## 2. Use the correct name\n\nThe folder name must match the name used in `server.cfg`.\n\nIf the folder is called:\n\n```txt\nTWS_Identity_Forge\n```\n\nthen use this in `server.cfg`:\n\n```cfg\nensure TWS_Identity_Forge\n```\n\n## 3. Configure the license\n\nIf your version requires a license, add the lines provided by The Wanted Sole Studio to `server.cfg`.\n\n## 4. Configure the MetaPed resource\n\nOpen:\n\n```txt\nshared/config.lua\n```\n\nand adjust:\n\n```lua\nConfig.MetapedResource = 'MetaPedAssets'\n```\n\n## 5. Restart the server\n\nAfter installing and configuring, restart the server or ensure the resource.\n\n```cfg\nensure TWS_Identity_Forge\n```", "visible": true}, {"id": "configuration", "productId": "tws-identity-forge", "category": "Configura O", "title": "Configuração básica", "titleEn": "Basic configuration", "slug": "configuration", "orderIndex": 40, "contentPt": "# Configuração básica\n\nAs configurações principais ficam em:\n\n```txt\nshared/config.lua\n```\n\n## Idioma\n\nIdiomas disponíveis:\n\n```lua\nConfig.Locale = 'pt-br'\n```\n\nOpções comuns:\n\n```txt\npt-br\nen-us\nes-es\n```\n\n## Tecla para abrir\n\nA tecla padrão do Studio é **J**.\n\n```lua\nConfig.OpenKey = 0xF3830D8E\n```\n\n## Limite de XML\n\nDefine o tamanho máximo aceito para XML.\n\n```lua\nConfig.MaxXml = 80000\n```\n\n## Slots de outfit\n\nDefine quantos slots de outfit cada projeto pode usar.\n\n```lua\nConfig.OutfitSlots = 10\n```\n\n## Resource MetaPed\n\nDefine qual resource será usado para aplicar outfits no servidor.\n\n```lua\nConfig.MetapedResource = 'MetaPedAssets'\n```\n\n## Debug\n\nUse somente para testes.\n\n```lua\nConfig.Debug = false\n```", "contentEn": "# Basic configuration\n\nThe main settings are located in:\n\n```txt\nshared/config.lua\n```\n\n## Language\n\nAvailable languages:\n\n```lua\nConfig.Locale = 'pt-br'\n```\n\nCommon options:\n\n```txt\npt-br\nen-us\nes-es\n```\n\n## Open key\n\nThe default Studio key is **J**.\n\n```lua\nConfig.OpenKey = 0xF3830D8E\n```\n\n## XML limit\n\nDefines the maximum accepted XML size.\n\n```lua\nConfig.MaxXml = 80000\n```\n\n## Outfit slots\n\nDefines how many outfit slots each project can use.\n\n```lua\nConfig.OutfitSlots = 10\n```\n\n## MetaPed resource\n\nDefines which resource will be used to apply outfits on the server.\n\n```lua\nConfig.MetapedResource = 'MetaPedAssets'\n```\n\n## Debug\n\nUse only for testing.\n\n```lua\nConfig.Debug = false\n```", "visible": true}, {"id": "license", "productId": "tws-identity-forge", "category": "Configura O", "title": "Licença no servidor", "titleEn": "Server license", "slug": "license", "orderIndex": 50, "contentPt": "# Licença no servidor\n\nAlgumas versões do TWS Identity Forge usam validação remota de licença.\n\nA The Wanted Sole Studio fornece os dados que devem ser adicionados ao `server.cfg`.\n\n## Exemplo\n\n```cfg\nsetr tws_license_enabled \"1\"\nset tws_license_validate_url \"https://SEU-ENDPOINT.workers.dev/\"\nset tws_license_key \"CHAVE-QUE-VOCE-RECEBEU\"\nset tws_license_owner_steam \"steam:1100001xxxxxxxx\"\nset tws_license_hwid \"ID-UNICO-DO-SERVIDOR\"\n```\n\n## Explicação\n\n- `tws_license_enabled`: ativa a validação.\n- `tws_license_validate_url`: URL de validação fornecida.\n- `tws_license_key`: chave recebida após a compra.\n- `tws_license_owner_steam`: Steam do dono do servidor.\n- `tws_license_hwid`: identificador único do servidor.\n\n## Importante\n\nSe os dados estiverem errados ou ausentes, o resource pode ser bloqueado e o Studio não abrirá.\n\nNão compartilhe sua chave de licença com terceiros.", "contentEn": "# Server license\n\nSome versions of TWS Identity Forge use remote license validation.\n\nThe Wanted Sole Studio provides the data that must be added to `server.cfg`.\n\n## Example\n\n```cfg\nsetr tws_license_enabled \"1\"\nset tws_license_validate_url \"https://YOUR-ENDPOINT.workers.dev/\"\nset tws_license_key \"YOUR_LICENSE_KEY\"\nset tws_license_owner_steam \"steam:1100001xxxxxxxx\"\nset tws_license_hwid \"UNIQUE_SERVER_ID\"\n```\n\n## Explanation\n\n- `tws_license_enabled`: enables validation.\n- `tws_license_validate_url`: provided validation URL.\n- `tws_license_key`: key received after purchase.\n- `tws_license_owner_steam`: server owner's Steam identifier.\n- `tws_license_hwid`: unique server identifier.\n\n## Important\n\nIf the data is wrong or missing, the resource may be blocked and the Studio may not open.\n\nDo not share your license key with third parties.", "visible": true}, {"id": "opening-studio", "productId": "tws-identity-forge", "category": "Uso do Studio", "title": "Abrindo o Studio", "titleEn": "Opening the Studio", "slug": "opening-studio", "orderIndex": 60, "contentPt": "# Abrindo o Studio\n\nA tecla padrão para abrir o TWS Identity Forge é:\n\n```txt\nJ\n```\n\nEla é definida em:\n\n```lua\nConfig.OpenKey = 0xF3830D8E\n```\n\n## Se não abrir\n\nVerifique:\n\n- O resource está iniciado no `server.cfg`.\n- A licença está correta.\n- O resource MetaPed está configurado.\n- O jogador tem permissão caso o servidor use permissões.\n- Não existem erros no console do servidor ou F8.\n- O idioma configurado existe na pasta `locale`.\n\n## Boas práticas\n\n- Teste em um ambiente seguro antes de usar em produção.\n- Evite usar com outros menus de roupa abertos ao mesmo tempo.\n- Faça backup de arquivos antes de alterar configurações.", "contentEn": "# Opening the Studio\n\nThe default key to open TWS Identity Forge is:\n\n```txt\nJ\n```\n\nIt is defined in:\n\n```lua\nConfig.OpenKey = 0xF3830D8E\n```\n\n## If it does not open\n\nCheck:\n\n- The resource is started in `server.cfg`.\n- The license is correct.\n- The MetaPed resource is configured.\n- The player has permission if your server uses permissions.\n- There are no errors in the server console or F8.\n- The configured language exists in the `locale` folder.\n\n## Best practices\n\n- Test in a safe environment before using in production.\n- Avoid using it while other clothing menus are open.\n- Backup files before changing configurations.", "visible": true}, {"id": "interface", "productId": "tws-identity-forge", "category": "Uso do Studio", "title": "Interface e painéis", "titleEn": "Interface and panels", "slug": "interface", "orderIndex": 70, "contentPt": "# Interface e painéis\n\nO Studio é dividido em áreas para facilitar a criação e organização de personagens.\n\n## Painel principal\n\nÁrea onde você acessa categorias, itens, busca e ações principais.\n\n## Preview\n\nÁrea visual onde o ped/personagem é exibido em tempo real.\n\n## Projetos\n\nUse projetos para separar criações diferentes, testes ou outfits por tema.\n\n## Favoritos\n\nMarque itens importantes para acessar rapidamente depois.\n\n## Itens aplicados\n\nMostra componentes aplicados no personagem atual.\n\n## Ferramentas extras\n\nDependendo da versão, podem existir opções para iluminação, câmera, XML, filtros, presets e exportações.", "contentEn": "# Interface and panels\n\nThe Studio is divided into areas to make character creation and organization easier.\n\n## Main panel\n\nArea where you access categories, items, search, and main actions.\n\n## Preview\n\nVisual area where the ped/character is displayed in real time.\n\n## Projects\n\nUse projects to separate different creations, tests, or themed outfits.\n\n## Favorites\n\nMark important items so you can access them quickly later.\n\n## Applied items\n\nShows components currently applied to the character.\n\n## Extra tools\n\nDepending on the version, there may be options for lighting, camera, XML, filters, presets, and exports.", "visible": true}, {"id": "projects-outfits", "productId": "tws-identity-forge", "category": "Uso do Studio", "title": "Projetos e outfits", "titleEn": "Projects and outfits", "slug": "projects-outfits", "orderIndex": 80, "contentPt": "# Projetos e outfits\n\nProjetos ajudam a organizar criações e manter diferentes versões de personagens.\n\n## Para que servem\n\n- Separar personagens diferentes.\n- Criar variações de roupas.\n- Testar combinações sem perder referência.\n- Organizar pacotes ou coleções.\n\n## Slots de outfit\n\nO número de slots é definido em:\n\n```lua\nConfig.OutfitSlots = 10\n```\n\nVocê pode ajustar conforme a necessidade do servidor.\n\n## Dica\n\nUse nomes claros nos projetos para facilitar a organização, por exemplo:\n\n```txt\nSheriff - Outfit formal\nCivilian - Winter outfit\nGang member - Variant 01\n```", "contentEn": "# Projects and outfits\n\nProjects help organize creations and keep different character versions.\n\n## What they are for\n\n- Separate different characters.\n- Create clothing variations.\n- Test combinations without losing reference.\n- Organize packs or collections.\n\n## Outfit slots\n\nThe number of slots is defined in:\n\n```lua\nConfig.OutfitSlots = 10\n```\n\nYou can adjust it according to your server needs.\n\n## Tip\n\nUse clear project names to keep things organized, for example:\n\n```txt\nSheriff - Formal outfit\nCivilian - Winter outfit\nGang member - Variant 01\n```", "visible": true}, {"id": "components", "productId": "tws-identity-forge", "category": "Uso do Studio", "title": "Componentes, paletas e tint", "titleEn": "Components, palettes, and tint", "slug": "components", "orderIndex": 90, "contentPt": "# Componentes, paletas e tint\n\nO TWS Identity Forge trabalha com recursos MetaPed e componentes visuais.\n\n## Componentes\n\nComponentes representam partes do visual, como cabeça, cabelo, corpo, acessórios, roupas e itens relacionados.\n\n## Paletas\n\nPaletas são usadas para trabalhar variações de cor/tint.\n\nExemplos de paletas conhecidas:\n\n```txt\nmetaped_tint_skin\nmetaped_tint_hair\nmetaped_tint_cloth\nmetaped_tint_leather\nmetaped_tint_hat\nmetaped_tint_makeup\n```\n\n## Albedo, Normal e Material\n\nDependendo do componente, você pode trabalhar com variações como:\n\n- Albedo\n- Normal\n- Material\n- Palette\n- Tint\n\n## Dica\n\nTeste alterações em preview antes de salvar ou aplicar em produção.", "contentEn": "# Components, palettes, and tint\n\nTWS Identity Forge works with MetaPed resources and visual components.\n\n## Components\n\nComponents represent visual parts such as head, hair, body, accessories, clothes, and related items.\n\n## Palettes\n\nPalettes are used to work with color/tint variations.\n\nExamples of known palettes:\n\n```txt\nmetaped_tint_skin\nmetaped_tint_hair\nmetaped_tint_cloth\nmetaped_tint_leather\nmetaped_tint_hat\nmetaped_tint_makeup\n```\n\n## Albedo, Normal, and Material\n\nDepending on the component, you can work with variations such as:\n\n- Albedo\n- Normal\n- Material\n- Palette\n- Tint\n\n## Tip\n\nTest changes in preview before saving or applying them in production.", "visible": true}, {"id": "camera-lighting", "productId": "tws-identity-forge", "category": "Ferramentas", "title": "Câmera e iluminação", "titleEn": "Camera and lighting", "slug": "camera-lighting", "orderIndex": 100, "contentPt": "# Câmera e iluminação\n\nA câmera e a iluminação ajudam a analisar detalhes do personagem com mais precisão.\n\n## Câmera\n\nUse os controles disponíveis para aproximar, girar, mover e observar o ped de diferentes ângulos.\n\n## Iluminação\n\nAs opções de iluminação ajudam a visualizar cores, texturas e detalhes que podem mudar conforme o ambiente.\n\n## Boas práticas\n\n- Veja o outfit em diferentes ângulos.\n- Teste cores com iluminação neutra.\n- Verifique chapéus, cabelo, acessórios e partes pequenas com zoom.\n- Faça prints ou vídeos para revisão se necessário.", "contentEn": "# Camera and lighting\n\nCamera and lighting tools help analyze character details more accurately.\n\n## Camera\n\nUse the available controls to zoom, rotate, move, and inspect the ped from different angles.\n\n## Lighting\n\nLighting options help preview colors, textures, and details that may change depending on the environment.\n\n## Best practices\n\n- View the outfit from different angles.\n- Test colors under neutral lighting.\n- Check hats, hair, accessories, and small parts with zoom.\n- Take screenshots or videos for review when needed.", "visible": true}, {"id": "xml-import-export", "productId": "tws-identity-forge", "category": "Ferramentas", "title": "XML, importação e exportação", "titleEn": "XML, import and export", "slug": "xml-import-export", "orderIndex": 110, "contentPt": "# XML, importação e exportação\n\nAlgumas versões do TWS Identity Forge permitem trabalhar com XML e dados de outfit.\n\n## Limite de XML\n\nO tamanho máximo é definido em:\n\n```lua\nConfig.MaxXml = 80000\n```\n\n## Uso recomendado\n\n- Use XML para guardar ou testar estruturas.\n- Revise o conteúdo antes de aplicar.\n- Não importe arquivos desconhecidos sem verificar.\n- Faça backup dos dados importantes.\n\n## Erros comuns\n\nSe o XML não carregar:\n\n- Verifique se o arquivo não ultrapassa o limite.\n- Confirme se o conteúdo está completo.\n- Confira erros no console/F8.\n- Teste com um XML menor para validar.", "contentEn": "# XML, import and export\n\nSome versions of TWS Identity Forge allow working with XML and outfit data.\n\n## XML limit\n\nThe maximum size is defined in:\n\n```lua\nConfig.MaxXml = 80000\n```\n\n## Recommended use\n\n- Use XML to store or test structures.\n- Review the content before applying it.\n- Do not import unknown files without checking them.\n- Backup important data.\n\n## Common errors\n\nIf XML does not load:\n\n- Check that the file does not exceed the limit.\n- Confirm the content is complete.\n- Check console/F8 errors.\n- Test with a smaller XML to validate.", "visible": true}, {"id": "troubleshooting", "productId": "tws-identity-forge", "category": "Suporte", "title": "Problemas comuns", "titleEn": "Troubleshooting", "slug": "troubleshooting", "orderIndex": 120, "contentPt": "# Problemas comuns\n\n## O Studio não abre\n\nVerifique:\n\n- Resource iniciado com `ensure`.\n- Tecla correta.\n- Licença correta.\n- `Config.MetapedResource` configurado.\n- Console do servidor sem erros.\n- F8 sem erros importantes.\n\n## Roupa não aplica\n\nVerifique:\n\n- Resource MetaPed correto.\n- Dependências ativas.\n- Componentes compatíveis com o ped usado.\n- Se outro script não está sobrescrevendo o visual.\n\n## Idioma não muda\n\nConfira:\n\n```lua\nConfig.Locale = 'pt-br'\n```\n\ne se o arquivo correspondente existe em:\n\n```txt\nlocale/\n```\n\n## Erros visuais\n\nTente:\n\n- Limpar cache quando necessário.\n- Reiniciar resource.\n- Testar outro ped.\n- Verificar se o item é compatível com o modelo usado.", "contentEn": "# Troubleshooting\n\n## The Studio does not open\n\nCheck:\n\n- Resource started with `ensure`.\n- Correct key.\n- Correct license.\n- `Config.MetapedResource` configured.\n- Server console without errors.\n- F8 without major errors.\n\n## Clothing does not apply\n\nCheck:\n\n- Correct MetaPed resource.\n- Active dependencies.\n- Components compatible with the selected ped.\n- Whether another script is overriding the appearance.\n\n## Language does not change\n\nCheck:\n\n```lua\nConfig.Locale = 'pt-br'\n```\n\nand whether the corresponding file exists in:\n\n```txt\nlocale/\n```\n\n## Visual issues\n\nTry:\n\n- Clearing cache when needed.\n- Restarting the resource.\n- Testing another ped.\n- Checking whether the item is compatible with the model used.", "visible": true}, {"id": "faq", "productId": "tws-identity-forge", "category": "Suporte", "title": "FAQ", "titleEn": "FAQ", "slug": "faq", "orderIndex": 130, "contentPt": "# FAQ\n\n## Posso revender o produto?\n\nNão. A licença é de uso pessoal/servidor conforme os termos da The Wanted Sole Studio.\n\n## Posso editar o config?\n\nSim. O arquivo `shared/config.lua` existe para configuração do cliente.\n\n## Posso compartilhar minha licença?\n\nNão. A licença é vinculada ao comprador/servidor conforme as regras de uso.\n\n## A primeira instalação precisa de suporte?\n\nNem sempre. Siga esta documentação. Se houver erro, envie prints, vídeos e logs no suporte oficial.\n\n## Posso usar com qualquer ped?\n\nDepende da compatibilidade do ped e dos componentes MetaPed usados.\n\n## Onde peço suporte?\n\nUse os canais oficiais da The Wanted Sole Studio, principalmente Discord.", "contentEn": "# FAQ\n\n## Can I resell the product?\n\nNo. The license is for personal/server use according to The Wanted Sole Studio terms.\n\n## Can I edit the config?\n\nYes. The `shared/config.lua` file exists for customer configuration.\n\n## Can I share my license?\n\nNo. The license is linked to the buyer/server according to usage rules.\n\n## Do I need support for the first installation?\n\nNot always. Follow this documentation. If there is an error, send screenshots, videos, and logs through official support.\n\n## Can I use it with any ped?\n\nIt depends on the ped compatibility and the MetaPed components used.\n\n## Where do I request support?\n\nUse The Wanted Sole Studio official channels, mainly Discord.", "visible": true}, {"id": "changelog", "productId": "tws-identity-forge", "category": "Refer Ncia", "title": "Versão e changelog", "titleEn": "Version and changelog", "slug": "changelog", "orderIndex": 140, "contentPt": "# Versão e changelog\n\nA versão atual do resource é definida no `fxmanifest.lua`.\n\n```lua\nversion '2.0.7'\n```\n\n## Recomendação\n\nSempre verifique a versão antes de abrir ticket de suporte.\n\nAo pedir suporte, informe:\n\n- Versão do produto.\n- Nome do resource.\n- Prints ou vídeo do problema.\n- Logs do console do servidor.\n- Logs do F8, se existir.\n- Alterações feitas no `shared/config.lua`.\n\n## Atualizações\n\nAtualizações podem incluir correções, melhorias visuais, novas funções ou ajustes de compatibilidade.", "contentEn": "# Version and changelog\n\nThe current resource version is defined in `fxmanifest.lua`.\n\n```lua\nversion '2.0.7'\n```\n\n## Recommendation\n\nAlways check the version before opening a support ticket.\n\nWhen requesting support, include:\n\n- Product version.\n- Resource name.\n- Screenshots or video of the issue.\n- Server console logs.\n- F8 logs, if available.\n- Changes made to `shared/config.lua`.\n\n## Updates\n\nUpdates may include fixes, visual improvements, new features, or compatibility adjustments.", "visible": true}];
+
+function normalizeDocsPage(item: any): DocsPageRecord {
+  return {
+    id: item.id ?? item.slug ?? crypto.randomUUID(),
+    productId: item.productId ?? item.product_id ?? "tws-identity-forge",
+    category: item.category ?? "Geral",
+    title: item.title ?? "Sem título",
+    titleEn: item.titleEn ?? item.title_en ?? item.title ?? "",
+    slug: item.slug ?? item.id ?? "",
+    orderIndex: Number(item.orderIndex ?? item.order_index ?? 999),
+    contentPt: item.contentPt ?? item.content_pt ?? "",
+    contentEn: item.contentEn ?? item.content_en ?? "",
+    visible: item.visible !== false && item.visible !== 0,
+    updatedAt: item.updatedAt ?? item.updated_at
+  };
+}
+
+async function fetchDocsPages(includeHidden = false, token = "") {
+  const endpoint = includeHidden ? "/api/admin/docs" : "/api/docs";
+  const response = await fetch(apiUrl(endpoint), {
+    headers: token ? { "Authorization": `Bearer ${token}` } : undefined
+  });
+
+  if (!response.ok) {
+    if (!includeHidden) return DOCS_FALLBACK_PAGES;
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.error ?? "Não foi possível carregar a documentação.");
+  }
+
+  const payload = await response.json();
+  const rows = Array.isArray(payload) ? payload : payload.pages ?? [];
+  const normalized = rows.map(normalizeDocsPage).sort((a: DocsPageRecord, b: DocsPageRecord) => a.orderIndex - b.orderIndex);
+  return normalized.length ? normalized : DOCS_FALLBACK_PAGES;
+}
+
+async function saveAdminDocsPage(token: string, page: DocsPageRecord) {
+  const response = await fetch(apiUrl("/api/admin/docs"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(page)
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.error ?? "Não foi possível salvar a página.");
+  }
+
+  const payload = await response.json();
+  return normalizeDocsPage(payload.page ?? page);
+}
+
+async function deleteAdminDocsPage(token: string, id: string) {
+  const response = await fetch(apiUrl(`/api/admin/docs/${encodeURIComponent(id)}`), {
+    method: "DELETE",
+    headers: { "Authorization": `Bearer ${token}` }
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.error ?? "Não foi possível apagar a página.");
+  }
+}
+
+function emptyDocsPage(): DocsPageRecord {
+  return {
+    id: `new-${Date.now()}`,
+    productId: "tws-identity-forge",
+    category: "Nova Categoria",
+    title: "Nova página",
+    titleEn: "New page",
+    slug: `nova-pagina-${Date.now()}`,
+    orderIndex: 999,
+    contentPt: "# Nova página\n\nEscreva o conteúdo aqui.",
+    contentEn: "# New page\n\nWrite the content here.",
+    visible: true
+  };
+}
+
+function escapeDocsHtml(value: string) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function inlineDocsMarkdown(value: string) {
+  return escapeDocsHtml(value)
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+
+function docsMarkdownToHtml(markdown: string) {
+  const lines = String(markdown ?? "").split("\n");
+  let html = "";
+  let codeLines: string[] = [];
+  let inCode = false;
+  let inList = false;
+
+  const closeList = () => {
+    if (inList) {
+      html += "</ul>";
+      inList = false;
+    }
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trimEnd();
+
+    if (line.trim().startsWith("```")) {
+      if (inCode) {
+        html += `<pre><code>${escapeDocsHtml(codeLines.join("\n"))}</code></pre>`;
+        codeLines = [];
+        inCode = false;
+      } else {
+        closeList();
+        inCode = true;
+      }
+      continue;
+    }
+
+    if (inCode) {
+      codeLines.push(rawLine);
+      continue;
+    }
+
+    if (!line.trim()) {
+      closeList();
+      continue;
+    }
+
+    if (line.startsWith("# ")) {
+      closeList();
+      html += `<h1>${escapeDocsHtml(line.slice(2))}</h1>`;
+      continue;
+    }
+
+    if (line.startsWith("## ")) {
+      closeList();
+      html += `<h2>${escapeDocsHtml(line.slice(3))}</h2>`;
+      continue;
+    }
+
+    if (line.startsWith("### ")) {
+      closeList();
+      html += `<h3>${escapeDocsHtml(line.slice(4))}</h3>`;
+      continue;
+    }
+
+    if (line.startsWith("- ")) {
+      if (!inList) {
+        html += "<ul>";
+        inList = true;
+      }
+      html += `<li>${inlineDocsMarkdown(line.slice(2))}</li>`;
+      continue;
+    }
+
+    closeList();
+    html += `<p>${inlineDocsMarkdown(line)}</p>`;
+  }
+
+  closeList();
+
+  if (inCode) {
+    html += `<pre><code>${escapeDocsHtml(codeLines.join("\n"))}</code></pre>`;
+  }
+
+  return html;
+}
+
+function DocsContent({ content }: { content: string }) {
+  return (
+    <div
+      className="docs-markdown"
+      dangerouslySetInnerHTML={{ __html: docsMarkdownToHtml(content) }}
+    />
+  );
+}
+
+function DocsPage({ language }: { language: SiteLanguage }) {
+  const [pages, setPages] = useState<DocsPageRecord[]>(DOCS_FALLBACK_PAGES);
+  const [selectedId, setSelectedId] = useState(DOCS_FALLBACK_PAGES[0]?.id ?? "");
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const isEnglish = language === "en_US";
+
+  useEffect(() => {
+    let mounted = true;
+    fetchDocsPages(false)
+      .then((rows) => {
+        if (!mounted) return;
+        setPages(rows);
+        setSelectedId((current) => current || rows[0]?.id || "");
+      })
+      .catch((error) => console.error(error))
+      .finally(() => mounted && setLoading(false));
+
+    return () => { mounted = false; };
+  }, []);
+
+  const filteredPages = pages.filter((page) => {
+    const title = isEnglish ? page.titleEn || page.title : page.title;
+    const content = isEnglish ? page.contentEn || page.contentPt : page.contentPt;
+    const haystack = `${title} ${page.category} ${content}`.toLowerCase();
+    return !query.trim() || haystack.includes(query.trim().toLowerCase());
+  });
+
+  const selected = filteredPages.find((page) => page.id === selectedId) ?? filteredPages[0] ?? pages[0];
+  const grouped = filteredPages.reduce<Record<string, DocsPageRecord[]>>((acc, page) => {
+    if (!acc[page.category]) acc[page.category] = [];
+    acc[page.category].push(page);
+    return acc;
+  }, {});
+
+  const selectedContent = selected ? (isEnglish ? selected.contentEn || selected.contentPt : selected.contentPt) : "";
+  const selectedTitle = selected ? (isEnglish ? selected.titleEn || selected.title : selected.title) : "";
+
+  return (
+    <main className="min-h-screen bg-background px-6 py-10 lg:py-14">
+      <style>{`
+        .docs-markdown h1 { font-size: clamp(2rem, 4vw, 3.7rem); line-height: .95; letter-spacing: -.055em; margin: 0 0 1.4rem; color: hsl(var(--foreground)); }
+        .docs-markdown h2 { margin-top: 2.2rem; padding-top: 1.6rem; border-top: 1px solid hsl(var(--border)); color: hsl(var(--primary)); font-size: 1.45rem; font-weight: 800; }
+        .docs-markdown h3 { margin-top: 1.7rem; color: hsl(var(--foreground)); font-size: 1.1rem; font-weight: 800; }
+        .docs-markdown p { margin: .85rem 0; color: hsl(var(--muted-foreground)); line-height: 1.8; }
+        .docs-markdown ul { list-style: none; padding: 0; display: grid; gap: .55rem; margin: 1rem 0; }
+        .docs-markdown li { position: relative; padding-left: 1.45rem; color: hsl(var(--muted-foreground)); }
+        .docs-markdown li::before { content: "✦"; position: absolute; left: 0; color: hsl(var(--primary)); }
+        .docs-markdown pre { overflow: auto; border-radius: 1rem; background: #15120f; color: #f6ecd8; padding: 1rem; border: 1px solid rgba(255,255,255,.08); }
+        .docs-markdown code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: .9em; }
+        .docs-markdown p code, .docs-markdown li code { background: hsl(var(--primary) / .12); color: hsl(var(--primary)); border-radius: .45rem; padding: .12rem .35rem; }
+      `}</style>
+
+      <div className="mx-auto max-w-7xl">
+        <section className="mb-6 rounded-[30px] border border-border bg-card p-7 lg:p-10 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+          <SectionTag>{isEnglish ? "Documentation" : "Documentação"}</SectionTag>
+          <h1 className="mt-5 text-4xl lg:text-6xl font-bold tracking-tight text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            TWS Identity Forge
+          </h1>
+          <p className="mt-4 max-w-3xl text-sm lg:text-base leading-7 text-muted-foreground">
+            {isEnglish
+              ? "Customer documentation for installation, configuration, usage, and support."
+              : "Documentação para cliente com instalação, configuração, uso e suporte."}
+          </p>
+        </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[310px_minmax(0,1fr)] gap-6 items-start">
+          <aside className="lg:sticky lg:top-24 rounded-[26px] border border-border bg-card p-4 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={isEnglish ? "Search documentation..." : "Buscar na documentação..."}
+              className="mb-4 h-11 w-full rounded-full border border-border bg-background px-4 text-sm outline-none focus:border-primary/40"
+            />
+
+            {loading && <p className="px-2 py-2 text-xs text-muted-foreground">{isEnglish ? "Loading..." : "Carregando..."}</p>}
+
+            <nav className="max-h-[calc(100vh-210px)] overflow-y-auto pr-1">
+              {Object.entries(grouped).map(([category, rows]) => (
+                <div key={category} className="mb-5">
+                  <p className="mb-2 px-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{category}</p>
+                  <div className="space-y-1">
+                    {rows.map((page) => {
+                      const title = isEnglish ? page.titleEn || page.title : page.title;
+                      const active = selected?.id === page.id;
+                      return (
+                        <button
+                          key={page.id}
+                          onClick={() => setSelectedId(page.id)}
+                          className={`w-full rounded-2xl px-3 py-2 text-left text-sm font-semibold transition-all ${active ? "bg-primary/10 text-primary border border-primary/20" : "text-foreground/65 hover:bg-primary/5 hover:text-foreground border border-transparent"}`}
+                        >
+                          {title}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </nav>
+          </aside>
+
+          <article className="min-h-[640px] rounded-[30px] border border-border bg-card p-6 lg:p-10 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+            {selected ? (
+              <>
+                <div className="mb-6 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-primary">
+                    {selected.category}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{selectedTitle}</span>
+                </div>
+                <DocsContent content={selectedContent} />
+              </>
+            ) : (
+              <p className="text-muted-foreground">{isEnglish ? "No page found." : "Nenhuma página encontrada."}</p>
+            )}
+          </article>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function DocsAdminPage() {
+  const [token, setToken] = useState(() => getAdminToken());
+  const [tokenInput, setTokenInput] = useState("");
+  const [pages, setPages] = useState<DocsPageRecord[]>([]);
+  const [selected, setSelected] = useState<DocsPageRecord>(() => emptyDocsPage());
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const isLogged = !!token;
+
+  const load = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setMessage(null);
+    try {
+      const rows = await fetchDocsPages(true, token);
+      setPages(rows);
+      if (rows.length > 0 && selected.id.startsWith("new-")) setSelected(rows[0]);
+    } catch (error) {
+      console.error(error);
+      setMessage(error instanceof Error ? error.message : "Erro ao carregar documentação.");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function handleLogin() {
+    storeAdminToken(tokenInput);
+    setToken(tokenInput.trim());
+    setTokenInput("");
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setMessage(null);
+    try {
+      const saved = await saveAdminDocsPage(token, selected);
+      setSelected(saved);
+      setMessage("Página salva com sucesso.");
+      await load();
+    } catch (error) {
+      console.error(error);
+      setMessage(error instanceof Error ? error.message : "Erro ao salvar página.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!selected.id || selected.id.startsWith("new-")) return;
+    if (!window.confirm("Apagar esta página da documentação?")) return;
+
+    setSaving(true);
+    setMessage(null);
+    try {
+      await deleteAdminDocsPage(token, selected.id);
+      setSelected(emptyDocsPage());
+      setMessage("Página apagada.");
+      await load();
+    } catch (error) {
+      console.error(error);
+      setMessage(error instanceof Error ? error.message : "Erro ao apagar página.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const fieldClass = "w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary/40";
+  const labelClass = "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
+
+  if (!isLogged) {
+    return (
+      <main className="min-h-screen bg-background px-6 py-16">
+        <div className="mx-auto max-w-xl rounded-[30px] border border-border bg-card p-7 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+          <SectionTag>Admin Docs</SectionTag>
+          <h1 className="mt-4 text-3xl font-bold text-foreground/95">Editor da documentação</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Use o mesmo token admin da loja.</p>
+          <div className="mt-6 space-y-3">
+            <input
+              value={tokenInput}
+              onChange={(e) => setTokenInput(e.target.value)}
+              placeholder="ADMIN_ACCESS_TOKEN"
+              className={fieldClass}
+            />
+            <button onClick={handleLogin} className="w-full rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
+              Entrar
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-background px-6 py-10">
+      <div className="mx-auto max-w-[1500px]">
+        <section className="mb-6 rounded-[30px] border border-border bg-card p-7 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <SectionTag>Admin Docs</SectionTag>
+              <h1 className="mt-4 text-3xl lg:text-5xl font-bold text-foreground/95">Editor da documentação</h1>
+              <p className="mt-2 text-sm text-muted-foreground">Crie e edite as páginas da documentação do TWS Identity Forge sem mexer no código.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <a href="/docs" className="rounded-xl border border-border px-4 py-3 text-sm font-semibold text-foreground/70 hover:bg-primary/5">
+                Ver documentação
+              </a>
+              <button onClick={() => setSelected(emptyDocsPage())} className="rounded-xl border border-primary/25 px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5">
+                Nova página
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <div className="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-6 items-start">
+          <aside className="xl:sticky xl:top-24 rounded-[26px] border border-border bg-card p-5 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-bold text-foreground/90">Páginas</h2>
+              {loading && <span className="text-xs text-muted-foreground">Carregando...</span>}
+            </div>
+            <div className="max-h-[calc(100vh-220px)] overflow-y-auto space-y-2 pr-1">
+              {pages.map((page) => (
+                <button
+                  key={page.id}
+                  onClick={() => setSelected(page)}
+                  className={`w-full rounded-2xl border p-3 text-left transition-all ${selected.id === page.id ? "border-primary/35 bg-primary/10" : "border-border bg-background/60 hover:border-primary/20"}`}
+                >
+                  <p className="font-semibold text-foreground/85">{page.title}</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">{page.category} · {page.slug} · {page.visible ? "visível" : "oculto"}</p>
+                </button>
+              ))}
+            </div>
+          </aside>
+
+          <section className="rounded-[26px] border border-border bg-card p-5 lg:p-6 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <label className="space-y-2">
+                <span className={labelClass}>ID</span>
+                <input value={selected.id} onChange={(e) => setSelected({ ...selected, id: e.target.value })} className={fieldClass} />
+              </label>
+              <label className="space-y-2">
+                <span className={labelClass}>Slug</span>
+                <input value={selected.slug} onChange={(e) => setSelected({ ...selected, slug: e.target.value })} className={fieldClass} />
+              </label>
+              <label className="space-y-2">
+                <span className={labelClass}>Categoria</span>
+                <input value={selected.category} onChange={(e) => setSelected({ ...selected, category: e.target.value })} className={fieldClass} />
+              </label>
+              <label className="space-y-2">
+                <span className={labelClass}>Ordem</span>
+                <input type="number" value={selected.orderIndex} onChange={(e) => setSelected({ ...selected, orderIndex: Number(e.target.value) })} className={fieldClass} />
+              </label>
+              <label className="space-y-2">
+                <span className={labelClass}>Título PT</span>
+                <input value={selected.title} onChange={(e) => setSelected({ ...selected, title: e.target.value })} className={fieldClass} />
+              </label>
+              <label className="space-y-2">
+                <span className={labelClass}>Título EN</span>
+                <input value={selected.titleEn ?? ""} onChange={(e) => setSelected({ ...selected, titleEn: e.target.value })} className={fieldClass} />
+              </label>
+              <label className="space-y-2">
+                <span className={labelClass}>Visível</span>
+                <select value={selected.visible ? "1" : "0"} onChange={(e) => setSelected({ ...selected, visible: e.target.value === "1" })} className={fieldClass}>
+                  <option value="1">Sim</option>
+                  <option value="0">Não</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 xl:grid-cols-2 gap-4">
+              <label className="space-y-2">
+                <span className={labelClass}>Conteúdo PT</span>
+                <textarea value={selected.contentPt} onChange={(e) => setSelected({ ...selected, contentPt: e.target.value })} rows={18} className={fieldClass + " font-mono"} />
+              </label>
+              <label className="space-y-2">
+                <span className={labelClass}>Conteúdo EN</span>
+                <textarea value={selected.contentEn ?? ""} onChange={(e) => setSelected({ ...selected, contentEn: e.target.value })} rows={18} className={fieldClass + " font-mono"} />
+              </label>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button onClick={handleSave} disabled={saving} className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+                {saving ? "Salvando..." : "Salvar / publicar"}
+              </button>
+              <button onClick={handleDelete} disabled={saving} className="rounded-xl border border-red-500/25 px-5 py-3 text-sm font-semibold text-red-500 hover:bg-red-500/5 disabled:opacity-60">
+                Apagar
+              </button>
+            </div>
+
+            {message && <p className="mt-4 text-sm text-muted-foreground">{message}</p>}
+          </section>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+
 function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
   const companyLinks = [
     { label: "About", href: "/about" },
@@ -4096,7 +4623,7 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
   const quickLinks = [
     { label: "Início", action: () => onNavigate("hero") },
     { label: "Scripts", action: () => onNavigate("products") },
-    { label: "Documentação", href: "https://docs.thewantedsolestudio.workers.dev" },
+    { label: "Documentação", href: "/docs" },
     { label: "Discord", href: "https://discord.gg/qE29trG84u" },
   ];
 
@@ -5948,6 +6475,14 @@ export default function App() {
 
   if (pathname === "/about" || pathname === "/about-us") {
     return renderPageWithNavbar(<AboutPage language={language} />);
+  }
+
+  if (pathname === "/docs" || pathname === "/documentation") {
+    return renderPageWithNavbar(<DocsPage language={language} />);
+  }
+
+  if (pathname === "/admin/docs") {
+    return renderPageWithNavbar(<DocsAdminPage />);
   }
 
   const productRouteMatch = pathname.match(/^\/(script|scripts|custom-peds|systems|outfit-creator|add-ons)\/(.+)$/);
