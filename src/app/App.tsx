@@ -2082,7 +2082,7 @@ function HeroSection({ onNavigate }: { onNavigate: (id: string) => void }) {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden"
+      className="relative min-h-[640px] lg:min-h-[85vh] flex flex-col items-center justify-center px-6 py-12 lg:py-16 overflow-hidden"
     >
       {/* Background layers */}
       <div className="absolute inset-0 pointer-events-none">
@@ -2118,25 +2118,25 @@ function HeroSection({ onNavigate }: { onNavigate: (id: string) => void }) {
         />
         {/* Radial glow top */}
         <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] opacity-25"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[720px] h-[320px] opacity-25"
           style={{
             background: "radial-gradient(ellipse at center top, rgba(201,168,76,0.14) 0%, transparent 70%)"
           }}
         />
         {/* Bottom fade */}
         <div
-          className="absolute bottom-0 left-0 right-0 h-48"
+          className="absolute bottom-0 left-0 right-0 h-32"
           style={{ background: "linear-gradient(to bottom, transparent, #f7f5f0)" }}
         />
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto text-center">
+      <div className="relative z-10 max-w-4xl mx-auto text-center pt-4 lg:pt-6">
         {/* Eyebrow */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex justify-center mb-8"
+          className="flex justify-center mb-5"
         >
           <SectionTag>
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
@@ -2171,7 +2171,7 @@ function HeroSection({ onNavigate }: { onNavigate: (id: string) => void }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-lg text-foreground/55 max-w-2xl mx-auto mb-10 leading-relaxed"
+          className="text-base lg:text-lg text-foreground/55 max-w-2xl mx-auto mb-6 leading-relaxed"
           style={{ fontFamily: "'DM Sans', sans-serif" }}
         >
           Scripts exclusivos, custom peds e sistemas premium desenvolvidos para servidores RedM que exigem
@@ -2183,17 +2183,17 @@ function HeroSection({ onNavigate }: { onNavigate: (id: string) => void }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-wrap items-center justify-center gap-3 mb-14"
+          className="flex flex-wrap items-center justify-center gap-3 mb-8"
         >
-          <GoldButton onClick={() => onNavigate("products")} className="px-7 py-3 text-base">
+          <GoldButton onClick={() => onNavigate("products")} className="px-6 py-2.5 text-sm">
             Ver Produtos
             <ArrowRight size={15} />
           </GoldButton>
-          <GhostButton href="https://discord.gg/qE29trG84u" external className="px-7 py-3 text-base">
+          <GhostButton href="https://discord.gg/qE29trG84u" external className="px-6 py-2.5 text-sm">
             <MessageCircle size={15} />
             Acessar Discord
           </GhostButton>
-          <GhostButton href="https://docs.thewantedsolestudio.workers.dev" external className="px-7 py-3 text-base">
+          <GhostButton href="https://docs.thewantedsolestudio.workers.dev" external className="px-6 py-2.5 text-sm">
             <BookOpen size={15} />
             Documentação
           </GhostButton>
@@ -2204,7 +2204,7 @@ function HeroSection({ onNavigate }: { onNavigate: (id: string) => void }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className="flex flex-wrap items-center justify-center gap-6"
+          className="flex flex-wrap items-center justify-center gap-4 lg:gap-5"
         >
           {[
             { icon: Check, label: "100% Original" },
@@ -2228,7 +2228,7 @@ function HeroSection({ onNavigate }: { onNavigate: (id: string) => void }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 1 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-foreground/25 hover:text-foreground/50 transition-colors"
+        className="absolute bottom-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-foreground/25 hover:text-foreground/50 transition-colors"
       >
         <span className="text-[10px] tracking-widest uppercase" style={{ fontFamily: "'DM Sans', sans-serif" }}>
           Explorar
@@ -2243,12 +2243,12 @@ function HeroSection({ onNavigate }: { onNavigate: (id: string) => void }) {
 
 function WhySection({ language }: { language: SiteLanguage }) {
   return (
-    <section id="why" className="py-28 px-6">
+    <section id="why" className="py-14 lg:py-16 px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-center mb-9">
           <SectionTag>{language === "en_US" ? "Why choose us" : "Por que nos escolher"}</SectionTag>
           <h2
-            className="mt-5 text-3xl lg:text-4xl font-bold text-foreground/90"
+            className="mt-4 text-2xl lg:text-4xl font-bold text-foreground/90"
             style={{ fontFamily: "'Raleway', sans-serif" }}
           >
             {language === "en_US" ? "The studio behind premium" : "O Studio por trás do melhor"}
@@ -2470,10 +2470,10 @@ function ProductsSection({
     });
 
   return (
-    <section id="products" className="py-28 px-6">
+    <section id="products" className="py-14 lg:py-16 px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-12">
+        <div className="mb-8">
           <SectionTag>Vitrine</SectionTag>
           <div className="mt-5 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <h2
