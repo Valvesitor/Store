@@ -3294,6 +3294,7 @@ function ProductAdminForm({
   onSave: () => void;
   saving: boolean;
 }) {
+  const [activeTab, setActiveTab] = useState<"principal" | "pt" | "en" | "media">("principal");
   const featuresText = product.features.join("\n");
   const featuresEnText = (product.featuresEn ?? []).join("\n");
   const requirementsText = product.requirements.join("\n");
@@ -3303,206 +3304,286 @@ function ProductAdminForm({
   const update = (patch: Partial<Product>) => onChange({ ...product, ...patch });
 
   const fieldClass = "w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary/40";
+  const textareaClass = `${fieldClass} min-h-[150px] resize-y`;
   const labelClass = "text-xs font-semibold uppercase tracking-wide text-muted-foreground";
-  const sectionClass = "rounded-[24px] border border-border bg-background/55 p-5 lg:p-6";
-  const sectionTitleClass = "text-lg font-bold text-foreground/90";
+  const cardClass = "rounded-[24px] border border-border bg-background/55 p-5 lg:p-6";
+  const tabs = [
+    { id: "principal" as const, label: "Principal", hint: "Nome, preço, Tebex e publicação" },
+    { id: "pt" as const, label: "Português", hint: "Descrição, recursos e requisitos" },
+    { id: "en" as const, label: "English", hint: "Versão do produto em inglês" },
+    { id: "media" as const, label: "Mídia", hint: "Imagens, vídeos e preview" }
+  ];
 
   return (
     <div className="space-y-6">
       <div className="rounded-[28px] border border-border bg-card p-6 lg:p-7 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <SectionTag>Admin</SectionTag>
+            <SectionTag>Editor de produto</SectionTag>
             <h2 className="mt-3 text-2xl lg:text-3xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
-              {product.id.startsWith("new-") ? "Publicar novo produto" : "Editar produto"}
+              {product.id.startsWith("new-") ? "Publicar novo produto" : product.name || "Editar produto"}
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Organize as informações por idioma, conecte o Package ID da Tebex e publique na vitrine.
+              Edite cada parte do produto em abas. Assim fica mais fácil revisar antes de publicar.
             </p>
           </div>
 
-          <button
-            onClick={onSave}
-            disabled={saving}
-            className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all hover:brightness-105 disabled:opacity-60"
-          >
-            {saving ? "Salvando..." : "Salvar e publicar"}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Status</p>
+              <p className="mt-1 text-sm font-semibold text-primary">{product.visible === false ? "Oculto" : "Publicado"}</p>
+            </div>
+            <button
+              onClick={onSave}
+              disabled={saving}
+              className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-all hover:brightness-105 disabled:opacity-60"
+            >
+              {saving ? "Salvando..." : "Salvar e publicar"}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className={sectionClass}>
-        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">01</p>
-            <h3 className={sectionTitleClass} style={{ fontFamily: "'Raleway', sans-serif" }}>
-              Informações principais
+      <div className="rounded-[28px] border border-border bg-card p-3 shadow-[0_14px_45px_rgba(32,32,32,0.05)]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`rounded-2xl border px-4 py-4 text-left transition-all ${
+                activeTab === tab.id
+                  ? "border-primary/40 bg-primary/10 shadow-[0_0_0_1px_rgba(201,168,76,0.12)]"
+                  : "border-transparent hover:border-primary/15 hover:bg-primary/5"
+              }`}
+            >
+              <span className={`text-sm font-bold ${activeTab === tab.id ? "text-primary" : "text-foreground/85"}`}>
+                {tab.label}
+              </span>
+              <span className="mt-1 block text-[11px] leading-4 text-muted-foreground">
+                {tab.hint}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeTab === "principal" && (
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-6">
+          <div className={cardClass}>
+            <div className="mb-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Principal</p>
+              <h3 className="text-lg font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                Identidade do produto
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <label className="space-y-2 lg:col-span-2">
+                <span className={labelClass}>Nome</span>
+                <input value={product.name} onChange={(e) => update({ name: e.target.value })} className={fieldClass} />
+              </label>
+
+              <label className="space-y-2">
+                <span className={labelClass}>Categoria</span>
+                <select value={product.category} onChange={(e) => update({ category: e.target.value as Product["category"] })} className={fieldClass}>
+                  {CATEGORIES.filter((item) => item !== "Todos").map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </label>
+
+              <label className="space-y-2">
+                <span className={labelClass}>Status visual</span>
+                <select value={product.status} onChange={(e) => update({ status: e.target.value as ProductStatus })} className={fieldClass}>
+                  <option value="novo">Novo</option>
+                  <option value="popular">Popular</option>
+                  <option value="atualizado">Atualizado</option>
+                  <option value="em-breve">Em breve</option>
+                </select>
+              </label>
+
+              <label className="space-y-2">
+                <span className={labelClass}>Preço fallback</span>
+                <input type="number" step="0.01" value={product.price} onChange={(e) => update({ price: Number(e.target.value), priceSource: "fallback" })} className={fieldClass} />
+              </label>
+
+              <label className="space-y-2">
+                <span className={labelClass}>Ícone</span>
+                <input value={product.iconName ?? ""} onChange={(e) => update({ iconName: e.target.value })} placeholder="Package, Crown, Palette..." className={fieldClass} />
+              </label>
+            </div>
+          </div>
+
+          <div className={cardClass}>
+            <div className="mb-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Publicação</p>
+              <h3 className="text-lg font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                Loja e Tebex
+              </h3>
+            </div>
+
+            <div className="space-y-4">
+              <label className="space-y-2 block">
+                <span className={labelClass}>Package ID Tebex</span>
+                <input value={product.packageId ?? ""} onChange={(e) => update({ packageId: e.target.value })} placeholder="7457637" className={fieldClass} />
+              </label>
+
+              <label className="space-y-2 block">
+                <span className={labelClass}>URL Tebex</span>
+                <input value={product.tebexUrl} onChange={(e) => update({ tebexUrl: e.target.value })} placeholder="https://.../package/..." className={fieldClass} />
+              </label>
+
+              <label className="space-y-2 block">
+                <span className={labelClass}>URL Documentação</span>
+                <input value={product.docsUrl ?? ""} onChange={(e) => update({ docsUrl: e.target.value })} placeholder="https://docs..." className={fieldClass} />
+              </label>
+
+              <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
+                <p className="text-xs font-semibold text-foreground/75">Preço automático</p>
+                <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+                  O site tenta puxar o preço pela Tebex. O fallback só entra caso o Package ID não retorne valor.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                <label className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 text-sm text-foreground/75">
+                  <span>
+                    <strong className="block text-foreground/90">Visível na loja</strong>
+                    <span className="text-xs text-muted-foreground">Mostra ou oculta da vitrine pública.</span>
+                  </span>
+                  <input type="checkbox" checked={product.visible !== false} onChange={(e) => update({ visible: e.target.checked })} />
+                </label>
+
+                <label className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 text-sm text-foreground/75">
+                  <span>
+                    <strong className="block text-foreground/90">Produto em destaque</strong>
+                    <span className="text-xs text-muted-foreground">Prioriza o produto na listagem.</span>
+                  </span>
+                  <input type="checkbox" checked={product.featured === true} onChange={(e) => update({ featured: e.target.checked })} />
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "pt" && (
+        <div className={cardClass}>
+          <div className="mb-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Português</p>
+            <h3 className="text-lg font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              Conteúdo para clientes PT
             </h3>
           </div>
-          <p className="text-xs text-muted-foreground">Dados usados no card da vitrine e na página do produto.</p>
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <label className="space-y-2 xl:col-span-2">
+              <span className={labelClass}>Descrição curta</span>
+              <input value={product.description} onChange={(e) => update({ description: e.target.value })} className={fieldClass} />
+            </label>
+
+            <label className="space-y-2 xl:col-span-2">
+              <span className={labelClass}>Descrição completa</span>
+              <textarea value={product.fullDescription} onChange={(e) => update({ fullDescription: e.target.value })} rows={6} className={textareaClass} />
+            </label>
+
+            <label className="space-y-2">
+              <span className={labelClass}>Recursos, um por linha</span>
+              <textarea value={featuresText} onChange={(e) => update({ features: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={9} className={textareaClass} />
+            </label>
+
+            <label className="space-y-2">
+              <span className={labelClass}>Requisitos, um por linha</span>
+              <textarea value={requirementsText} onChange={(e) => update({ requirements: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={9} className={textareaClass} />
+            </label>
+          </div>
         </div>
+      )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
-          <label className="space-y-2 xl:col-span-2">
-            <span className={labelClass}>Nome</span>
-            <input value={product.name} onChange={(e) => update({ name: e.target.value })} className={fieldClass} />
-          </label>
-
-          <label className="space-y-2">
-            <span className={labelClass}>Categoria</span>
-            <select value={product.category} onChange={(e) => update({ category: e.target.value as Product["category"] })} className={fieldClass}>
-              {CATEGORIES.filter((item) => item !== "Todos").map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </label>
-
-          <label className="space-y-2">
-            <span className={labelClass}>Status</span>
-            <select value={product.status} onChange={(e) => update({ status: e.target.value as ProductStatus })} className={fieldClass}>
-              <option value="novo">Novo</option>
-              <option value="popular">Popular</option>
-              <option value="atualizado">Atualizado</option>
-              <option value="em-breve">Em breve</option>
-            </select>
-          </label>
-
-          <label className="space-y-2">
-            <span className={labelClass}>Preço fallback</span>
-            <input type="number" step="0.01" value={product.price} onChange={(e) => update({ price: Number(e.target.value), priceSource: "fallback" })} className={fieldClass} />
-          </label>
-
-          <label className="space-y-2">
-            <span className={labelClass}>Package ID Tebex</span>
-            <input value={product.packageId ?? ""} onChange={(e) => update({ packageId: e.target.value })} placeholder="7457637" className={fieldClass} />
-          </label>
-
-          <label className="space-y-2 xl:col-span-2">
-            <span className={labelClass}>URL Tebex</span>
-            <input value={product.tebexUrl} onChange={(e) => update({ tebexUrl: e.target.value })} placeholder="https://.../package/..." className={fieldClass} />
-          </label>
-
-          <label className="space-y-2 xl:col-span-2">
-            <span className={labelClass}>URL Documentação</span>
-            <input value={product.docsUrl ?? ""} onChange={(e) => update({ docsUrl: e.target.value })} placeholder="https://docs..." className={fieldClass} />
-          </label>
-
-          <div className="xl:col-span-2 rounded-2xl border border-primary/15 bg-primary/5 p-4">
-            <p className="text-xs font-semibold text-foreground/75">Preço automático da Tebex</p>
-            <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
-              Se o Package ID estiver correto, o site puxa o preço direto da Tebex. O preço fallback só aparece caso a Tebex não retorne valor.
+      {activeTab === "en" && (
+        <div className="rounded-[24px] border border-primary/20 bg-primary/5 p-5 lg:p-6">
+          <div className="mb-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/80">English</p>
+            <h3 className="text-lg font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              Product English version
+            </h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              If a field is empty, the product uses the Portuguese version as fallback.
             </p>
           </div>
 
-          <div className="xl:col-span-2 flex flex-wrap items-center gap-5 rounded-2xl border border-border bg-card p-4">
-            <label className="inline-flex items-center gap-2 text-sm text-foreground/75">
-              <input type="checkbox" checked={product.visible !== false} onChange={(e) => update({ visible: e.target.checked })} />
-              Visível na loja
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <label className="space-y-2 xl:col-span-2">
+              <span className={labelClass}>Name EN</span>
+              <input value={product.nameEn ?? ""} onChange={(e) => update({ nameEn: e.target.value })} className={fieldClass} />
             </label>
-            <label className="inline-flex items-center gap-2 text-sm text-foreground/75">
-              <input type="checkbox" checked={product.featured === true} onChange={(e) => update({ featured: e.target.checked })} />
-              Produto em destaque
+
+            <label className="space-y-2 xl:col-span-2">
+              <span className={labelClass}>Short Description EN</span>
+              <input value={product.descriptionEn ?? ""} onChange={(e) => update({ descriptionEn: e.target.value })} className={fieldClass} />
+            </label>
+
+            <label className="space-y-2 xl:col-span-2">
+              <span className={labelClass}>Full Description EN</span>
+              <textarea value={product.fullDescriptionEn ?? ""} onChange={(e) => update({ fullDescriptionEn: e.target.value })} rows={6} className={textareaClass} />
+            </label>
+
+            <label className="space-y-2">
+              <span className={labelClass}>Features EN, one per line</span>
+              <textarea value={featuresEnText} onChange={(e) => update({ featuresEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={9} className={textareaClass} />
+            </label>
+
+            <label className="space-y-2">
+              <span className={labelClass}>Requirements EN, one per line</span>
+              <textarea value={requirementsEnText} onChange={(e) => update({ requirementsEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={9} className={textareaClass} />
             </label>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className={sectionClass}>
-        <div className="mb-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">02</p>
-          <h3 className={sectionTitleClass} style={{ fontFamily: "'Raleway', sans-serif" }}>
-            Conteúdo em Português
-          </h3>
-          <p className="mt-1 text-xs text-muted-foreground">Aparece quando o cliente selecionar PT.</p>
+      {activeTab === "media" && (
+        <div className={cardClass}>
+          <div className="mb-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">Mídia</p>
+            <h3 className="text-lg font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              Galeria e preview
+            </h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Coloque uma URL por linha. A primeira mídia vira o destaque principal do produto.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-5">
+            <label className="space-y-2 block">
+              <span className={labelClass}>Imagens/vídeos, uma URL por linha</span>
+              <textarea
+                value={mediaText}
+                onChange={(e) => update({
+                  media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
+                    type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
+                    src,
+                    alt: product.name || "Preview do produto"
+                  }))
+                })}
+                rows={12}
+                className={textareaClass}
+              />
+            </label>
+
+            <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
+              <p className="text-sm font-semibold text-foreground/85">Dicas de mídia</p>
+              <ul className="mt-3 space-y-2 text-xs leading-5 text-muted-foreground">
+                <li>• Use imagens horizontais para melhor enquadramento.</li>
+                <li>• Links do YouTube viram vídeo automaticamente.</li>
+                <li>• Arquivos .mp4, .webm e .mov viram vídeo direto.</li>
+                <li>• A primeira URL será o preview inicial.</li>
+              </ul>
+              <div className="mt-4 rounded-xl border border-border bg-card p-3">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Total de mídias</p>
+                <p className="mt-1 text-lg font-bold text-primary">{product.media?.length ?? 0}</p>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <label className="space-y-2 xl:col-span-2">
-            <span className={labelClass}>Descrição curta</span>
-            <input value={product.description} onChange={(e) => update({ description: e.target.value })} className={fieldClass} />
-          </label>
-
-          <label className="space-y-2 xl:col-span-2">
-            <span className={labelClass}>Descrição completa</span>
-            <textarea value={product.fullDescription} onChange={(e) => update({ fullDescription: e.target.value })} rows={5} className={fieldClass} />
-          </label>
-
-          <label className="space-y-2">
-            <span className={labelClass}>Recursos, um por linha</span>
-            <textarea value={featuresText} onChange={(e) => update({ features: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={fieldClass} />
-          </label>
-
-          <label className="space-y-2">
-            <span className={labelClass}>Requisitos, um por linha</span>
-            <textarea value={requirementsText} onChange={(e) => update({ requirements: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={fieldClass} />
-          </label>
-        </div>
-      </div>
-
-      <div className="rounded-[24px] border border-primary/20 bg-primary/5 p-5 lg:p-6">
-        <div className="mb-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/80">03</p>
-          <h3 className={sectionTitleClass} style={{ fontFamily: "'Raleway', sans-serif" }}>
-            Versão em Inglês
-          </h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Quando o cliente selecionar EN, o site usa estes campos. Se algum campo ficar vazio, o site usa a versão em português.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <label className="space-y-2 xl:col-span-2">
-            <span className={labelClass}>Name EN</span>
-            <input value={product.nameEn ?? ""} onChange={(e) => update({ nameEn: e.target.value })} className={fieldClass} />
-          </label>
-
-          <label className="space-y-2 xl:col-span-2">
-            <span className={labelClass}>Short Description EN</span>
-            <input value={product.descriptionEn ?? ""} onChange={(e) => update({ descriptionEn: e.target.value })} className={fieldClass} />
-          </label>
-
-          <label className="space-y-2 xl:col-span-2">
-            <span className={labelClass}>Full Description EN</span>
-            <textarea value={product.fullDescriptionEn ?? ""} onChange={(e) => update({ fullDescriptionEn: e.target.value })} rows={5} className={fieldClass} />
-          </label>
-
-          <label className="space-y-2">
-            <span className={labelClass}>Features EN, one per line</span>
-            <textarea value={featuresEnText} onChange={(e) => update({ featuresEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={fieldClass} />
-          </label>
-
-          <label className="space-y-2">
-            <span className={labelClass}>Requirements EN, one per line</span>
-            <textarea value={requirementsEnText} onChange={(e) => update({ requirementsEn: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean) })} rows={7} className={fieldClass} />
-          </label>
-        </div>
-      </div>
-
-      <div className={sectionClass}>
-        <div className="mb-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/70">04</p>
-          <h3 className={sectionTitleClass} style={{ fontFamily: "'Raleway', sans-serif" }}>
-            Galeria e mídia
-          </h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Coloque uma URL por linha. Aceita imagens, vídeos diretos e links do YouTube.
-          </p>
-        </div>
-
-        <label className="space-y-2 block">
-          <span className={labelClass}>Imagens/vídeos, uma URL por linha</span>
-          <textarea
-            value={mediaText}
-            onChange={(e) => update({
-              media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
-                type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
-                src,
-                alt: product.name || "Preview do produto"
-              }))
-            })}
-            rows={7}
-            className={fieldClass}
-          />
-        </label>
-      </div>
+      )}
     </div>
   );
 }
@@ -3865,7 +3946,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
           </div>
         </div>
 
-        <div className="grid grid-cols-1 2xl:grid-cols-[380px_minmax(0,1fr)] gap-8 lg:gap-10 items-start">
+        <div className="grid grid-cols-1 2xl:grid-cols-[360px_minmax(0,1fr)] gap-8 lg:gap-10 items-start">
           <aside className="rounded-[28px] border border-border bg-card p-5 lg:p-6 shadow-[0_22px_80px_rgba(32,32,32,0.08)] 2xl:sticky 2xl:top-6">
             <div className="flex items-center justify-between gap-3 mb-5">
               <div>
