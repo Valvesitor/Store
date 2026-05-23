@@ -47,6 +47,15 @@ CREATE TABLE IF NOT EXISTS order_items (
   FOREIGN KEY(order_id) REFERENCES orders(id)
 );
 
+CREATE TABLE IF NOT EXISTS creator_codes (
+  id TEXT PRIMARY KEY,
+  label TEXT NOT NULL,
+  original_code TEXT NOT NULL,
+  visible INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
 INSERT OR IGNORE INTO products (
   id, name, category, description, full_description, price, status,
   tebex_url, package_id, docs_url, features, requirements, media,

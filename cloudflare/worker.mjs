@@ -82,6 +82,67 @@ async function listProducts(env, includeHidden = false) {
   return (results || []).map(rowToProduct);
 }
 
+function rowToCreatorCode(row) {
+  return {
+    id: row.id,
+    label: row.label,
+    originalCode: row.original_code,
+    visible: row.visible === 1,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
+async function listCreatorCodes(env, includeHidden = false) {
+  const where = includeHidden ? "" : "WHERE visible = 1";
+  const query = `
+    SELECT * FROM creator_codes
+    ${where}
+    ORDER BY updated_at DESC, created_at DESC
+  `;
+  const { results } = await env.DB.prepare(query).all();
+  return (results || []).map(rowToCreatorCode);
+}
+
+async function upsertCreatorCode(env, payload, forcedId = null) {
+  const id = forcedId || payload.id || crypto.randomUUID();
+  const now = new Date().toISOString();
+  const existing = await env.DB.prepare("SELECT id, created_at FROM creator_codes WHERE id = ?").bind(id).first();
+
+  const creatorCode = {
+    id,
+    label: payload.label || payload.name || "Creator",
+    original_code: payload.originalCode || payload.original_code || payload.code || "",
+    visible: payload.visible === false ? 0 : 1,
+    created_at: existing?.created_at || now,
+    updated_at: now
+  };
+
+  if (!creatorCode.original_code) {
+    throw new Error("Código original da Tebex é obrigatório.");
+  }
+
+  await env.DB.prepare(`
+    INSERT INTO creator_codes (id, label, original_code, visible, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      label = excluded.label,
+      original_code = excluded.original_code,
+      visible = excluded.visible,
+      updated_at = excluded.updated_at
+  `).bind(
+    creatorCode.id,
+    creatorCode.label,
+    creatorCode.original_code,
+    creatorCode.visible,
+    creatorCode.created_at,
+    creatorCode.updated_at
+  ).run();
+
+  const row = await env.DB.prepare("SELECT * FROM creator_codes WHERE id = ?").bind(creatorCode.id).first();
+  return rowToCreatorCode(row);
+}
+
 async function upsertProduct(env, payload, forcedId = null) {
   const id = forcedId || payload.id || slugify(payload.name);
   const now = new Date().toISOString();
@@ -343,6 +404,36 @@ async function handleApi(request, env) {
     if (!requireAdmin(request, env)) return jsonResponse({ error: "Admin token inválido." }, 401);
     await env.DB.prepare("UPDATE products SET visible = 0, updated_at = ? WHERE id = ?")
       .bind(new Date().toISOString(), decodeURIComponent(adminProductMatch[1]))
+      .run();
+    return jsonResponse({ ok: true });
+  }
+
+  if (pathname === "/api/creator-codes" && request.method === "GET") {
+    return jsonResponse({ creatorCodes: await listCreatorCodes(env, false) });
+  }
+
+  if (pathname === "/api/admin/creator-codes" && request.method === "GET") {
+    if (!requireAdmin(request, env)) return jsonResponse({ error: "Admin token inválido." }, 401);
+    return jsonResponse({ creatorCodes: await listCreatorCodes(env, true) });
+  }
+
+  if (pathname === "/api/admin/creator-codes" && request.method === "POST") {
+    if (!requireAdmin(request, env)) return jsonResponse({ error: "Admin token inválido." }, 401);
+    const payload = await parseJson(request);
+    return jsonResponse({ creatorCode: await upsertCreatorCode(env, payload) });
+  }
+
+  const adminCreatorCodeMatch = pathname.match(/^\/api\/admin\/creator-codes\/([^/]+)$/);
+  if (adminCreatorCodeMatch && request.method === "PUT") {
+    if (!requireAdmin(request, env)) return jsonResponse({ error: "Admin token inválido." }, 401);
+    const payload = await parseJson(request);
+    return jsonResponse({ creatorCode: await upsertCreatorCode(env, payload, decodeURIComponent(adminCreatorCodeMatch[1])) });
+  }
+
+  if (adminCreatorCodeMatch && request.method === "DELETE") {
+    if (!requireAdmin(request, env)) return jsonResponse({ error: "Admin token inválido." }, 401);
+    await env.DB.prepare("UPDATE creator_codes SET visible = 0, updated_at = ? WHERE id = ?")
+      .bind(new Date().toISOString(), decodeURIComponent(adminCreatorCodeMatch[1]))
       .run();
     return jsonResponse({ ok: true });
   }

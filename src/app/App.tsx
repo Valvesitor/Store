@@ -48,6 +48,15 @@ interface Product {
   updatedAt?: string;
 }
 
+interface CreatorCode {
+  id: string;
+  label: string;
+  originalCode: string;
+  visible: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 declare global {
   interface Window {
     Tebex?: {
@@ -1285,6 +1294,99 @@ async function deleteAdminProduct(token: string, productId: string) {
     const payload = await response.json().catch(() => null);
     throw new Error(payload?.error ?? "Nao foi possivel remover o produto.");
   }
+}
+
+function normalizeCreatorCode(item: any): CreatorCode {
+  return {
+    id: String(item.id ?? crypto.randomUUID()),
+    label: String(item.label ?? item.display_name ?? item.name ?? item.original_code ?? item.originalCode ?? "Creator"),
+    originalCode: String(item.originalCode ?? item.original_code ?? item.code ?? ""),
+    visible: item.visible !== false && item.visible !== 0,
+    createdAt: item.createdAt ?? item.created_at,
+    updatedAt: item.updatedAt ?? item.updated_at
+  };
+}
+
+async function fetchCreatorCodes() {
+  const response = await fetch(apiUrl("/api/creator-codes"), {
+    headers: { "Accept": "application/json" }
+  });
+
+  if (!response.ok) return [];
+
+  const payload = await response.json();
+  const rows = Array.isArray(payload) ? payload : payload.creatorCodes ?? payload.codes ?? [];
+  return rows.map(normalizeCreatorCode).filter((item: CreatorCode) => item.visible && item.originalCode);
+}
+
+async function fetchAdminCreatorCodes(token: string) {
+  const response = await fetch(apiUrl("/api/admin/creator-codes"), {
+    headers: {
+      "Accept": "application/json",
+      "Authorization": `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.error ?? "Nao foi possivel carregar creator codes.");
+  }
+
+  const payload = await response.json();
+  const rows = Array.isArray(payload) ? payload : payload.creatorCodes ?? payload.codes ?? [];
+  return rows.map(normalizeCreatorCode);
+}
+
+async function saveAdminCreatorCode(token: string, creatorCode: CreatorCode) {
+  const editing = !!creatorCode.id && !creatorCode.id.startsWith("new-");
+  const endpoint = editing ? `/api/admin/creator-codes/${encodeURIComponent(creatorCode.id)}` : "/api/admin/creator-codes";
+  const payload = editing ? creatorCode : { ...creatorCode, id: undefined };
+
+  const response = await fetch(apiUrl(endpoint), {
+    method: editing ? "PUT" : "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorPayload = await response.json().catch(() => null);
+    throw new Error(errorPayload?.error ?? "Nao foi possivel salvar creator code.");
+  }
+
+  const responsePayload = await response.json();
+  return normalizeCreatorCode(responsePayload.creatorCode ?? responsePayload);
+}
+
+async function deleteAdminCreatorCode(token: string, creatorCodeId: string) {
+  const response = await fetch(apiUrl(`/api/admin/creator-codes/${encodeURIComponent(creatorCodeId)}`), {
+    method: "DELETE",
+    headers: { "Authorization": `Bearer ${token}` }
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.error ?? "Nao foi possivel remover creator code.");
+  }
+}
+
+async function applyCreatorCodeToBasket(basketIdent: string, originalCode: string) {
+  const webstoreToken = getTebexWebstoreToken();
+
+  const response = await fetch(`https://headless.tebex.io/api/accounts/${webstoreToken}/baskets/${basketIdent}/creator-codes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ creator_code: originalCode })
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.message ?? payload?.detail ?? "Nao foi possivel aplicar o creator code.");
+  }
+
+  return fetchTebexBasket(basketIdent);
 }
 
 async function fetchAccountSummary(basketIdent?: string | null, usernameId?: string | null) {
@@ -2683,7 +2785,9 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
     { label: "Documentação", href: "https://docs.thewantedsolestudio.workers.dev" },
     { label: "Licença", action: () => onNavigate("faq") },
     { label: "Discord", href: "https://discord.gg/qE29trG84u" },
-    { label: "Tebex", href: "#" },
+    { label: "Privacy", href: "https://checkout.tebex.io/privacy" },
+    { label: "Terms", href: "https://checkout.tebex.io/terms" },
+    { label: "Impressum", href: "https://checkout.tebex.io/impressum" },
   ];
 
   return (
@@ -2776,6 +2880,8 @@ function emptyAdminProduct(): Product {
     description: "",
     fullDescription: "",
     price: 0,
+    priceCurrency: PRODUCT_BASE_CURRENCY,
+    priceSource: "fallback",
     status: "novo",
     tebexUrl: "",
     packageId: "",
@@ -2910,6 +3016,182 @@ function ProductAdminForm({
             <input type="checkbox" checked={product.featured === true} onChange={(e) => update({ featured: e.target.checked })} />
             Destaque
           </label>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+function emptyCreatorCode(): CreatorCode {
+  return {
+    id: `new-${Date.now()}`,
+    label: "",
+    originalCode: "",
+    visible: true
+  };
+}
+
+function CreatorCodeAdminPanel({ token }: { token: string }) {
+  const [codes, setCodes] = useState<CreatorCode[]>([]);
+  const [selected, setSelected] = useState<CreatorCode>(() => emptyCreatorCode());
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const loadCodes = useCallback(async () => {
+    if (!token) return;
+    try {
+      setLoading(true);
+      setMessage(null);
+      const rows = await fetchAdminCreatorCodes(token);
+      setCodes(rows);
+      if (rows.length > 0 && selected.id.startsWith("new-")) {
+        setSelected(rows[0]);
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel carregar creator codes.");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    loadCodes();
+  }, [loadCodes]);
+
+  async function handleSaveCreatorCode() {
+    if (!selected.label.trim() || !selected.originalCode.trim()) {
+      setMessage("Preencha o nome público e o código original da Tebex.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setMessage(null);
+      const saved = await saveAdminCreatorCode(token, selected);
+      setSelected(saved);
+      await loadCodes();
+      setMessage("Creator code salvo com sucesso.");
+    } catch (error) {
+      console.error(error);
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel salvar creator code.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteCreatorCode(id: string) {
+    if (!window.confirm("Remover este creator code do site?")) return;
+    try {
+      setSaving(true);
+      await deleteAdminCreatorCode(token, id);
+      setSelected(emptyCreatorCode());
+      await loadCodes();
+      setMessage("Creator code removido.");
+    } catch (error) {
+      console.error(error);
+      setMessage(error instanceof Error ? error.message : "Nao foi possivel remover creator code.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="mt-8 rounded-[28px] border border-border bg-card p-6 lg:p-8 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5 mb-6">
+        <div>
+          <SectionTag>Creator Code</SectionTag>
+          <h2 className="mt-3 text-2xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            Códigos de criador
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
+            Cadastre o código original criado na Tebex e escolha o nome que o cliente verá no checkout.
+          </p>
+        </div>
+        <button onClick={() => setSelected(emptyCreatorCode())} className="rounded-full border border-primary/30 px-4 h-10 text-sm font-semibold text-primary">
+          Novo creator code
+        </button>
+      </div>
+
+      {message && (
+        <div className="mb-5 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+          {message}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 xl:grid-cols-[300px_minmax(0,1fr)] gap-6">
+        <div className="space-y-3">
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Carregando...</p>
+          ) : codes.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhum creator code configurado.</p>
+          ) : codes.map((code) => (
+            <button
+              key={code.id}
+              onClick={() => setSelected(code)}
+              className={`w-full rounded-2xl border p-4 text-left transition-all ${
+                selected.id === code.id ? "border-primary/50 bg-primary/10" : "border-border hover:border-primary/25"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-foreground/90">{code.label}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Código original: {code.originalCode}</p>
+                </div>
+                <span className={`mt-2 h-2 w-2 rounded-full ${code.visible ? "bg-emerald-400" : "bg-red-400"}`} />
+              </div>
+              <button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleDeleteCreatorCode(code.id);
+                }}
+                className="mt-3 text-xs text-red-500 hover:underline"
+              >
+                Remover
+              </button>
+            </button>
+          ))}
+        </div>
+
+        <div className="rounded-2xl border border-border bg-background/70 p-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="space-y-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nome público</span>
+              <input
+                value={selected.label}
+                onChange={(e) => setSelected({ ...selected, label: e.target.value })}
+                placeholder="Ex: Parceiro Oficial"
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary/40"
+              />
+            </label>
+            <label className="space-y-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Código original da Tebex</span>
+              <input
+                value={selected.originalCode}
+                onChange={(e) => setSelected({ ...selected, originalCode: e.target.value })}
+                placeholder="Ex: TWSCREATOR"
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary/40"
+              />
+            </label>
+            <label className="md:col-span-2 inline-flex items-center gap-2 text-sm text-foreground/75">
+              <input
+                type="checkbox"
+                checked={selected.visible}
+                onChange={(e) => setSelected({ ...selected, visible: e.target.checked })}
+              />
+              Visível para clientes no checkout
+            </label>
+          </div>
+
+          <button
+            onClick={handleSaveCreatorCode}
+            disabled={saving}
+            className="mt-5 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+          >
+            {saving ? "Salvando..." : "Salvar creator code"}
+          </button>
         </div>
       </div>
     </div>
@@ -3106,12 +3388,15 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             </div>
           </aside>
 
-          <ProductAdminForm
-            product={selected}
-            onChange={setSelected}
-            onSave={handleSave}
-            saving={saving}
-          />
+          <div>
+            <ProductAdminForm
+              product={selected}
+              onChange={setSelected}
+              onSave={handleSave}
+              saving={saving}
+            />
+            <CreatorCodeAdminPanel token={token} />
+          </div>
         </div>
       </main>
     </div>
@@ -3221,6 +3506,10 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
   const [loading, setLoading] = useState(true);
   const [removingItem, setRemovingItem] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [creatorCodes, setCreatorCodes] = useState<CreatorCode[]>([]);
+  const [selectedCreatorCode, setSelectedCreatorCode] = useState("");
+  const [creatorCodeMessage, setCreatorCodeMessage] = useState<string | null>(null);
+  const [applyingCreatorCode, setApplyingCreatorCode] = useState(false);
 
   const basketIdent = basket?.ident ?? getStoredTebexBasket();
   const rows = getBasketItems(basket);
@@ -3248,6 +3537,20 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
     loadBasket();
   }, [loadBasket]);
 
+  useEffect(() => {
+    fetchCreatorCodes()
+      .then((codes) => {
+        setCreatorCodes(codes);
+        if (codes.length > 0) {
+          setSelectedCreatorCode((current) => current || codes[0].id);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        setCreatorCodes([]);
+      });
+  }, []);
+
   async function handleRemoveCartItem(row: any) {
     if (!basketIdent) return;
     const packageId = getBasketRowPackageId(row);
@@ -3263,6 +3566,31 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
       await loadBasket();
     } finally {
       setRemovingItem(null);
+    }
+  }
+
+  async function handleApplyCreatorCode() {
+    if (!basketIdent) {
+      setCreatorCodeMessage("Faça login ou adicione um produto antes de aplicar o creator code.");
+      return;
+    }
+
+    const selected = creatorCodes.find((code) => code.id === selectedCreatorCode);
+    if (!selected) {
+      setCreatorCodeMessage("Selecione um creator code válido.");
+      return;
+    }
+
+    try {
+      setApplyingCreatorCode(true);
+      const updated = await applyCreatorCodeToBasket(basketIdent, selected.originalCode);
+      setBasket(updated);
+      setCreatorCodeMessage(`Creator code aplicado: ${selected.label}`);
+    } catch (error) {
+      console.error(error);
+      setCreatorCodeMessage(error instanceof Error ? error.message : "Nao foi possivel aplicar o creator code.");
+    } finally {
+      setApplyingCreatorCode(false);
     }
   }
 
@@ -3351,6 +3679,46 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
           })}
         </div>
 
+        <div className="mt-8 rounded-[28px] border border-border bg-card p-6">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Creator Code</p>
+              <h2 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                Apoiar criador
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Selecione o nome público. O site aplica na Tebex o código original configurado no admin.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 lg:min-w-[420px]">
+              <select
+                value={selectedCreatorCode}
+                onChange={(e) => setSelectedCreatorCode(e.target.value)}
+                disabled={creatorCodes.length === 0}
+                className="h-11 flex-1 rounded-xl border border-border bg-background px-4 text-sm outline-none focus:border-primary/40"
+              >
+                {creatorCodes.length === 0 ? (
+                  <option value="">Nenhum creator code configurado</option>
+                ) : creatorCodes.map((code) => (
+                  <option key={code.id} value={code.id}>{code.label}</option>
+                ))}
+              </select>
+              <button
+                onClick={handleApplyCreatorCode}
+                disabled={creatorCodes.length === 0 || applyingCreatorCode}
+                className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {applyingCreatorCode ? "Aplicando..." : "Aplicar"}
+              </button>
+            </div>
+          </div>
+          {creatorCodeMessage && (
+            <p className="mt-4 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-primary">
+              {creatorCodeMessage}
+            </p>
+          )}
+        </div>
+
         <div className="mt-8 rounded-[28px] border border-border bg-card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
           <div>
             <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Total</p>
@@ -3372,6 +3740,11 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
           <a href="https://discord.gg/qE29trG84u" target="_blank" rel="noopener noreferrer" className="hover:text-primary">Support on Discord</a>
           <MessageCircle size={26} className="text-primary" />
           <a href="mailto:vito123bolado86@gmail.com" className="hover:text-primary">Contact us</a>
+        </div>
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-5 text-xs text-muted-foreground">
+          <a href="https://checkout.tebex.io/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-primary">Privacy</a>
+          <a href="https://checkout.tebex.io/terms" target="_blank" rel="noopener noreferrer" className="hover:text-primary">Terms</a>
+          <a href="https://checkout.tebex.io/impressum" target="_blank" rel="noopener noreferrer" className="hover:text-primary">Impressum</a>
         </div>
       </main>
     </div>
@@ -3580,10 +3953,6 @@ const orders = summary?.orders ?? [];
                 <Package size={16} />
                 Scripts
               </button>
-              <button className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-foreground/65 hover:bg-muted transition-colors">
-                <Code2 size={16} className="text-primary" />
-                Creator Code
-              </button>
             </div>
 
             <div className="space-y-3 pt-2">
@@ -3628,19 +3997,10 @@ const orders = summary?.orders ?? [];
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <a href="/checkout" className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
-                    <ShoppingCart size={16} />
-                    Ver cesta
-                  </a>
-                  <a href="https://docs.thewantedsolestudio.workers.dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-primary/20 px-5 py-3 text-sm font-semibold text-primary">
-                    <BookOpen size={16} />
-                    Docs
-                  </a>
-                </div>
+
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6 mb-8">
+              <div className="mb-8">
                 <div className="rounded-2xl border border-primary/15 bg-primary/5 p-6">
                   <div className="flex items-center gap-3 text-foreground/85 font-semibold mb-3">
                     <Github size={18} className="text-primary" />
@@ -3659,21 +4019,6 @@ const orders = summary?.orders ?? [];
                   ) : (
                     <p className="text-muted-foreground">Nenhuma sessão Tebex encontrada ainda. Faça o login para criar e vincular o basket.</p>
                   )}
-                </div>
-
-                <div className="rounded-2xl border border-border bg-background/70 p-6">
-                  <p className="text-sm font-semibold text-foreground/85 mb-4">Cupom / creator code</p>
-                  <div className="space-y-3">
-                    <input
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
-                      placeholder="Digite seu cupom"
-                      className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary/30"
-                    />
-                    <button onClick={handleApplyCoupon} className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">
-                      {busy === "coupon" ? "Aplicando..." : "Aplicar cupom"}
-                    </button>
-                  </div>
                 </div>
               </div>
 
