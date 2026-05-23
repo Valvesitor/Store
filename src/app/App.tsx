@@ -313,7 +313,7 @@ const WHY_FEATURES = [
   }
 ];
 
-const FAQ_ITEMS = [
+const FAQ_ITEMS_PT = [
   {
     q: "Os produtos são para RedM?",
     a: "Sim. O foco principal da The Wanted Sole Studio é conteúdo premium exclusivo para RedM. Todos os scripts, peds e sistemas são desenvolvidos e testados especificamente para servidores RedM."
@@ -337,6 +337,33 @@ const FAQ_ITEMS = [
   {
     q: "Posso pedir um projeto customizado?",
     a: "Sim. Abra um ticket no Discord para verificar disponibilidade, prazo e orçamento para desenvolvimento de scripts ou recursos personalizados."
+  }
+];
+
+const FAQ_ITEMS_EN = [
+  {
+    q: "Are the products for RedM?",
+    a: "Yes. The main focus of The Wanted Sole Studio is exclusive premium content for RedM. All scripts, peds, and systems are developed and tested specifically for RedM servers."
+  },
+  {
+    q: "Is the purchase made through the website?",
+    a: "The website displays the products and their details, but payment is processed securely through Tebex. When you click Buy, you will be redirected to the checkout."
+  },
+  {
+    q: "Do I receive support after purchase?",
+    a: "Yes. Technical support is provided through the official The Wanted Sole Studio Discord. Our team is available to help with questions, installation, and issues."
+  },
+  {
+    q: "Can I resell or share the files?",
+    a: "No. The license is individual per server and does not allow resale, redistribution, leaks, or file sharing. Violations may result in immediate license cancellation."
+  },
+  {
+    q: "Do scripts receive updates?",
+    a: "Yes. Active products may receive improvements, bug fixes, and new features when needed. Buyers receive available updates at no extra cost."
+  },
+  {
+    q: "Can I request a custom project?",
+    a: "Yes. Open a ticket on Discord to check availability, delivery time, and pricing for custom scripts or personalized resources."
   }
 ];
 
@@ -3408,22 +3435,25 @@ function DiscordSection() {
 
 // ─── FAQ ──────────────────────────────────────────────────────────────────────
 
-function FAQSection() {
+function FAQSection({ language }: { language: SiteLanguage }) {
+  const isEnglish = language === "en_US";
+  const items = isEnglish ? FAQ_ITEMS_EN : FAQ_ITEMS_PT;
+
   return (
     <section id="faq" className="py-28 px-6">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-14">
-          <SectionTag>Dúvidas Frequentes</SectionTag>
+          <SectionTag>{isEnglish ? "FAQ" : "Dúvidas Frequentes"}</SectionTag>
           <h2
             className="mt-5 text-3xl lg:text-4xl font-bold text-foreground/90"
             style={{ fontFamily: "'Raleway', sans-serif" }}
           >
-            Perguntas Frequentes
+            {isEnglish ? "Frequently Asked Questions" : "Perguntas Frequentes"}
           </h2>
         </div>
 
         <AccordionPrimitive.Root type="single" collapsible className="space-y-2">
-          {FAQ_ITEMS.map((item, i) => (
+          {items.map((item, i) => (
             <AccordionPrimitive.Item
               key={i}
               value={`faq-${i}`}
@@ -7481,7 +7511,7 @@ export default function App() {
       </div>
 
       <DiscordSection />
-      <FAQSection />
+      <FAQSection language={language} />
       <Footer onNavigate={scrollTo} />
 
       {/* Product Detail Panel */}
