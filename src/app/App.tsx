@@ -5818,6 +5818,27 @@ function ProductAdminForm({
     }
   }
 
+  function moveMediaItem(index: number, direction: "up" | "down") {
+    const currentMedia = [...(product.media ?? [])];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= currentMedia.length) return;
+
+    [currentMedia[index], currentMedia[targetIndex]] = [currentMedia[targetIndex], currentMedia[index]];
+    update({ media: currentMedia });
+    setPreviewFailed(false);
+  }
+
+  function setMediaAsCover(index: number) {
+    const currentMedia = [...(product.media ?? [])];
+
+    if (index <= 0 || index >= currentMedia.length) return;
+
+    const [selectedMedia] = currentMedia.splice(index, 1);
+    update({ media: [selectedMedia, ...currentMedia] });
+    setPreviewFailed(false);
+  }
+
   return (
     <div className="space-y-5">
       {/* ── Header ── */}
@@ -6020,7 +6041,7 @@ function ProductAdminForm({
                       <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Lista de mídias</p>
                         <p className="text-[10px] leading-4 text-muted-foreground">
-                          Clique em Remover para tirar uma mídia sem apagar as outras.
+                          Organize a ordem com Subir/Descer. A primeira mídia é a capa/card.
                         </p>
                       </div>
                       <span className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-bold text-primary">
@@ -6030,25 +6051,54 @@ function ProductAdminForm({
 
                     <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
                       {(product.media ?? []).map((item, index) => (
-                        <div key={`media-list-${item.src}-${index}`} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2">
-                          <div className="min-w-0">
-                            <p className="truncate text-xs font-semibold text-foreground/85" title={getMediaDisplayName(item, index)}>
-                              {index === 0 ? "Capa · " : ""}{getMediaDisplayName(item, index)}
-                            </p>
-                            <p className="mt-0.5 text-[9px] uppercase tracking-widest text-muted-foreground">
-                              {item.type === "youtube" ? "YouTube" : item.type === "video" ? "Vídeo" : isUploadedDataMedia(item) ? "Upload" : "URL"}
-                            </p>
+                        <div key={`media-list-${item.src}-${index}`} className="rounded-xl border border-border bg-card px-3 py-2">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="truncate text-xs font-semibold text-foreground/85" title={getMediaDisplayName(item, index)}>
+                                {index === 0 ? "Capa · " : ""}{getMediaDisplayName(item, index)}
+                              </p>
+                              <p className="mt-0.5 text-[9px] uppercase tracking-widest text-muted-foreground">
+                                {item.type === "youtube" ? "YouTube" : item.type === "video" ? "Vídeo" : isUploadedDataMedia(item) ? "Upload" : "URL"}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                update({ media: (product.media ?? []).filter((_, mediaIndex) => mediaIndex !== index) });
+                                setPreviewFailed(false);
+                              }}
+                              className="shrink-0 rounded-lg border border-red-500/25 px-3 py-1.5 text-[10px] font-bold text-red-600 transition-all hover:bg-red-500 hover:text-white"
+                            >
+                              Remover
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              update({ media: (product.media ?? []).filter((_, mediaIndex) => mediaIndex !== index) });
-                              setPreviewFailed(false);
-                            }}
-                            className="shrink-0 rounded-lg border border-red-500/25 px-3 py-1.5 text-[10px] font-bold text-red-600 transition-all hover:bg-red-500 hover:text-white"
-                          >
-                            Remover
-                          </button>
+
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            <button
+                              type="button"
+                              disabled={index === 0}
+                              onClick={() => moveMediaItem(index, "up")}
+                              className="rounded-md border border-border px-2 py-1 text-[10px] font-bold text-muted-foreground transition-all hover:border-primary/35 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              ↑ Subir
+                            </button>
+                            <button
+                              type="button"
+                              disabled={index === (product.media?.length ?? 0) - 1}
+                              onClick={() => moveMediaItem(index, "down")}
+                              className="rounded-md border border-border px-2 py-1 text-[10px] font-bold text-muted-foreground transition-all hover:border-primary/35 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              ↓ Descer
+                            </button>
+                            <button
+                              type="button"
+                              disabled={index === 0}
+                              onClick={() => setMediaAsCover(index)}
+                              className="rounded-md border border-primary/25 px-2 py-1 text-[10px] font-bold text-primary transition-all hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              Definir capa
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -6081,7 +6131,7 @@ function ProductAdminForm({
                 {(product.media ?? []).length > 0 && (
                   <div className="rounded-2xl border border-border bg-background p-3">
                     <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Prévia / arquivos enviados</p>
-                    <p className="mb-2 text-[10px] leading-4 text-muted-foreground">Clique no X para remover na hora, sem confirmação.</p>
+                    <p className="mb-2 text-[10px] leading-4 text-muted-foreground">Preview somente visual. Organize e remova na lista ao lado.</p>
 
                     <div className="grid grid-cols-3 gap-2">
                       {(product.media ?? []).slice(0, 6).map((item, index) => (
@@ -6099,17 +6149,6 @@ function ProductAdminForm({
                               <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground">CAPA</span>
                             )}
 
-                            <button
-                              type="button"
-                              onClick={() => {
-                                update({ media: (product.media ?? []).filter((_, mediaIndex) => mediaIndex !== index) });
-                                setPreviewFailed(false);
-                              }}
-                              className="absolute right-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full border border-red-500/25 bg-background/95 text-red-600 shadow-sm transition-all hover:bg-red-500 hover:text-white"
-                              title={`Remover ${getMediaDisplayName(item, index)}`}
-                            >
-                              <X size={11} />
-                            </button>
                           </div>
                           <div className="border-t border-border bg-background px-1.5 py-1 text-[9px] font-semibold leading-3 text-muted-foreground truncate" title={getMediaDisplayName(item, index)}>
                             {getMediaDisplayName(item, index)}
