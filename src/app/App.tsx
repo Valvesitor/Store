@@ -1895,16 +1895,14 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
         {/* Logo */}
         <button
           onClick={() => onNavigate("hero")}
-          className="flex flex-col items-start transition-opacity hover:opacity-80"
+          className="flex items-center transition-opacity hover:opacity-80"
+          aria-label="The Wanted Sole Studio"
         >
-          <span className="text-base font-bold tracking-[0.2em] uppercase"
-            style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
-            The Wanted Sole
-          </span>
-          <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/50 -mt-0.5"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}>
-            Studio
-          </span>
+          <img
+            src="/logo.png"
+            alt="The Wanted Sole Studio"
+            className="h-8 w-auto object-contain"
+          />
         </button>
 
         {/* Desktop Nav */}
