@@ -1898,11 +1898,12 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
           className="flex items-center transition-opacity hover:opacity-80"
           aria-label="The Wanted Sole Studio"
         >
-          <img
-            src="/logo.png"
-            alt="The Wanted Sole Studio"
-            className="h-8 w-auto object-contain"
-          />
+          <span
+            className="text-base font-bold tracking-[0.18em] uppercase whitespace-nowrap"
+            style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}
+          >
+            The Wanted Sole Studio
+          </span>
         </button>
 
         {/* Desktop Nav */}
