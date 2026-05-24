@@ -22,6 +22,7 @@ type ProductMedia = {
   poster?: string;
   alt: string;
   filename?: string;
+  previewSrc?: string;
 };
 
 interface Product {
@@ -1509,6 +1510,37 @@ async function fetchAdminProducts(token: string) {
   const payload = await response.json();
   const rows = Array.isArray(payload) ? payload : payload.products ?? [];
   return applyTebexPricesToProducts(rows.map(normalizeProductFromApi));
+}
+
+async function uploadAdminProductMedia(token: string, product: Product, files: File[]) {
+  const formData = new FormData();
+  formData.append("productId", product.id ?? "");
+  formData.append("productName", product.name || product.nameEn || product.id || "produto");
+
+  files.forEach((file) => formData.append("files", file, file.name));
+
+  const response = await fetch(apiUrl("/api/admin/product-media/upload"), {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+    body: formData
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.error ?? "Não foi possível enviar as imagens para o storage.");
+  }
+
+  const payload = await response.json();
+  const rows = Array.isArray(payload) ? payload : payload.media ?? payload.files ?? [];
+
+  return rows.map((item: any, index: number): ProductMedia => ({
+    type: "image",
+    src: String(item.src ?? item.url ?? item.path ?? getProductMediaPublicPath(product, files[index]?.name || `imagem-${index + 1}.png`, index)),
+    filename: String(item.filename ?? item.name ?? files[index]?.name ?? `imagem-${index + 1}.png`),
+    alt: String(item.alt ?? files[index]?.name ?? getUploadedMediaAlt(product, index))
+  }));
 }
 
 async function saveAdminProduct(token: string, product: Product) {
@@ -5718,13 +5750,20 @@ function getProductMediaPublicPath(product: Pick<Product, "id" | "name" | "nameE
   return `${getProductMediaFolder(product)}/${safeFilename}`;
 }
 
+function getMediaPreviewSrc(item?: ProductMedia) {
+  if (!item) return "";
+  return item.previewSrc || item.src;
+}
+
 function normalizeProductMediaForDatabase(product: Product) {
   return (product.media ?? []).map((item, index) => {
-    if (!isUploadedDataMedia(item)) return item;
+    const { previewSrc, ...safeItem } = item;
+
+    if (!isUploadedDataMedia(safeItem)) return safeItem;
 
     return {
-      ...item,
-      src: getProductMediaPublicPath(product, item.filename || `imagem-${index + 1}.png`, index)
+      ...safeItem,
+      src: getProductMediaPublicPath(product, safeItem.filename || `imagem-${index + 1}.png`, index)
     };
   });
 }
@@ -5793,7 +5832,7 @@ function ProductAdminForm({
   const mediaText = manualMedia.map((item) => item.src).join("\n");
   const Icon = ICON_MAP[product.iconName] ?? Package;
   const status = STATUS_CONFIG[product.status];
-  const iconPreview = getProductThumbnail(product);
+  const iconPreview = getMediaPreviewSrc((product.media ?? [])[0]) || getProductThumbnail(product);
   const galleryCount = Math.max((product.media?.length ?? 0) - 1, 0);
   const discordMediaCount = (product.media ?? []).filter((item) => isDiscordMediaUrl(item.src)).length;
   const hasDiscordMedia = discordMediaCount > 0;
@@ -5838,23 +5877,29 @@ function ProductAdminForm({
     try {
       setUploadBusy(true);
 
+      const token = getAdminToken();
+
+      if (!token) {
+        window.alert("Faça login como admin antes de enviar imagens.");
+        return;
+      }
+
       const currentMedia = product.media ?? [];
-      const uploadedMedia: ProductMedia[] = [];
+      const previewByName = new Map<string, string>();
 
       for (const file of imageFiles) {
-        const mediaIndex = currentMedia.length + uploadedMedia.length;
-        uploadedMedia.push({
-          type: "image",
-          src: getProductMediaPublicPath(product, file.name, mediaIndex),
-          filename: file.name,
-          alt: file.name || getUploadedMediaAlt(product, mediaIndex)
-        });
+        previewByName.set(file.name, await readFileAsDataUrl(file));
       }
+
+      const storedMedia = await uploadAdminProductMedia(token, product, imageFiles);
+      const uploadedMedia = storedMedia.map((item, itemIndex) => ({
+        ...item,
+        previewSrc: previewByName.get(item.filename || imageFiles[itemIndex]?.name) || ""
+      }));
 
       if (uploadedMedia.length > 0) {
         update({ media: [...currentMedia, ...uploadedMedia] });
         setPreviewFailed(false);
-        window.alert(`Caminho(s) criado(s). Agora coloque os arquivos na pasta ${getProductMediaFolder(product)} do projeto, ou envie para o Cloudflare R2 no futuro.`);
       }
     } catch (error) {
       console.error(error);
@@ -6027,7 +6072,7 @@ function ProductAdminForm({
 
           {/* 04 — Mídia */}
           <div className="rounded-[22px] border border-border bg-card p-5 lg:p-6 shadow-[0_8px_28px_rgba(32,32,32,0.04)]">
-            <SectionHeader number="04" title="Mídia" subtitle="Caminhos de imagens, imagem do card e galeria" />
+            <SectionHeader number="04" title="Mídia" subtitle="Upload real de imagens, imagem do card e galeria" />
             <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_240px] gap-5">
               <div>
                 <span className={lbl}>Upload de imagens</span>
@@ -6036,7 +6081,7 @@ function ProductAdminForm({
                     <div>
                       <p className="text-sm font-bold text-foreground/85">Adicionar imagens ao produto</p>
                       <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                        A primeira imagem vira capa/card. As próximas entram na galeria. O arquivo precisa existir em /public/products ou R2.
+                        A primeira imagem vira capa/card. As próximas entram na galeria. As imagens são enviadas para o storage e ficam no caminho /products/nome-do-produto/arquivo.
                       </p>
                     </div>
 
@@ -6058,7 +6103,7 @@ function ProductAdminForm({
                   </div>
 
                   <p className="mt-3 rounded-xl border border-border bg-background px-3 py-2 text-[11px] leading-5 text-muted-foreground">
-                    O sistema salva apenas o caminho da imagem, não o arquivo em base64. Depois coloque a imagem em /public/products ou use Cloudflare R2.
+                    As imagens são enviadas para o storage. O banco salva apenas o caminho pequeno da imagem.
                   </p>
                 </div>
 
@@ -6153,7 +6198,7 @@ function ProductAdminForm({
 
                 <div className="mt-3 rounded-2xl border border-amber-500/25 bg-amber-500/5 px-4 py-3 text-xs leading-5 text-muted-foreground">
                   <strong className="block text-amber-700">Importante sobre imagens</strong>
-                  Para evitar erro SQLITE_TOOBIG, o produto salva somente o caminho da imagem. Coloque os arquivos dentro de <code className="rounded bg-background px-1 py-0.5">/public/products</code>.
+                  Para evitar erro SQLITE_TOOBIG, o produto salva somente o caminho da imagem. O arquivo fica no storage em /products/nome-do-produto/. Coloque os arquivos dentro de <code className="rounded bg-background px-1 py-0.5">/public/products</code>.
                   {hasDiscordMedia && (
                     <span className="mt-2 block font-semibold text-amber-700">
                       Este produto ainda tem {discordMediaCount} URL(s) do Discord. Troque por upload ou imagem hospedada no site.
@@ -6188,7 +6233,7 @@ function ProductAdminForm({
                             ) : item.type === "video" ? (
                               <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-primary">MP4</div>
                             ) : (
-                              <img src={item.src} alt={item.alt} className="h-full w-full bg-[#fffdf8] object-contain p-1" />
+                              <img src={getMediaPreviewSrc(item)} alt={item.alt} className="h-full w-full bg-[#fffdf8] object-contain p-1" />
                             )}
 
                             {index === 0 && (
