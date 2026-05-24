@@ -683,7 +683,9 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Sair": "Logout",
   "Discord": "Discord",
   "The Wanted": "The Wanted",
-  "Sole Studio": "Sole Studio",
+  "The Wanted Sole": "The Wanted Sole",
+  "Sole Studio": "Studio",
+  "Studio": "Studio",
   "© 2026 The Wanted Sole Studio — Todos os direitos reservados.": "© 2026 The Wanted Sole Studio — All rights reserved.",
 
   "RedM · Scripts & Custom Peds": "RedM · Scripts & Custom Peds",
@@ -1897,11 +1899,11 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
         >
           <span className="text-base font-bold tracking-[0.2em] uppercase"
             style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
-            The Wanted
+            The Wanted Sole
           </span>
           <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/50 -mt-0.5"
             style={{ fontFamily: "'DM Sans', sans-serif" }}>
-            Sole Studio
+            Studio
           </span>
         </button>
 
@@ -2257,9 +2259,9 @@ function HeroSection({ onNavigate }: { onNavigate: (id: string) => void }) {
               backgroundClip: "text"
             }}
           >
-            The Wanted
+            The Wanted Sole
           </span>
-          <span className="block text-foreground/90">Sole Studio</span>
+          <span className="block text-foreground/90">Studio</span>
         </motion.h1>
 
         {/* Tagline */}
@@ -5488,14 +5490,14 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
                 className="text-lg font-bold tracking-[0.2em] uppercase block"
                 style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}
               >
-                The Wanted
-              </span>
+            The Wanted Sole
+          </span>
               <span
                 className="text-xs tracking-[0.35em] uppercase text-foreground/40"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
-                Sole Studio
-              </span>
+            Studio
+          </span>
             </div>
             <p
               className="text-xs text-muted-foreground leading-relaxed"
@@ -6180,7 +6182,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
       <nav className="hidden lg:flex flex-col w-60 xl:w-64 shrink-0 border-r border-border bg-card/90 px-4 py-7 gap-1 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
         <a href="/" className="flex flex-col items-start mb-7 px-2 transition-opacity hover:opacity-75">
           <span className="text-sm font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
-            The Wanted
+            The Wanted Sole
           </span>
           <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/40 mt-0.5">Admin Studio</span>
         </a>
@@ -6421,9 +6423,9 @@ function LoginPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
             <span className="text-base font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
-              The Wanted
-            </span>
-            <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/50 -mt-0.5">Sole Studio</span>
+            The Wanted Sole
+          </span>
+            <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/50 -mt-0.5">Studio</span>
           </a>
           <div className="flex items-center gap-3">
             <select
@@ -6647,9 +6649,9 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
             <span className="text-base font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
-              The Wanted
-            </span>
-            <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/50 -mt-0.5">Sole Studio</span>
+            The Wanted Sole
+          </span>
+            <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/50 -mt-0.5">Studio</span>
           </a>
           <div className="flex items-center gap-3">
             <select
@@ -6940,9 +6942,9 @@ const orders = summary?.orders ?? [];
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <a href="/" className="flex flex-col items-start transition-opacity hover:opacity-85">
             <span className="text-base font-bold tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}>
-              The Wanted
-            </span>
-            <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/50 -mt-0.5">Sole Studio</span>
+            The Wanted Sole
+          </span>
+            <span className="text-[10px] tracking-[0.35em] uppercase text-foreground/50 -mt-0.5">Studio</span>
           </a>
 
           <nav className="hidden lg:flex items-center gap-6 text-sm text-foreground/70">
