@@ -2353,7 +2353,7 @@ function HeroSection({ onNavigate }: { onNavigate: (id: string) => void }) {
 function WhySection({ language }: { language: SiteLanguage }) {
   return (
     <section id="why" className="py-14 lg:py-16 px-6">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-7xl">
         <div className="text-center mb-9">
           <SectionTag>{language === "en_US" ? "Why choose us" : "Por que nos escolher"}</SectionTag>
           <h2
@@ -5501,8 +5501,8 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
   return (
     <footer className="border-t border-primary/20 bg-[#1f1c17] px-6 py-14 text-[#f7f1e6] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
       <div className="mx-auto max-w-6xl">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(0,1.35fr)_0.7fr_0.85fr_0.85fr] lg:gap-14 items-start">
-          <div className="max-w-sm">
+        <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-sm shrink-0 lg:max-w-[380px]">
             <div className="mb-3">
               <span
                 className="block text-lg font-bold uppercase tracking-[0.2em]"
@@ -5514,14 +5514,14 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
                   backgroundClip: "text"
                 }}
               >
-            The Wanted Sole
-          </span>
+                The Wanted Sole
+              </span>
               <span
                 className="text-xs uppercase tracking-[0.35em] text-[#f7f1e6]/55"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
-            Studio
-          </span>
+                Studio
+              </span>
             </div>
             <p
               className="text-xs leading-relaxed text-[#f7f1e6]/70"
@@ -5531,31 +5531,33 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
             </p>
           </div>
 
-          <div>
-            <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Links
-            </p>
-            <nav className="flex flex-col items-start gap-2">
-              {siteLinks.map((link) => renderLink(link, "text-sm font-semibold text-[#f7f1e6]/72 transition-colors hover:text-[#d7bb82] text-left"))}
-            </nav>
-          </div>
+          <div className="grid w-full grid-cols-1 gap-10 sm:grid-cols-3 sm:gap-12 lg:ml-24 lg:max-w-[720px] lg:gap-20 xl:ml-32 xl:max-w-[800px] xl:gap-24">
+            <div>
+              <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                Links
+              </p>
+              <nav className="flex flex-col items-start gap-2">
+                {siteLinks.map((link) => renderLink(link, "text-sm font-semibold text-[#f7f1e6]/72 transition-colors hover:text-[#d7bb82] text-left"))}
+              </nav>
+            </div>
 
-          <div>
-            <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Company
-            </p>
-            <nav className="flex flex-col items-start gap-2">
-              {companyLinks.map((link) => renderLink(link, "text-sm font-semibold text-[#f7f1e6]/72 transition-colors hover:text-[#d7bb82] text-left"))}
-            </nav>
-          </div>
+            <div>
+              <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                Company
+              </p>
+              <nav className="flex flex-col items-start gap-2">
+                {companyLinks.map((link) => renderLink(link, "text-sm font-semibold text-[#f7f1e6]/72 transition-colors hover:text-[#d7bb82] text-left"))}
+              </nav>
+            </div>
 
-          <div className="md:justify-self-start">
-            <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-              Tebex
-            </p>
-            <nav className="flex flex-col items-start gap-2">
-              {tebexLinks.map((link) => renderLink(link, "text-sm font-semibold text-[#f7f1e6]/72 transition-colors hover:text-[#d7bb82] text-left"))}
-            </nav>
+            <div>
+              <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                Tebex
+              </p>
+              <nav className="flex flex-col items-start gap-2">
+                {tebexLinks.map((link) => renderLink(link, "text-sm font-semibold text-[#f7f1e6]/72 transition-colors hover:text-[#d7bb82] text-left"))}
+              </nav>
+            </div>
           </div>
         </div>
 
