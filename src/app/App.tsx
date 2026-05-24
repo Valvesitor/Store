@@ -1895,12 +1895,18 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
         {/* Logo */}
         <button
           onClick={() => onNavigate("hero")}
-          className="flex items-center transition-opacity hover:opacity-80 lg:min-w-[330px]"
+          className="group flex min-h-10 items-center rounded-full px-3 transition-opacity hover:opacity-90 lg:min-w-[330px]"
           aria-label="The Wanted Sole Studio"
         >
           <span
-            className="text-sm font-bold tracking-[0.16em] uppercase whitespace-nowrap lg:text-base"
-            style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}
+            className="text-sm font-bold tracking-[0.18em] uppercase whitespace-nowrap lg:text-base"
+            style={{
+              fontFamily: "'Cinzel', serif",
+              background: "linear-gradient(135deg, #202020 0%, #b89458 45%, #ded2bc 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text"
+            }}
           >
             The Wanted Sole Studio
           </span>
