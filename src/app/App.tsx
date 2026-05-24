@@ -21,6 +21,7 @@ type ProductMedia = {
   src: string;
   poster?: string;
   alt: string;
+  filename?: string;
 };
 
 interface Product {
@@ -5679,6 +5680,22 @@ function getUploadedMediaAlt(product: Product, index: number) {
   return index === 0 ? `Imagem principal do ${baseName}` : `Imagem da galeria do ${baseName}`;
 }
 
+function isUploadedDataMedia(item: ProductMedia) {
+  return item.src.startsWith("data:");
+}
+
+function getMediaDisplayName(item: ProductMedia, index: number) {
+  if (item.filename) return item.filename;
+  if (isUploadedDataMedia(item)) return `imagem-enviada-${index + 1}.png`;
+
+  try {
+    const url = new URL(item.src, window.location.origin);
+    return decodeURIComponent(url.pathname.split("/").filter(Boolean).pop() || item.src);
+  } catch {
+    return item.src;
+  }
+}
+
 function emptyAdminProduct(): Product {
   return {
     id: `new-${Date.now()}`,
@@ -5726,7 +5743,9 @@ function ProductAdminForm({
   const featuresEnText = (product.featuresEn ?? []).join("\n");
   const requirementsText = product.requirements.join("\n");
   const requirementsEnText = (product.requirementsEn ?? []).join("\n");
-  const mediaText = (product.media ?? []).map((item) => item.src).join("\n");
+  const uploadedMedia = (product.media ?? []).filter(isUploadedDataMedia);
+  const manualMedia = (product.media ?? []).filter((item) => !isUploadedDataMedia(item));
+  const mediaText = manualMedia.map((item) => item.src).join("\n");
   const Icon = ICON_MAP[product.iconName] ?? Package;
   const status = STATUS_CONFIG[product.status];
   const iconPreview = getProductThumbnail(product);
@@ -5782,7 +5801,8 @@ function ProductAdminForm({
         uploadedMedia.push({
           type: "image",
           src: dataUrl,
-          alt: getUploadedMediaAlt(product, currentMedia.length + uploadedMedia.length)
+          filename: file.name,
+          alt: file.name || getUploadedMediaAlt(product, currentMedia.length + uploadedMedia.length)
         });
       }
 
@@ -5971,21 +5991,23 @@ function ProductAdminForm({
                   </div>
 
                   <p className="mt-3 rounded-xl border border-border bg-background px-3 py-2 text-[11px] leading-5 text-muted-foreground">
-                    As imagens são salvas junto ao produto ao clicar em <strong>Salvar e publicar</strong>. Use imagens otimizadas de até {PRODUCT_MEDIA_UPLOAD_MAX_MB}MB.
+                    As imagens enviadas aparecem abaixo pelo nome do arquivo, não como código base64. Use imagens otimizadas de até {PRODUCT_MEDIA_UPLOAD_MAX_MB}MB.
                   </p>
                 </div>
 
                 <label className="mt-4 block">
-                  <span className={lbl}>URLs / imagens salvas — uma por linha</span>
+                  <span className={lbl}>URLs manuais — uma por linha</span>
                   <textarea
                     value={mediaText}
-                    onChange={(e) => update({
-                      media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
+                    onChange={(e) => {
+                      const nextManualMedia: ProductMedia[] = e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
                         type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
                         src,
                         alt: product.name || "Preview do produto"
-                      }))
-                    })}
+                      }));
+
+                      update({ media: [...uploadedMedia, ...nextManualMedia] });
+                    }}
                     rows={10}
                     className={textarea}
                     placeholder={"/products/tws-identity-forge/thumb.webp\nhttps://youtube.com/watch?v=...\n/products/tws-identity-forge/screenshot2.webp"}
@@ -6017,20 +6039,25 @@ function ProductAdminForm({
 
                 {(product.media ?? []).length > 0 && (
                   <div className="rounded-2xl border border-border bg-background p-3">
-                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Prévia</p>
+                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Prévia / arquivos enviados</p>
                     <div className="grid grid-cols-3 gap-2">
                       {(product.media ?? []).slice(0, 6).map((item, index) => (
-                        <div key={`${item.src}-${index}`} className="relative aspect-square overflow-hidden rounded-lg border border-border bg-[#fffdf8]">
-                          {item.type === "youtube" ? (
-                            <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-primary">YT</div>
-                          ) : item.type === "video" ? (
-                            <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-primary">MP4</div>
-                          ) : (
-                            <img src={item.src} alt={item.alt} className="h-full w-full bg-[#fffdf8] object-contain p-1" />
-                          )}
-                          {index === 0 && (
-                            <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground">CAPA</span>
-                          )}
+                        <div key={`${item.src}-${index}`} className="overflow-hidden rounded-lg border border-border bg-[#fffdf8]">
+                          <div className="relative aspect-square">
+                            {item.type === "youtube" ? (
+                              <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-primary">YT</div>
+                            ) : item.type === "video" ? (
+                              <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-primary">MP4</div>
+                            ) : (
+                              <img src={item.src} alt={item.alt} className="h-full w-full bg-[#fffdf8] object-contain p-1" />
+                            )}
+                            {index === 0 && (
+                              <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground">CAPA</span>
+                            )}
+                          </div>
+                          <div className="border-t border-border bg-background px-1.5 py-1 text-[9px] font-semibold leading-3 text-muted-foreground truncate" title={getMediaDisplayName(item, index)}>
+                            {getMediaDisplayName(item, index)}
+                          </div>
                         </div>
                       ))}
                     </div>
