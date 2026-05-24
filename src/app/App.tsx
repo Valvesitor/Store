@@ -7424,7 +7424,7 @@ export default function App() {
   }
 
   if (pathname === "/docs" || pathname === "/documentation") {
-    return renderPageWithNavbar(<DocsPage language={language} />);
+    return renderPageWithNavbar(<DocsPage language={language} />, true);
   }
 
   if (pathname === "/admin/docs") {
