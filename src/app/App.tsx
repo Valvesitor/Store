@@ -6008,11 +6008,52 @@ function ProductAdminForm({
 
                       update({ media: [...uploadedMedia, ...nextManualMedia] });
                     }}
-                    rows={10}
+                    rows={6}
                     className={textarea}
                     placeholder={"/products/tws-identity-forge/thumb.webp\nhttps://youtube.com/watch?v=...\n/products/tws-identity-forge/screenshot2.webp"}
                   />
                 </label>
+
+                {(product.media ?? []).length > 0 && (
+                  <div className="mt-3 rounded-2xl border border-border bg-background p-3">
+                    <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Lista de mídias</p>
+                        <p className="text-[10px] leading-4 text-muted-foreground">
+                          Clique em Remover para tirar uma mídia sem apagar as outras.
+                        </p>
+                      </div>
+                      <span className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-bold text-primary">
+                        {(product.media ?? []).length} item(s)
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+                      {(product.media ?? []).map((item, index) => (
+                        <div key={`media-list-${item.src}-${index}`} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2">
+                          <div className="min-w-0">
+                            <p className="truncate text-xs font-semibold text-foreground/85" title={getMediaDisplayName(item, index)}>
+                              {index === 0 ? "Capa · " : ""}{getMediaDisplayName(item, index)}
+                            </p>
+                            <p className="mt-0.5 text-[9px] uppercase tracking-widest text-muted-foreground">
+                              {item.type === "youtube" ? "YouTube" : item.type === "video" ? "Vídeo" : isUploadedDataMedia(item) ? "Upload" : "URL"}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              update({ media: (product.media ?? []).filter((_, mediaIndex) => mediaIndex !== index) });
+                              setPreviewFailed(false);
+                            }}
+                            className="shrink-0 rounded-lg border border-red-500/25 px-3 py-1.5 text-[10px] font-bold text-red-600 transition-all hover:bg-red-500 hover:text-white"
+                          >
+                            Remover
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="mt-3 rounded-2xl border border-amber-500/25 bg-amber-500/5 px-4 py-3 text-xs leading-5 text-muted-foreground">
                   <strong className="block text-amber-700">Importante sobre imagens</strong>
@@ -6073,32 +6114,6 @@ function ProductAdminForm({
                           <div className="border-t border-border bg-background px-1.5 py-1 text-[9px] font-semibold leading-3 text-muted-foreground truncate" title={getMediaDisplayName(item, index)}>
                             {getMediaDisplayName(item, index)}
                           </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-3 space-y-1.5">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Lista de mídias</p>
-                      {(product.media ?? []).map((item, index) => (
-                        <div key={`media-list-${item.src}-${index}`} className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card px-2 py-1.5">
-                          <div className="min-w-0">
-                            <p className="truncate text-[11px] font-semibold text-foreground/80" title={getMediaDisplayName(item, index)}>
-                              {index === 0 ? "Capa · " : ""}{getMediaDisplayName(item, index)}
-                            </p>
-                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground">
-                              {item.type === "youtube" ? "YouTube" : item.type === "video" ? "Vídeo" : isUploadedDataMedia(item) ? "Upload" : "URL"}
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              update({ media: (product.media ?? []).filter((_, mediaIndex) => mediaIndex !== index) });
-                              setPreviewFailed(false);
-                            }}
-                            className="shrink-0 rounded-md border border-red-500/25 px-2 py-1 text-[10px] font-bold text-red-600 transition-all hover:bg-red-500 hover:text-white"
-                          >
-                            Remover
-                          </button>
                         </div>
                       ))}
                     </div>
