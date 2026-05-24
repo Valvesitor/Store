@@ -13,7 +13,7 @@ import * as AccordionPrimitive from "@radix-ui/react-accordion";
 
 type Category = "Todos" | "Scripts" | "Custom Peds" | "Systems" | "Outfit / Creator" | "Add-ons" | "Free Resources";
 type SortOrder = "recent" | "popular" | "price-asc" | "price-desc";
-type ProductStatus = "novo" | "atualizado" | "popular" | "em-breve";
+type ProductStatus = "novo" | "atualizado" | "popular" | "em-breve" | "manutencao";
 type SiteLanguage = "pt_BR" | "en_US";
 type CurrencyCode = "AUD" | "BRL" | "CAD" | "DKK" | "EUR" | "NOK" | "NZD" | "GBP" | "SEK" | "USD" | "PLN";
 type ProductMedia = {
@@ -377,8 +377,19 @@ const STATUS_CONFIG: Record<ProductStatus, { label: string; cls: string }> = {
   novo: { label: "Novo", cls: "bg-emerald-950 text-emerald-400 border border-emerald-800/50" },
   atualizado: { label: "Atualizado", cls: "bg-sky-950 text-sky-400 border border-sky-800/50" },
   popular: { label: "Popular", cls: "bg-amber-950 text-amber-400 border border-amber-800/50" },
-  "em-breve": { label: "Em Breve", cls: "bg-zinc-900 text-zinc-400 border border-zinc-700/50" }
+  "em-breve": { label: "Em Breve", cls: "bg-zinc-900 text-zinc-400 border border-zinc-700/50" },
+  manutencao: { label: "Manutenção", cls: "bg-orange-950 text-orange-300 border border-orange-800/60" }
 };
+
+function isProductInMaintenance(product: Product) {
+  return product.status === "manutencao";
+}
+
+function getMaintenanceMessage(language: SiteLanguage = "pt_BR") {
+  return language === "en_US"
+    ? "This product is currently under maintenance. Purchases are temporarily disabled while the team reviews or updates the product."
+    : "Este produto está em manutenção. A compra está temporariamente desativada enquanto a equipe revisa ou atualiza o produto.";
+}
 
 const PRODUCT_BASE_CURRENCY: CurrencyCode = "USD";
 const PRODUCT_CURRENCY_RATES: Record<CurrencyCode, number> = {
@@ -729,6 +740,11 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Novo": "New",
   "Atualizado": "Updated",
   "Em breve": "Coming soon",
+  "Manutenção": "Maintenance",
+  "Produto em manutenção": "Product under maintenance",
+  "Compra temporariamente indisponível": "Purchase temporarily unavailable",
+  "Este produto está em manutenção. A compra está temporariamente desativada enquanto a equipe revisa ou atualiza o produto.": "This product is currently under maintenance. Purchases are temporarily disabled while the team reviews or updates the product.",
+  "Indisponível": "Unavailable",
   "Grátis": "Free",
   "Comprar": "Buy",
   "Adicionar": "Add",
@@ -1041,6 +1057,11 @@ async function launchTebexCheckoutFromBasket(basketIdent: string, packageId?: st
 }
 
 async function launchTebexCheckout(product: Product) {
+  if (isProductInMaintenance(product)) {
+    window.alert(getMaintenanceMessage(tebexCheckoutLocale));
+    return;
+  }
+
   if (product.packageId && window.Tebex?.checkout) {
     try {
       const basketIdent = getStoredTebexBasket() ?? await createTebexBasket();
@@ -1065,6 +1086,10 @@ async function launchTebexCheckout(product: Product) {
 
 
 async function addProductToTebexCart(product: Product) {
+  if (isProductInMaintenance(product)) {
+    throw new Error(getMaintenanceMessage(tebexCheckoutLocale));
+  }
+
   if (product.packageId) {
     const basketIdent = getStoredTebexBasket() ?? await createTebexBasket();
     storeTebexBasket(basketIdent);
@@ -2413,6 +2438,7 @@ function ProductCard({ product, currency, language, onSelect }: { product: Produ
   const Icon = ICON_MAP[product.iconName] ?? Package;
   const status = STATUS_CONFIG[product.status];
   const localized = getLocalizedProduct(product, language);
+  const isMaintenance = isProductInMaintenance(product);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const thumbnailSrc = getProductThumbnail(product);
   const showThumbnail = Boolean(thumbnailSrc) && !thumbnailFailed;
@@ -2518,15 +2544,18 @@ function ProductCard({ product, currency, language, onSelect }: { product: Produ
             )}
             <button
               type="button"
+              disabled={isMaintenance}
               onClick={(e) => {
                 e.stopPropagation();
-                launchTebexCheckout(product);
+                if (!isMaintenance) launchTebexCheckout(product);
               }}
-              className="px-3 py-1.5 rounded-sm text-[11px] font-semibold
-                bg-primary text-primary-foreground hover:brightness-110
-                hover:shadow-[0_0_12px_rgba(201,168,76,0.3)] transition-all duration-150"
+              className={`px-3 py-1.5 rounded-sm text-[11px] font-semibold transition-all duration-150 ${
+                isMaintenance
+                  ? "cursor-not-allowed border border-orange-500/25 bg-orange-500/10 text-orange-700"
+                  : "bg-primary text-primary-foreground hover:brightness-110 hover:shadow-[0_0_12px_rgba(201,168,76,0.3)]"
+              }`}
             >
-              {product.price === 0 ? "Download" : "Comprar"}
+              {isMaintenance ? "Manutenção" : product.price === 0 ? "Download" : "Comprar"}
             </button>
           </div>
         </div>
@@ -2572,7 +2601,7 @@ function ProductsSection({
       if (sort === "price-asc") return a.price - b.price;
       if (sort === "price-desc") return b.price - a.price;
       if (sort === "popular") {
-        const order = ["popular", "atualizado", "novo", "em-breve"];
+        const order = ["popular", "atualizado", "novo", "em-breve", "manutencao"];
         return order.indexOf(a.status) - order.indexOf(b.status);
       }
       return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
@@ -2990,8 +3019,14 @@ function ProductMediaGallery({ product }: { product: Product }) {
 function ProductPage({ product, currency, language }: { product: Product; currency: CurrencyCode; language: SiteLanguage }) {
   const status = STATUS_CONFIG[product.status];
   const localized = getLocalizedProduct(product, language);
+  const isMaintenance = isProductInMaintenance(product);
+  const maintenanceMessage = getMaintenanceMessage(language);
 
   async function handleAddToCart() {
+    if (isMaintenance) {
+      window.alert(maintenanceMessage);
+      return;
+    }
     try {
       const basket = await addProductToTebexCart(product);
       if (basket && getBasketItems(basket).length === 0) {
@@ -3012,6 +3047,11 @@ function ProductPage({ product, currency, language }: { product: Product; curren
   }
 
   async function handleBuyNow() {
+    if (isMaintenance) {
+      window.alert(maintenanceMessage);
+      return;
+    }
+
     await launchTebexCheckout(product);
   }
 
@@ -3096,14 +3136,37 @@ function ProductPage({ product, currency, language }: { product: Product; curren
               </p>
             </div>
 
+            {isMaintenance && (
+              <div className="mb-3 rounded-xl border border-orange-500/25 bg-orange-500/10 p-3 text-xs leading-5 text-orange-700">
+                <strong className="mb-1 block">Produto em manutenção</strong>
+                {maintenanceMessage}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <button onClick={handleAddToCart} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-primary/25 px-4 text-xs font-semibold text-primary hover:bg-primary/5">
+              <button
+                onClick={handleAddToCart}
+                disabled={isMaintenance}
+                className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg border px-4 text-xs font-semibold ${
+                  isMaintenance
+                    ? "cursor-not-allowed border-orange-500/25 bg-orange-500/5 text-orange-700"
+                    : "border-primary/25 text-primary hover:bg-primary/5"
+                }`}
+              >
                 <ShoppingCart size={14} />
-                Adicionar
+                {isMaintenance ? "Indisponível" : "Adicionar"}
               </button>
-              <button onClick={handleBuyNow} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground">
-                Comprar
-                <ArrowRight size={13} />
+              <button
+                onClick={handleBuyNow}
+                disabled={isMaintenance}
+                className={`inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-xs font-semibold ${
+                  isMaintenance
+                    ? "cursor-not-allowed border border-orange-500/25 bg-orange-500/10 text-orange-700"
+                    : "bg-primary text-primary-foreground"
+                }`}
+              >
+                {isMaintenance ? "Manutenção" : "Comprar"}
+                {!isMaintenance && <ArrowRight size={13} />}
               </button>
             </div>
           </div>
@@ -3116,6 +3179,8 @@ function ProductPage({ product, currency, language }: { product: Product; curren
 function ProductDetail({ product, currency, language, onClose }: { product: Product; currency: CurrencyCode; language: SiteLanguage; onClose: () => void }) {
   const status = STATUS_CONFIG[product.status];
   const localized = getLocalizedProduct(product, language);
+  const isMaintenance = isProductInMaintenance(product);
+  const maintenanceMessage = getMaintenanceMessage(language);
   const [cartBusy, setCartBusy] = useState(false);
   const [buyBusy, setBuyBusy] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
@@ -3126,6 +3191,11 @@ function ProductDetail({ product, currency, language, onClose }: { product: Prod
   }, []);
 
   async function handleAddToCart() {
+    if (isMaintenance) {
+      window.alert(maintenanceMessage);
+      return;
+    }
+
     try {
       setCartBusy(true);
       setAddedToCart(false);
@@ -3154,6 +3224,11 @@ function ProductDetail({ product, currency, language, onClose }: { product: Prod
   }
 
   async function handleBuyNow() {
+    if (isMaintenance) {
+      window.alert(maintenanceMessage);
+      return;
+    }
+
     try {
       setBuyBusy(true);
       await launchTebexCheckout(product);
@@ -3321,18 +3396,27 @@ function ProductDetail({ product, currency, language, onClose }: { product: Prod
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row">
-                <GhostButton onClick={handleAddToCart} className="justify-center">
-                  <ShoppingCart size={14} />
-                  {cartBusy ? "Adicionando..." : addedToCart ? "Adicionado" : "Adicionar"}
-                </GhostButton>
-                <GhostButton href="/checkout" className="justify-center">
-                  Ver cesta
-                  <ChevronRight size={13} />
-                </GhostButton>
-                <GoldButton onClick={handleBuyNow} className="justify-center">
-                  {buyBusy ? "Abrindo..." : product.price === 0 ? "Download" : "Comprar"}
-                  <ArrowRight size={13} />
-                </GoldButton>
+                {isMaintenance ? (
+                  <div className="rounded-lg border border-orange-500/25 bg-orange-500/10 px-4 py-3 text-xs font-semibold leading-5 text-orange-700">
+                    <span className="block">Produto em manutenção</span>
+                    <span className="font-normal">{maintenanceMessage}</span>
+                  </div>
+                ) : (
+                  <>
+                    <GhostButton onClick={handleAddToCart} className="justify-center">
+                      <ShoppingCart size={14} />
+                      {cartBusy ? "Adicionando..." : addedToCart ? "Adicionado" : "Adicionar"}
+                    </GhostButton>
+                    <GhostButton href="/checkout" className="justify-center">
+                      Ver cesta
+                      <ChevronRight size={13} />
+                    </GhostButton>
+                    <GoldButton onClick={handleBuyNow} className="justify-center">
+                      {buyBusy ? "Abrindo..." : product.price === 0 ? "Download" : "Comprar"}
+                      <ArrowRight size={13} />
+                    </GoldButton>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -5579,6 +5663,23 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
 
 
 
+const PRODUCT_MEDIA_UPLOAD_MAX_MB = 3;
+const PRODUCT_MEDIA_UPLOAD_MAX_BYTES = PRODUCT_MEDIA_UPLOAD_MAX_MB * 1024 * 1024;
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.onerror = () => reject(new Error("Não foi possível ler a imagem enviada."));
+    reader.readAsDataURL(file);
+  });
+}
+
+function getUploadedMediaAlt(product: Product, index: number) {
+  const baseName = product.name || product.nameEn || "Produto";
+  return index === 0 ? `Imagem principal do ${baseName}` : `Imagem da galeria do ${baseName}`;
+}
+
 function emptyAdminProduct(): Product {
   return {
     id: `new-${Date.now()}`,
@@ -5621,6 +5722,7 @@ function ProductAdminForm({
   saving: boolean;
 }) {
   const [previewFailed, setPreviewFailed] = useState(false);
+  const [uploadBusy, setUploadBusy] = useState(false);
   const featuresText = product.features.join("\n");
   const featuresEnText = (product.featuresEn ?? []).join("\n");
   const requirementsText = product.requirements.join("\n");
@@ -5651,6 +5753,50 @@ function ProductAdminForm({
         </div>
       </div>
     );
+  }
+
+  async function handleMediaUpload(files: FileList | null) {
+    const selectedFiles = Array.from(files ?? []);
+
+    if (selectedFiles.length === 0) return;
+
+    const imageFiles = selectedFiles.filter((file) => file.type.startsWith("image/"));
+
+    if (imageFiles.length !== selectedFiles.length) {
+      window.alert("Envie somente imagens nesta área. Para vídeo, use link do YouTube ou URL .mp4/.webm.");
+    }
+
+    const oversized = imageFiles.find((file) => file.size > PRODUCT_MEDIA_UPLOAD_MAX_BYTES);
+    if (oversized) {
+      window.alert(`A imagem "${oversized.name}" está muito grande. Use imagens com até ${PRODUCT_MEDIA_UPLOAD_MAX_MB}MB.`);
+      return;
+    }
+
+    try {
+      setUploadBusy(true);
+
+      const currentMedia = product.media ?? [];
+      const uploadedMedia: ProductMedia[] = [];
+
+      for (const file of imageFiles) {
+        const dataUrl = await readFileAsDataUrl(file);
+        uploadedMedia.push({
+          type: "image",
+          src: dataUrl,
+          alt: getUploadedMediaAlt(product, currentMedia.length + uploadedMedia.length)
+        });
+      }
+
+      if (uploadedMedia.length > 0) {
+        update({ media: [...currentMedia, ...uploadedMedia] });
+        setPreviewFailed(false);
+      }
+    } catch (error) {
+      console.error(error);
+      window.alert(error instanceof Error ? error.message : "Não foi possível fazer upload da imagem.");
+    } finally {
+      setUploadBusy(false);
+    }
   }
 
   return (
@@ -5703,7 +5849,13 @@ function ProductAdminForm({
                   <option value="popular">Popular</option>
                   <option value="atualizado">Atualizado</option>
                   <option value="em-breve">Em breve</option>
+                  <option value="manutencao">Manutenção</option>
                 </select>
+                {product.status === "manutencao" && (
+                  <p className="mt-2 rounded-xl border border-orange-500/25 bg-orange-500/10 px-3 py-2 text-xs leading-5 text-orange-700">
+                    O cliente verá um aviso de manutenção e os botões Adicionar/Comprar ficarão bloqueados.
+                  </p>
+                )}
               </label>
               <label>
                 <span className={lbl}>Ícone fallback</span>
@@ -5789,48 +5941,106 @@ function ProductAdminForm({
 
           {/* 04 — Mídia */}
           <div className="rounded-[22px] border border-border bg-card p-5 lg:p-6 shadow-[0_8px_28px_rgba(32,32,32,0.04)]">
-            <SectionHeader number="04" title="Mídia" subtitle="Imagem do card (linha 1) e galeria (linhas seguintes)" />
-            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_220px] gap-5">
-              <label>
-                <span className={lbl}>URLs — uma por linha</span>
-                <textarea
-                  value={mediaText}
-                  onChange={(e) => update({
-                    media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
-                      type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
-                      src,
-                      alt: product.name || "Preview do produto"
-                    }))
-                  })}
-                  rows={10}
-                  className={textarea}
-                  placeholder={"/products/tws-identity-forge/thumb.webp\nhttps://youtube.com/watch?v=...\n/products/tws-identity-forge/screenshot2.webp"}
-                />
+            <SectionHeader number="04" title="Mídia" subtitle="Upload de imagens, imagem do card e galeria" />
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_240px] gap-5">
+              <div>
+                <span className={lbl}>Upload de imagens</span>
+                <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-foreground/85">Enviar imagens do produto</p>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                        A primeira imagem vira capa/card. As próximas entram na galeria.
+                      </p>
+                    </div>
+
+                    <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground transition-all hover:brightness-105">
+                      <Upload size={14} />
+                      {uploadBusy ? "Enviando..." : "Selecionar"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        disabled={uploadBusy}
+                        className="hidden"
+                        onChange={(e) => {
+                          handleMediaUpload(e.target.files);
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </label>
+                  </div>
+
+                  <p className="mt-3 rounded-xl border border-border bg-background px-3 py-2 text-[11px] leading-5 text-muted-foreground">
+                    As imagens são salvas junto ao produto ao clicar em <strong>Salvar e publicar</strong>. Use imagens otimizadas de até {PRODUCT_MEDIA_UPLOAD_MAX_MB}MB.
+                  </p>
+                </div>
+
+                <label className="mt-4 block">
+                  <span className={lbl}>URLs / imagens salvas — uma por linha</span>
+                  <textarea
+                    value={mediaText}
+                    onChange={(e) => update({
+                      media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
+                        type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
+                        src,
+                        alt: product.name || "Preview do produto"
+                      }))
+                    })}
+                    rows={10}
+                    className={textarea}
+                    placeholder={"/products/tws-identity-forge/thumb.webp\nhttps://youtube.com/watch?v=...\n/products/tws-identity-forge/screenshot2.webp"}
+                  />
+                </label>
 
                 <div className="mt-3 rounded-2xl border border-amber-500/25 bg-amber-500/5 px-4 py-3 text-xs leading-5 text-muted-foreground">
-                  <strong className="block text-amber-700">Importante sobre imagens do Discord</strong>
-                  Links do Discord/CDN podem expirar ou funcionar só para quem abriu no Discord. Para o cliente ver sempre, salve a imagem no projeto e use um caminho fixo, exemplo: <code className="rounded bg-background px-1 py-0.5">/products/tws-identity-forge/preview.webp</code>.
+                  <strong className="block text-amber-700">Importante sobre imagens</strong>
+                  O upload acima salva a imagem no próprio produto. Para produção em grande escala, o ideal é usar Cloudflare R2 ou imagens dentro de <code className="rounded bg-background px-1 py-0.5">/public/products</code>.
                   {hasDiscordMedia && (
                     <span className="mt-2 block font-semibold text-amber-700">
-                      Este produto ainda tem {discordMediaCount} URL(s) do Discord. Troque por imagem hospedada no site.
+                      Este produto ainda tem {discordMediaCount} URL(s) do Discord. Troque por upload ou imagem hospedada no site.
                     </span>
                   )}
                 </div>
-              </label>
+              </div>
+
               <div className="space-y-3">
                 <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
                   <p className="text-xs font-semibold text-foreground/80 mb-2">Como usar</p>
                   <ul className="space-y-1.5 text-xs leading-5 text-muted-foreground">
-                    <li>• Linha 1 → imagem do card</li>
-                    <li>• Linha 2+ → galeria</li>
-                    <li>• YouTube → player embutido</li>
-                    <li>• .mp4 / .webm / .mov → vídeo</li>
+                    <li>• Upload 1 → imagem do card</li>
+                    <li>• Uploads seguintes → galeria</li>
+                    <li>• YouTube → cole a URL manualmente</li>
+                    <li>• .mp4 / .webm / .mov → cole a URL manualmente</li>
                     <li>• Evite Discord/CDN → links temporários</li>
                   </ul>
                 </div>
+
+                {(product.media ?? []).length > 0 && (
+                  <div className="rounded-2xl border border-border bg-background p-3">
+                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Prévia</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(product.media ?? []).slice(0, 6).map((item, index) => (
+                        <div key={`${item.src}-${index}`} className="relative aspect-square overflow-hidden rounded-lg border border-border bg-card">
+                          {item.type === "youtube" ? (
+                            <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-primary">YT</div>
+                          ) : item.type === "video" ? (
+                            <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-primary">MP4</div>
+                          ) : (
+                            <img src={item.src} alt={item.alt} className="h-full w-full object-cover" />
+                          )}
+                          {index === 0 && (
+                            <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground">CAPA</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-2">
                   <div className="rounded-xl border border-border bg-background p-3 text-center">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">URLs</p>
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Mídias</p>
                     <p className="mt-1 text-xl font-bold text-primary">{product.media?.length ?? 0}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-background p-3 text-center">
@@ -5838,6 +6048,21 @@ function ProductAdminForm({
                     <p className="mt-1 text-xl font-bold text-primary">{galleryCount}</p>
                   </div>
                 </div>
+
+                {(product.media ?? []).length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm("Remover todas as mídias deste produto?")) {
+                        update({ media: [] });
+                        setPreviewFailed(false);
+                      }
+                    }}
+                    className="w-full rounded-xl border border-red-500/25 px-3 py-2 text-xs font-bold text-red-600 transition-all hover:bg-red-500/5"
+                  >
+                    Limpar mídias
+                  </button>
+                )}
               </div>
             </div>
           </div>
