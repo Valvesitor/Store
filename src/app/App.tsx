@@ -5663,23 +5663,6 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
 
 
 
-const PRODUCT_MEDIA_UPLOAD_MAX_MB = 3;
-const PRODUCT_MEDIA_UPLOAD_MAX_BYTES = PRODUCT_MEDIA_UPLOAD_MAX_MB * 1024 * 1024;
-
-function readFileAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(new Error("Não foi possível ler a imagem enviada."));
-    reader.readAsDataURL(file);
-  });
-}
-
-function getUploadedMediaAlt(product: Product, index: number) {
-  const baseName = product.name || product.nameEn || "Produto";
-  return index === 0 ? `Imagem principal do ${baseName}` : `Imagem da galeria do ${baseName}`;
-}
-
 function emptyAdminProduct(): Product {
   return {
     id: `new-${Date.now()}`,
@@ -5722,7 +5705,6 @@ function ProductAdminForm({
   saving: boolean;
 }) {
   const [previewFailed, setPreviewFailed] = useState(false);
-  const [uploadBusy, setUploadBusy] = useState(false);
   const featuresText = product.features.join("\n");
   const featuresEnText = (product.featuresEn ?? []).join("\n");
   const requirementsText = product.requirements.join("\n");
@@ -5753,50 +5735,6 @@ function ProductAdminForm({
         </div>
       </div>
     );
-  }
-
-  async function handleMediaUpload(files: FileList | null) {
-    const selectedFiles = Array.from(files ?? []);
-
-    if (selectedFiles.length === 0) return;
-
-    const imageFiles = selectedFiles.filter((file) => file.type.startsWith("image/"));
-
-    if (imageFiles.length !== selectedFiles.length) {
-      window.alert("Envie somente imagens nesta área. Para vídeo, use link do YouTube ou URL .mp4/.webm.");
-    }
-
-    const oversized = imageFiles.find((file) => file.size > PRODUCT_MEDIA_UPLOAD_MAX_BYTES);
-    if (oversized) {
-      window.alert(`A imagem "${oversized.name}" está muito grande. Use imagens com até ${PRODUCT_MEDIA_UPLOAD_MAX_MB}MB.`);
-      return;
-    }
-
-    try {
-      setUploadBusy(true);
-
-      const currentMedia = product.media ?? [];
-      const uploadedMedia: ProductMedia[] = [];
-
-      for (const file of imageFiles) {
-        const dataUrl = await readFileAsDataUrl(file);
-        uploadedMedia.push({
-          type: "image",
-          src: dataUrl,
-          alt: getUploadedMediaAlt(product, currentMedia.length + uploadedMedia.length)
-        });
-      }
-
-      if (uploadedMedia.length > 0) {
-        update({ media: [...currentMedia, ...uploadedMedia] });
-        setPreviewFailed(false);
-      }
-    } catch (error) {
-      console.error(error);
-      window.alert(error instanceof Error ? error.message : "Não foi possível fazer upload da imagem.");
-    } finally {
-      setUploadBusy(false);
-    }
   }
 
   return (
@@ -5941,106 +5879,48 @@ function ProductAdminForm({
 
           {/* 04 — Mídia */}
           <div className="rounded-[22px] border border-border bg-card p-5 lg:p-6 shadow-[0_8px_28px_rgba(32,32,32,0.04)]">
-            <SectionHeader number="04" title="Mídia" subtitle="Upload de imagens, imagem do card e galeria" />
-            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_240px] gap-5">
-              <div>
-                <span className={lbl}>Upload de imagens</span>
-                <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-4">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-sm font-bold text-foreground/85">Enviar imagens do produto</p>
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                        A primeira imagem vira capa/card. As próximas entram na galeria.
-                      </p>
-                    </div>
-
-                    <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground transition-all hover:brightness-105">
-                      <Upload size={14} />
-                      {uploadBusy ? "Enviando..." : "Selecionar"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        disabled={uploadBusy}
-                        className="hidden"
-                        onChange={(e) => {
-                          handleMediaUpload(e.target.files);
-                          e.currentTarget.value = "";
-                        }}
-                      />
-                    </label>
-                  </div>
-
-                  <p className="mt-3 rounded-xl border border-border bg-background px-3 py-2 text-[11px] leading-5 text-muted-foreground">
-                    As imagens são salvas junto ao produto ao clicar em <strong>Salvar e publicar</strong>. Use imagens otimizadas de até {PRODUCT_MEDIA_UPLOAD_MAX_MB}MB.
-                  </p>
-                </div>
-
-                <label className="mt-4 block">
-                  <span className={lbl}>URLs / imagens salvas — uma por linha</span>
-                  <textarea
-                    value={mediaText}
-                    onChange={(e) => update({
-                      media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
-                        type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
-                        src,
-                        alt: product.name || "Preview do produto"
-                      }))
-                    })}
-                    rows={10}
-                    className={textarea}
-                    placeholder={"/products/tws-identity-forge/thumb.webp\nhttps://youtube.com/watch?v=...\n/products/tws-identity-forge/screenshot2.webp"}
-                  />
-                </label>
+            <SectionHeader number="04" title="Mídia" subtitle="Imagem do card (linha 1) e galeria (linhas seguintes)" />
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_220px] gap-5">
+              <label>
+                <span className={lbl}>URLs — uma por linha</span>
+                <textarea
+                  value={mediaText}
+                  onChange={(e) => update({
+                    media: e.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((src) => ({
+                      type: isYouTubeUrl(src) ? "youtube" : src.match(/\.(mp4|webm|mov)$/i) ? "video" : "image",
+                      src,
+                      alt: product.name || "Preview do produto"
+                    }))
+                  })}
+                  rows={10}
+                  className={textarea}
+                  placeholder={"/products/tws-identity-forge/thumb.webp\nhttps://youtube.com/watch?v=...\n/products/tws-identity-forge/screenshot2.webp"}
+                />
 
                 <div className="mt-3 rounded-2xl border border-amber-500/25 bg-amber-500/5 px-4 py-3 text-xs leading-5 text-muted-foreground">
-                  <strong className="block text-amber-700">Importante sobre imagens</strong>
-                  O upload acima salva a imagem no próprio produto. Para produção em grande escala, o ideal é usar Cloudflare R2 ou imagens dentro de <code className="rounded bg-background px-1 py-0.5">/public/products</code>.
+                  <strong className="block text-amber-700">Importante sobre imagens do Discord</strong>
+                  Links do Discord/CDN podem expirar ou funcionar só para quem abriu no Discord. Para o cliente ver sempre, salve a imagem no projeto e use um caminho fixo, exemplo: <code className="rounded bg-background px-1 py-0.5">/products/tws-identity-forge/preview.webp</code>.
                   {hasDiscordMedia && (
                     <span className="mt-2 block font-semibold text-amber-700">
-                      Este produto ainda tem {discordMediaCount} URL(s) do Discord. Troque por upload ou imagem hospedada no site.
+                      Este produto ainda tem {discordMediaCount} URL(s) do Discord. Troque por imagem hospedada no site.
                     </span>
                   )}
                 </div>
-              </div>
-
+              </label>
               <div className="space-y-3">
                 <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
                   <p className="text-xs font-semibold text-foreground/80 mb-2">Como usar</p>
                   <ul className="space-y-1.5 text-xs leading-5 text-muted-foreground">
-                    <li>• Upload 1 → imagem do card</li>
-                    <li>• Uploads seguintes → galeria</li>
-                    <li>• YouTube → cole a URL manualmente</li>
-                    <li>• .mp4 / .webm / .mov → cole a URL manualmente</li>
+                    <li>• Linha 1 → imagem do card</li>
+                    <li>• Linha 2+ → galeria</li>
+                    <li>• YouTube → player embutido</li>
+                    <li>• .mp4 / .webm / .mov → vídeo</li>
                     <li>• Evite Discord/CDN → links temporários</li>
                   </ul>
                 </div>
-
-                {(product.media ?? []).length > 0 && (
-                  <div className="rounded-2xl border border-border bg-background p-3">
-                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Prévia</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {(product.media ?? []).slice(0, 6).map((item, index) => (
-                        <div key={`${item.src}-${index}`} className="relative aspect-square overflow-hidden rounded-lg border border-border bg-card">
-                          {item.type === "youtube" ? (
-                            <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-primary">YT</div>
-                          ) : item.type === "video" ? (
-                            <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-primary">MP4</div>
-                          ) : (
-                            <img src={item.src} alt={item.alt} className="h-full w-full object-cover" />
-                          )}
-                          {index === 0 && (
-                            <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground">CAPA</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 <div className="grid grid-cols-2 gap-2">
                   <div className="rounded-xl border border-border bg-background p-3 text-center">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Mídias</p>
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">URLs</p>
                     <p className="mt-1 text-xl font-bold text-primary">{product.media?.length ?? 0}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-background p-3 text-center">
@@ -6048,21 +5928,6 @@ function ProductAdminForm({
                     <p className="mt-1 text-xl font-bold text-primary">{galleryCount}</p>
                   </div>
                 </div>
-
-                {(product.media ?? []).length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm("Remover todas as mídias deste produto?")) {
-                        update({ media: [] });
-                        setPreviewFailed(false);
-                      }
-                    }}
-                    className="w-full rounded-xl border border-red-500/25 px-3 py-2 text-xs font-bold text-red-600 transition-all hover:bg-red-500/5"
-                  >
-                    Limpar mídias
-                  </button>
-                )}
               </div>
             </div>
           </div>
