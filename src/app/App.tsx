@@ -4510,20 +4510,18 @@ function slugifyHeading(text: string) {
 }
 
 function inlineDocsMarkdown(value: string) {
-  // Process links first (before escaping), then escape, then inline marks
-  const linkPattern = /\[([^\]]+)\]\(([^)]+)\)/g;
+  // Handle [text](url) links before escaping
+  const linkRx = /\[([^\]]+)\]\(([^)]+)\)/g;
   const parts: string[] = [];
-  let lastIndex = 0;
-  let match;
-  while ((match = linkPattern.exec(value)) !== null) {
-    parts.push(escapeDocsHtml(value.slice(lastIndex, match.index)));
-    const href = match[2].trim();
-    const label = escapeDocsHtml(match[1]);
-    const isExternal = /^https?:\/\//.test(href);
-    parts.push(`<a href="${escapeDocsHtml(href)}"${isExternal ? ' target="_blank" rel="noopener noreferrer"' : ""}>${label}</a>`);
-    lastIndex = match.index + match[0].length;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = linkRx.exec(value)) !== null) {
+    parts.push(escapeDocsHtml(value.slice(last, m.index)));
+    const isExt = /^https?:\/\//.test(m[2].trim());
+    parts.push(`<a href="${escapeDocsHtml(m[2].trim())}"${isExt ? ' target="_blank" rel="noopener noreferrer"' : ""}>${escapeDocsHtml(m[1])}</a>`);
+    last = m.index + m[0].length;
   }
-  parts.push(escapeDocsHtml(value.slice(lastIndex)));
+  parts.push(escapeDocsHtml(value.slice(last)));
   return parts.join("")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
@@ -4537,20 +4535,18 @@ function docsMarkdownToHtml(markdown: string) {
   let inCode = false;
   let inList = false;
   let inOl = false;
-  let inBlockquote = false;
+  let inBq = false;
   let bqLines: string[] = [];
 
   const closeList = () => {
     if (inList) { html += "</ul>"; inList = false; }
     if (inOl) { html += "</ol>"; inOl = false; }
   };
-
-  const flushBlockquote = () => {
-    if (inBlockquote) {
-      const inner = bqLines.map((l) => `<p>${inlineDocsMarkdown(l)}</p>`).join("");
-      html += `<blockquote>${inner}</blockquote>`;
+  const flushBq = () => {
+    if (inBq) {
+      html += `<blockquote>${bqLines.map((l) => `<p>${inlineDocsMarkdown(l)}</p>`).join("")}</blockquote>`;
       bqLines = [];
-      inBlockquote = false;
+      inBq = false;
     }
   };
 
@@ -4563,90 +4559,56 @@ function docsMarkdownToHtml(markdown: string) {
         codeLines = [];
         inCode = false;
       } else {
-        closeList();
-        flushBlockquote();
-        inCode = true;
+        closeList(); flushBq(); inCode = true;
       }
       continue;
     }
+    if (inCode) { codeLines.push(rawLine); continue; }
+    if (!line.trim()) { closeList(); flushBq(); continue; }
+    if (/^-{3,}$/.test(line.trim())) { closeList(); flushBq(); html += "<hr />"; continue; }
 
-    if (inCode) {
-      codeLines.push(rawLine);
-      continue;
-    }
-
-    if (!line.trim()) {
-      closeList();
-      flushBlockquote();
-      continue;
-    }
-
-    // Horizontal rule
-    if (/^---+$/.test(line.trim())) {
-      closeList();
-      flushBlockquote();
-      html += "<hr />";
-      continue;
-    }
-
-    // Blockquote
     if (line.startsWith("> ")) {
-      closeList();
-      inBlockquote = true;
-      bqLines.push(line.slice(2));
-      continue;
-    } else if (inBlockquote) {
-      flushBlockquote();
-    }
+      closeList(); inBq = true; bqLines.push(line.slice(2)); continue;
+    } else if (inBq) { flushBq(); }
 
-    // Info callout: :::info text
     if (line.startsWith(":::info") || line.startsWith(":::note")) {
       closeList();
-      const text = line.replace(/^:::(info|note)\s*/, "");
-      html += `<div class="docs-callout docs-callout-info">${text ? inlineDocsMarkdown(text) : ""}</div>`;
+      const t = line.replace(/^:::(info|note)\s*/, "");
+      html += `<div class="docs-callout docs-callout-info">${t ? inlineDocsMarkdown(t) : ""}</div>`;
       continue;
     }
-
-    // Warning callout: :::warning text
     if (line.startsWith(":::warning") || line.startsWith(":::caution")) {
       closeList();
-      const text = line.replace(/^:::(warning|caution)\s*/, "");
-      html += `<div class="docs-callout docs-callout-warning">${text ? inlineDocsMarkdown(text) : ""}</div>`;
+      const t = line.replace(/^:::(warning|caution)\s*/, "");
+      html += `<div class="docs-callout docs-callout-warning">${t ? inlineDocsMarkdown(t) : ""}</div>`;
       continue;
     }
 
     if (line.startsWith("# ")) {
       closeList();
-      const text = line.slice(2);
-      const id = slugifyHeading(text);
-      html += `<h1 id="${id}">${escapeDocsHtml(text)}</h1>`;
+      const t = line.slice(2);
+      html += `<h1 id="${slugifyHeading(t)}">${escapeDocsHtml(t)}</h1>`;
       continue;
     }
-
     if (line.startsWith("## ")) {
       closeList();
-      const text = line.slice(3);
-      const id = slugifyHeading(text);
-      html += `<h2 id="${id}">${escapeDocsHtml(text)}</h2>`;
+      const t = line.slice(3);
+      html += `<h2 id="${slugifyHeading(t)}">${escapeDocsHtml(t)}</h2>`;
       continue;
     }
-
     if (line.startsWith("### ")) {
       closeList();
-      const text = line.slice(4);
-      const id = slugifyHeading(text);
-      html += `<h3 id="${id}">${escapeDocsHtml(text)}</h3>`;
+      const t = line.slice(4);
+      html += `<h3 id="${slugifyHeading(t)}">${escapeDocsHtml(t)}</h3>`;
       continue;
     }
 
-    // Numbered list
     if (/^\d+\. /.test(line)) {
       if (inList) { html += "</ul>"; inList = false; }
       if (!inOl) { html += "<ol>"; inOl = true; }
       html += `<li>${inlineDocsMarkdown(line.replace(/^\d+\. /, ""))}</li>`;
       continue;
     }
-
     if (line.startsWith("- ")) {
       if (inOl) { html += "</ol>"; inOl = false; }
       if (!inList) { html += "<ul>"; inList = true; }
@@ -4658,13 +4620,8 @@ function docsMarkdownToHtml(markdown: string) {
     html += `<p>${inlineDocsMarkdown(line)}</p>`;
   }
 
-  closeList();
-  flushBlockquote();
-
-  if (inCode) {
-    html += `<pre><code>${escapeDocsHtml(codeLines.join("\n"))}</code></pre>`;
-  }
-
+  closeList(); flushBq();
+  if (inCode) html += `<pre><code>${escapeDocsHtml(codeLines.join("\n"))}</code></pre>`;
   return html;
 }
 
@@ -4861,35 +4818,34 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     <main className="h-[calc(100vh-4rem)] overflow-hidden bg-background">
       <style>{`
         .docs-markdown h1 { font-size: clamp(1.9rem, 3.2vw, 3.05rem); line-height: .98; letter-spacing: -.055em; margin: 0 0 1.15rem; color: hsl(var(--foreground)); }
-        .docs-markdown h2 { margin-top: 1.7rem; padding-top: 1.25rem; border-top: 1px solid hsl(var(--border)); color: hsl(var(--primary)); font-size: 1.2rem; font-weight: 800; scroll-margin-top: 5rem; }
-        .docs-markdown h3 { margin-top: 1.3rem; color: hsl(var(--foreground)); font-size: 1rem; font-weight: 800; scroll-margin-top: 5rem; }
+        .docs-markdown h2 { margin-top: 1.7rem; padding-top: 1.25rem; border-top: 1px solid hsl(var(--border)); color: hsl(var(--primary)); font-size: 1.2rem; font-weight: 800; scroll-margin-top: 4.5rem; }
+        .docs-markdown h3 { margin-top: 1.3rem; color: hsl(var(--foreground)); font-size: 1rem; font-weight: 800; scroll-margin-top: 4.5rem; }
         .docs-markdown p { margin: .65rem 0; color: hsl(var(--muted-foreground)); line-height: 1.7; font-size: .94rem; }
         .docs-markdown ul { list-style: none; padding: 0; display: grid; gap: .45rem; margin: .85rem 0; }
-        .docs-markdown ol { padding-left: 1.4rem; display: grid; gap: .45rem; margin: .85rem 0; counter-reset: ol-counter; list-style: none; }
-        .docs-markdown ol li { position: relative; padding-left: .5rem; color: hsl(var(--muted-foreground)); font-size: .94rem; line-height: 1.65; counter-increment: ol-counter; }
-        .docs-markdown ol li::before { content: counter(ol-counter) "."; position: absolute; left: -1.2rem; color: hsl(var(--primary)); font-weight: 700; font-size: .85rem; }
-        .docs-markdown li { position: relative; padding-left: 1.35rem; color: hsl(var(--muted-foreground)); font-size: .94rem; line-height: 1.65; }
+        .docs-markdown ol { list-style: none; padding: 0; display: grid; gap: .45rem; margin: .85rem 0; counter-reset: docs-ol; }
+        .docs-markdown ul li { position: relative; padding-left: 1.35rem; color: hsl(var(--muted-foreground)); font-size: .94rem; line-height: 1.65; }
         .docs-markdown ul li::before { content: "✦"; position: absolute; left: 0; color: hsl(var(--primary)); }
+        .docs-markdown ol li { position: relative; padding-left: 1.6rem; color: hsl(var(--muted-foreground)); font-size: .94rem; line-height: 1.65; counter-increment: docs-ol; }
+        .docs-markdown ol li::before { content: counter(docs-ol) "."; position: absolute; left: 0; color: hsl(var(--primary)); font-weight: 700; font-size: .85rem; }
         .docs-markdown pre { overflow: auto; border-radius: .9rem; background: #15120f; color: #f6ecd8; padding: .9rem; border: 1px solid rgba(255,255,255,.08); font-size: .86rem; }
         .docs-markdown code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: .9em; }
         .docs-markdown p code, .docs-markdown li code { background: hsl(var(--primary) / .12); color: hsl(var(--primary)); border-radius: .45rem; padding: .12rem .35rem; }
-        .docs-markdown a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 3px; transition: opacity .15s; }
+        .docs-markdown a { color: hsl(var(--primary)); text-underline-offset: 3px; }
         .docs-markdown a:hover { opacity: .75; }
-        .docs-markdown blockquote { margin: 1rem 0; border-left: 3px solid hsl(var(--primary) / .5); background: hsl(var(--primary) / .05); border-radius: 0 .75rem .75rem 0; padding: .75rem 1rem; }
-        .docs-markdown blockquote p { margin: 0; color: hsl(var(--foreground) / .7); font-style: italic; }
-        .docs-markdown hr { border: none; border-top: 1px solid hsl(var(--border)); margin: 1.5rem 0; }
         .docs-markdown strong { color: hsl(var(--foreground)); }
-        .docs-markdown em { color: hsl(var(--foreground) / .8); }
-        .docs-callout { margin: 1rem 0; padding: .75rem 1rem; border-radius: .9rem; font-size: .9rem; line-height: 1.6; }
-        .docs-callout-info { background: hsl(210 100% 50% / .08); border: 1px solid hsl(210 100% 50% / .2); color: hsl(210 100% 70%); }
-        .docs-callout-warning { background: hsl(38 95% 50% / .08); border: 1px solid hsl(38 95% 50% / .2); color: hsl(38 95% 65%); }
+        .docs-markdown em { color: hsl(var(--foreground) / .75); }
+        .docs-markdown blockquote { margin: 1rem 0; padding: .7rem 1rem; border-left: 3px solid hsl(var(--primary) / .5); background: hsl(var(--primary) / .05); border-radius: 0 .7rem .7rem 0; }
+        .docs-markdown blockquote p { margin: 0; font-style: italic; }
+        .docs-markdown hr { border: none; border-top: 1px solid hsl(var(--border)); margin: 1.5rem 0; }
+        .docs-callout { margin: 1rem 0; padding: .7rem 1rem; border-radius: .75rem; font-size: .9rem; line-height: 1.6; }
+        .docs-callout-info { background: hsl(210 100% 50% / .07); border: 1px solid hsl(210 100% 50% / .18); color: hsl(210 80% 72%); }
+        .docs-callout-warning { background: hsl(38 95% 50% / .07); border: 1px solid hsl(38 95% 50% / .18); color: hsl(38 85% 68%); }
         .docs-scroll-area::-webkit-scrollbar { width: 8px; height: 8px; }
         .docs-scroll-area::-webkit-scrollbar-thumb { background: hsl(var(--primary) / .35); border-radius: 999px; }
         .docs-scroll-area::-webkit-scrollbar-track { background: transparent; }
-        .docs-toc-link { display: block; padding: .3rem .5rem; border-radius: .5rem; font-size: .78rem; color: hsl(var(--muted-foreground)); text-decoration: none; transition: all .15s; line-height: 1.4; }
-        .docs-toc-link:hover { color: hsl(var(--foreground)); background: hsl(var(--primary) / .08); }
-        .docs-toc-link.active { color: hsl(var(--primary)); font-weight: 600; }
-        .docs-toc-link.h3 { padding-left: 1rem; font-size: .74rem; }
+        .docs-toc-item { display: block; padding: .28rem .5rem; border-radius: .45rem; font-size: .76rem; color: hsl(var(--muted-foreground)); text-decoration: none; line-height: 1.4; transition: color .15s, background .15s; }
+        .docs-toc-item:hover { color: hsl(var(--foreground)); background: hsl(var(--primary) / .07); }
+        .docs-toc-item.h3 { padding-left: 1.1rem; font-size: .72rem; }
       `}</style>
 
       <div className="mx-auto grid h-full max-w-[1540px] grid-cols-1 overflow-hidden border-x border-border bg-background lg:grid-cols-[318px_minmax(0,1fr)] xl:grid-cols-[318px_minmax(0,1fr)_240px]">
@@ -4929,29 +4885,30 @@ function DocsPage({ language }: { language: SiteLanguage }) {
               <input
                 value={sidebarSearch}
                 onChange={(e) => setSidebarSearch(e.target.value)}
-                placeholder={isEnglish ? "Search docs…" : "Buscar nas docs…"}
-                className="h-9 w-full rounded-xl border border-border bg-background pl-8 pr-3 text-xs outline-none focus:border-primary/40 placeholder:text-muted-foreground"
+                placeholder={isEnglish ? "Search pages…" : "Buscar páginas…"}
+                className="h-9 w-full rounded-xl border border-border bg-background pl-8 pr-3 text-xs text-foreground outline-none focus:border-primary/40 placeholder:text-muted-foreground"
               />
             </div>
+
             {loading && <p className="px-3 py-2 text-xs text-muted-foreground">{isEnglish ? "Loading..." : "Carregando..."}</p>}
 
             {productOptions.map((product) => {
               const productPages = getProductPages(product.id);
               const productCategoryEntries = getProductCategoryEntries(product.id);
 
-              // Filter by search
-              const filteredCategoryEntries = sidebarSearch.trim()
-                ? productCategoryEntries.map(([cat, rows]) => [
-                    cat,
-                    rows.filter((p) =>
-                      getDocsTitle(p, isEnglish).toLowerCase().includes(sidebarSearch.toLowerCase()) ||
-                      p.slug.toLowerCase().includes(sidebarSearch.toLowerCase())
-                    )
-                  ] as [string, DocsPageRecord[]]).filter(([, rows]) => rows.length > 0)
+              const q = sidebarSearch.trim().toLowerCase();
+              const filteredEntries = q
+                ? productCategoryEntries
+                    .map(([cat, rows]) => [cat, rows.filter((p) =>
+                      getDocsTitle(p, isEnglish).toLowerCase().includes(q) ||
+                      p.slug.toLowerCase().includes(q)
+                    )] as [string, DocsPageRecord[]])
+                    .filter(([, rows]) => rows.length > 0)
                 : productCategoryEntries;
 
-              if (sidebarSearch.trim() && filteredCategoryEntries.length === 0) return null;
-              const productExpanded = expandedProducts.includes(product.id) || (sidebarSearch.trim().length > 0 && filteredCategoryEntries.length > 0);
+              if (q && filteredEntries.length === 0) return null;
+
+              const productExpanded = expandedProducts.includes(product.id) || (q.length > 0 && filteredEntries.length > 0);
               const selectedProductActive = selectedProductId === product.id;
 
               return (
@@ -4973,13 +4930,13 @@ function DocsPage({ language }: { language: SiteLanguage }) {
 
                   {productExpanded && (
                     <div className="mt-1 space-y-1 pl-2">
-                      {filteredCategoryEntries.length === 0 && (
+                      {filteredEntries.length === 0 && (
                         <p className="rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
                           {isEnglish ? "No pages yet." : "Ainda não existem páginas."}
                         </p>
                       )}
 
-                      {filteredCategoryEntries.map(([category, rows]) => {
+                      {filteredEntries.map(([category, rows]) => {
                         const categoryKey = `${product.id}:${category}`;
                         const expanded = expandedCategories.includes(categoryKey) || sidebarSearch.trim().length > 0;
                         const selectedInCategory = selected ? rows.some((page) => page.id === selected.id) : false;
@@ -5049,92 +5006,70 @@ function DocsPage({ language }: { language: SiteLanguage }) {
               <DocsContent content={selectedContent} />
             </>
           ) : (
-            <section className="pb-12">
-              {/* Hero */}
-              <div className="relative mb-8 overflow-hidden rounded-[28px] border border-border bg-card">
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-primary/4" />
-                <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-primary/6 blur-3xl" />
-                <div className="relative p-7 lg:p-10">
-                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5">
-                    <BookOpen size={12} className="text-primary" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">{docsSiteTitle}</span>
-                  </div>
-                  <h1 className="text-4xl font-bold tracking-tight text-foreground/95 lg:text-5xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                    {docsWelcomeTitle}
-                  </h1>
-                  <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-                    {isEnglish
-                      ? "Official documentation for The Wanted Sole Studio products. Select a product on the left to explore its pages."
-                      : "Documentação oficial dos produtos da The Wanted Sole Studio. Clique num produto à esquerda para explorar as páginas."}
-                  </p>
-                  <div className="mt-6 flex flex-wrap gap-3">
-                    <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2">
-                      <span className="text-lg font-bold text-primary">{productOptions.length}</span>
-                      <span className="text-xs text-muted-foreground">{isEnglish ? "Products" : "Produtos"}</span>
-                    </div>
-                    <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2">
-                      <span className="text-lg font-bold text-primary">{pages.length}</span>
-                      <span className="text-xs text-muted-foreground">{isEnglish ? "Pages" : "Páginas"}</span>
-                    </div>
-                    <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2">
-                      <span className="text-lg font-bold text-primary">{categoryEntries.length}</span>
-                      <span className="text-xs text-muted-foreground">{isEnglish ? "Categories" : "Categorias"}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <section>
+              <SectionTag>{docsSiteTitle}</SectionTag>
+              <h1 className="mt-5 max-w-4xl text-4xl font-bold tracking-tight text-foreground/95 lg:text-6xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                {docsWelcomeTitle}
+              </h1>
+              <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
+                {isEnglish
+                  ? "Official documentation for The Wanted Sole Studio products. Select a product category on the left to expand its pages."
+                  : "Documentação oficial dos produtos da The Wanted Sole Studio. Clique no nome de um produto à esquerda para abrir o conteúdo dele."}
+              </p>
 
-              {/* Quick start callout */}
-              <div className="mb-6 flex items-start gap-3 rounded-[18px] border border-primary/20 bg-primary/5 p-4">
-                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
-                  <Zap size={14} />
-                </span>
-                <div>
-                  <p className="text-sm font-bold text-foreground/90">{isEnglish ? "How to navigate" : "Como navegar"}</p>
-                  <p className="mt-0.5 text-[13px] leading-5 text-muted-foreground">
-                    {isEnglish
-                      ? "Use the sidebar on the left to browse products and categories. Each product expands into categorized sections. Use the search bar to quickly find pages."
-                      : "Use a barra lateral à esquerda para navegar pelos produtos e categorias. Cada produto se expande em seções categorizadas. Use a busca para encontrar páginas rapidamente."}
+              <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="rounded-[22px] border border-border bg-card p-5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Products" : "Produtos"}</p>
+                  <p className="mt-2 text-xl font-bold text-foreground/90">{productOptions.length}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {isEnglish ? "Each product works like a collapsed section." : "Cada produto funciona como uma seção retraída."}
+                  </p>
+                </div>
+                <div className="rounded-[22px] border border-border bg-card p-5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Selected product" : "Produto selecionado"}</p>
+                  <p className="mt-2 text-xl font-bold text-foreground/90">{selectedProductName}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {isEnglish ? "Click a product name on the left to switch." : "Clique no nome do produto à esquerda para trocar."}
+                  </p>
+                </div>
+                <div className="rounded-[22px] border border-border bg-card p-5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Categories" : "Categorias"}</p>
+                  <p className="mt-2 text-xl font-bold text-foreground/90">{categoryEntries.length}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {isEnglish ? "Categories open under each product." : "As categorias abrem dentro de cada produto."}
                   </p>
                 </div>
               </div>
 
-              {/* Products grid */}
-              <div className="mb-2">
-                <h2 className="mb-1 text-base font-bold text-foreground/90">{isEnglish ? "Browse products" : "Produtos disponíveis"}</h2>
-                <p className="mb-4 text-[13px] text-muted-foreground">
-                  {isEnglish ? "Click a product to expand its documentation in the sidebar." : "Clique num produto para abrir sua documentação na barra lateral."}
-                </p>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-8 rounded-[26px] border border-border bg-card p-5 lg:p-6">
+                <div className="mb-5">
+                  <h2 className="text-xl font-bold text-foreground/90">{isEnglish ? "Browse products" : "Produtos da documentação"}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {isEnglish ? "Click a product to expand its documentation." : "Clique em um produto para expandir a documentação dele."}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                   {productOptions.map((product) => {
                     const productPages = getProductPages(product.id);
-                    const catEntries = getProductCategoryEntries(product.id);
-                    const isActive = selectedProductId === product.id;
+                    const productCats = getProductCategoryEntries(product.id);
 
                     return (
                       <button
                         key={product.id}
                         onClick={() => toggleProduct(product.id)}
-                        className={`group relative overflow-hidden rounded-2xl border p-4 text-left transition-all ${
-                          isActive
-                            ? "border-primary/30 bg-primary/5"
-                            : "border-border bg-card hover:border-primary/20 hover:bg-card/80"
-                        }`}
+                        className="rounded-2xl border border-border bg-background p-4 text-left transition-all hover:border-primary/30 hover:bg-primary/5"
                       >
-                        <div className="pointer-events-none absolute -right-4 -top-4 h-16 w-16 rounded-full bg-primary/5 blur-xl" />
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                            <BookOpen size={16} />
-                          </div>
-                          <ChevronRight size={15} className={`mt-0.5 shrink-0 transition-all ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`} />
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-sm font-bold uppercase tracking-[0.14em] text-primary">{product.label}</span>
+                          <ChevronRight size={16} className="shrink-0 text-primary" />
                         </div>
-                        <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">{product.label}</p>
                         <div className="mt-2 flex flex-wrap gap-1.5">
-                          <span className="rounded-md border border-border bg-background px-2 py-0.5 text-[10px] text-muted-foreground">
+                          <span className="rounded-md border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
                             {productPages.length} {isEnglish ? "pages" : "páginas"}
                           </span>
-                          {catEntries.slice(0, 2).map(([cat]) => (
-                            <span key={cat} className="rounded-md border border-border bg-background px-2 py-0.5 text-[10px] text-muted-foreground">
+                          {productCats.slice(0, 3).map(([cat]) => (
+                            <span key={cat} className="rounded-md border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
                               {cat}
                             </span>
                           ))}
@@ -5142,31 +5077,6 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                       </button>
                     );
                   })}
-                </div>
-              </div>
-
-              {/* Markdown guide */}
-              <div className="mt-8 rounded-[20px] border border-border bg-card p-5">
-                <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-primary/75">{isEnglish ? "Content format" : "Formato do conteúdo"}</p>
-                <p className="mb-3 text-sm text-muted-foreground">
-                  {isEnglish
-                    ? "Pages are written in Markdown. Supported syntax includes:"
-                    : "As páginas são escritas em Markdown. Sintaxe suportada:"}
-                </p>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3">
-                  {[
-                    ["# H1  ## H2  ### H3", isEnglish ? "Headings" : "Títulos"],
-                    ["**bold**  *italic*", isEnglish ? "Text styles" : "Estilos de texto"],
-                    ["`code`  ```block```", isEnglish ? "Code" : "Código"],
-                    ["- item  1. item", isEnglish ? "Lists" : "Listas"],
-                    ["[text](url)", isEnglish ? "Links" : "Links"],
-                    ["> quote  ---", isEnglish ? "Blockquote / rule" : "Citação / linha"],
-                  ].map(([syntax, label]) => (
-                    <div key={label} className="flex flex-col gap-0.5">
-                      <code className="font-mono text-[10px] text-primary/80">{syntax}</code>
-                      <span className="text-[10px] text-muted-foreground">{label}</span>
-                    </div>
-                  ))}
                 </div>
               </div>
             </section>
@@ -5179,48 +5089,42 @@ function DocsPage({ language }: { language: SiteLanguage }) {
           </p>
 
           {selected ? (() => {
-            // Extract headings from rendered content for TOC
-            const headingMatches = Array.from(selectedContent.matchAll(/^#{1,3} (.+)$/gm));
-            const tocItems = headingMatches.map((m) => {
-              const level = (m[0].match(/^#+/) ?? ["#"])[0].length;
-              const text = m[1].trim();
-              return { level, text, id: slugifyHeading(text) };
-            });
+            // Extract H2 / H3 headings from raw markdown for anchor TOC
+            const headings = Array.from(
+              selectedContent.matchAll(/^(#{2,3}) (.+)$/gm)
+            ).map((m) => ({
+              level: m[1].length as 2 | 3,
+              text: m[2].trim(),
+              id: slugifyHeading(m[2].trim()),
+            }));
 
-            return (
-              <div className="space-y-1">
-                <p className="mb-3 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground/75 leading-5">
-                  {selectedTitle}
-                </p>
-                {tocItems.length > 0 ? (
-                  <nav className="space-y-0.5">
-                    {tocItems.map((item) => (
-                      <a
-                        key={item.id}
-                        href={`#${item.id}`}
-                        className={`docs-toc-link${item.level === 3 ? " h3" : ""}`}
-                      >
-                        {item.text}
-                      </a>
-                    ))}
-                  </nav>
-                ) : (
-                  <p className="text-[11px] leading-5 text-muted-foreground">
-                    {isEnglish ? "No sections found." : "Nenhuma seção encontrada."}
-                  </p>
-                )}
-              </div>
+            return headings.length > 0 ? (
+              <nav className="space-y-0.5">
+                {headings.map((h) => (
+                  <a
+                    key={h.id}
+                    href={`#${h.id}`}
+                    className={`docs-toc-item${h.level === 3 ? " h3" : ""}`}
+                  >
+                    {h.text}
+                  </a>
+                ))}
+              </nav>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                {isEnglish ? "No sections on this page." : "Nenhuma seção nesta página."}
+              </p>
             );
           })() : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <p className="rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground/75">
                 {docsWelcomeTitle}
               </p>
-              <nav className="space-y-0.5">
-                <a href="#" className="docs-toc-link">{isEnglish ? "Overview" : "Visão geral"}</a>
-                <a href="#" className="docs-toc-link">{isEnglish ? "Browse products" : "Produtos"}</a>
-                <a href="#" className="docs-toc-link h3">{isEnglish ? "Content format" : "Formato do conteúdo"}</a>
-              </nav>
+              <p className="text-xs leading-6 text-muted-foreground">
+                {isEnglish
+                  ? "Welcome stays at the top. Products are listed below it as collapsible sections."
+                  : "O Welcome fica no topo. Os produtos aparecem abaixo como seções retraídas."}
+              </p>
             </div>
           )}
         </aside>
