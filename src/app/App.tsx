@@ -5617,8 +5617,8 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
             </p>
           </div>
 
-          <div className="grid w-full grid-cols-1 gap-0 sm:grid-cols-3 lg:ml-24 lg:max-w-[760px] xl:ml-32 xl:max-w-[840px]">
-            <div className="border-b border-[#b89458]/25 pb-7 sm:border-b-0 sm:pb-0 sm:pr-10">
+          <div className="grid w-full grid-cols-1 gap-0 sm:grid-cols-3 lg:ml-12 lg:max-w-[620px] xl:ml-16 xl:max-w-[680px]">
+            <div className="border-b border-[#b89458]/25 pb-7 sm:border-b-0 sm:pb-0 sm:pr-6">
               <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 Links
               </p>
@@ -5627,7 +5627,7 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
               </nav>
             </div>
 
-            <div className="border-b border-[#b89458]/25 py-7 sm:border-b-0 sm:border-l sm:border-[#b89458]/55 sm:py-0 sm:pl-10 sm:pr-10">
+            <div className="border-b border-[#b89458]/25 py-7 sm:border-b-0 sm:border-l sm:border-[#b89458]/55 sm:py-0 sm:pl-7 sm:pr-6">
               <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 Company
               </p>
@@ -5636,7 +5636,7 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
               </nav>
             </div>
 
-            <div className="pt-7 sm:border-l sm:border-[#b89458]/55 sm:pt-0 sm:pl-10">
+            <div className="pt-7 sm:border-l sm:border-[#b89458]/55 sm:pt-0 sm:pl-7">
               <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 Tebex
               </p>
