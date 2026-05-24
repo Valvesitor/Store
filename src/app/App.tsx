@@ -6040,7 +6040,8 @@ function ProductAdminForm({
                 {(product.media ?? []).length > 0 && (
                   <div className="rounded-2xl border border-border bg-background p-3">
                     <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Prévia / arquivos enviados</p>
-                    <p className="mb-2 text-[10px] leading-4 text-muted-foreground">Use o X em cada mídia para remover individualmente.</p>
+                    <p className="mb-2 text-[10px] leading-4 text-muted-foreground">Clique no X para remover na hora, sem confirmação.</p>
+
                     <div className="grid grid-cols-3 gap-2">
                       {(product.media ?? []).slice(0, 6).map((item, index) => (
                         <div key={`${item.src}-${index}`} className="overflow-hidden rounded-lg border border-border bg-[#fffdf8]">
@@ -6060,11 +6061,8 @@ function ProductAdminForm({
                             <button
                               type="button"
                               onClick={() => {
-                                const mediaName = getMediaDisplayName(item, index);
-                                if (window.confirm(`Remover "${mediaName}" deste produto?`)) {
-                                  update({ media: (product.media ?? []).filter((_, mediaIndex) => mediaIndex !== index) });
-                                  setPreviewFailed(false);
-                                }
+                                update({ media: (product.media ?? []).filter((_, mediaIndex) => mediaIndex !== index) });
+                                setPreviewFailed(false);
                               }}
                               className="absolute right-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full border border-red-500/25 bg-background/95 text-red-600 shadow-sm transition-all hover:bg-red-500 hover:text-white"
                               title={`Remover ${getMediaDisplayName(item, index)}`}
@@ -6075,6 +6073,32 @@ function ProductAdminForm({
                           <div className="border-t border-border bg-background px-1.5 py-1 text-[9px] font-semibold leading-3 text-muted-foreground truncate" title={getMediaDisplayName(item, index)}>
                             {getMediaDisplayName(item, index)}
                           </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-3 space-y-1.5">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Lista de mídias</p>
+                      {(product.media ?? []).map((item, index) => (
+                        <div key={`media-list-${item.src}-${index}`} className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card px-2 py-1.5">
+                          <div className="min-w-0">
+                            <p className="truncate text-[11px] font-semibold text-foreground/80" title={getMediaDisplayName(item, index)}>
+                              {index === 0 ? "Capa · " : ""}{getMediaDisplayName(item, index)}
+                            </p>
+                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                              {item.type === "youtube" ? "YouTube" : item.type === "video" ? "Vídeo" : isUploadedDataMedia(item) ? "Upload" : "URL"}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              update({ media: (product.media ?? []).filter((_, mediaIndex) => mediaIndex !== index) });
+                              setPreviewFailed(false);
+                            }}
+                            className="shrink-0 rounded-md border border-red-500/25 px-2 py-1 text-[10px] font-bold text-red-600 transition-all hover:bg-red-500 hover:text-white"
+                          >
+                            Remover
+                          </button>
                         </div>
                       ))}
                     </div>
