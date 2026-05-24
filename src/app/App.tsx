@@ -4723,6 +4723,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   const [docsSearch, setDocsSearch] = useState("");
 
   const isEnglish = language === "en_US";
+  const isDocsAdminLogged = !!getAdminToken();
 
   useEffect(() => {
     let mounted = true;
@@ -4976,9 +4977,11 @@ function DocsPage({ language }: { language: SiteLanguage }) {
             <a href="/discord" className="rounded-xl border border-border px-3 py-2 text-xs font-bold text-foreground/65 transition-all hover:border-primary/30 hover:text-primary">
               Discord
             </a>
-            <a href="/admin/docs" className="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-all hover:brightness-105">
-              {isEnglish ? "Edit docs" : "Editar docs"}
-            </a>
+            {isDocsAdminLogged && (
+              <a href="/admin/docs" className="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-all hover:brightness-105">
+                {isEnglish ? "Edit docs" : "Editar docs"}
+              </a>
+            )}
           </div>
         </div>
       </div>
