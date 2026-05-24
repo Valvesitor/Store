@@ -5,7 +5,7 @@ import {
   MessageCircle, Star, Zap, Shield, Crown, ArrowRight,
   Package, Users, Palette, Code2, ChevronDown, Check,
   ChevronRight, Sparkles, LayoutGrid, Filter, LogIn, ShoppingCart,
-  Play, Image as ImageIcon, User, LogOut, Github, Plus
+  Play, Image as ImageIcon, User, LogOut, Github, Plus, Upload
 } from "lucide-react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 
@@ -2473,9 +2473,8 @@ function ProductCard({ product, currency, language, onSelect }: { product: Produ
               src={thumbnailSrc}
               alt={localized.name || product.name}
               onError={() => setThumbnailFailed(true)}
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="absolute inset-0 h-full w-full bg-[#fffdf8] object-contain p-4 transition-transform duration-500 group-hover:scale-[1.03]"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/35 via-transparent to-transparent" />
           </>
         ) : (
           <div className="relative z-10 p-4 rounded-sm border border-primary/20 bg-primary/10
@@ -2803,8 +2802,8 @@ function ProductMediaGallery({ product }: { product: Product }) {
           onClick={() => setLightboxOpen(true)}
           onError={() => setFailedMedia((prev) => ({ ...prev, [activeMedia.src]: true }))}
           className={isLightbox
-            ? "max-h-[82vh] max-w-[86vw] rounded-xl object-contain shadow-[0_35px_120px_rgba(0,0,0,0.55)]"
-            : "h-full w-full cursor-zoom-in object-contain"
+            ? "max-h-[82vh] max-w-[86vw] rounded-xl bg-[#fffdf8] object-contain shadow-[0_35px_120px_rgba(0,0,0,0.55)]"
+            : "h-full w-full cursor-zoom-in bg-[#fffdf8] object-contain p-3"
           }
         />
       );
@@ -2897,7 +2896,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
                   onClick={() => setActiveIndex(index)}
                   onDoubleClick={() => setLightboxOpen(true)}
                   title={item.alt}
-                  className={`relative h-[68px] w-28 shrink-0 overflow-hidden rounded-lg border bg-background transition-all ${
+                  className={`relative h-[68px] w-28 shrink-0 overflow-hidden rounded-lg border bg-[#fffdf8] transition-all ${
                     isActive
                       ? "border-primary shadow-[0_0_14px_rgba(201,168,76,0.22)]"
                       : "border-border hover:border-primary/40"
@@ -2908,7 +2907,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
                       src={item.src}
                       alt={item.alt}
                       onError={() => setFailedMedia((prev) => ({ ...prev, [item.src]: true }))}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full bg-[#fffdf8] object-contain p-1"
                     />
                   )}
 
@@ -2919,7 +2918,7 @@ function ProductMediaGallery({ product }: { product: Product }) {
                           src={thumbSrc}
                           alt=""
                           onError={() => setFailedMedia((prev) => ({ ...prev, [thumbSrc]: true }))}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full bg-[#fffdf8] object-contain p-1"
                         />
                       ) : (
                         <div className="h-full w-full bg-primary/10" />
@@ -6021,13 +6020,13 @@ function ProductAdminForm({
                     <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Prévia</p>
                     <div className="grid grid-cols-3 gap-2">
                       {(product.media ?? []).slice(0, 6).map((item, index) => (
-                        <div key={`${item.src}-${index}`} className="relative aspect-square overflow-hidden rounded-lg border border-border bg-card">
+                        <div key={`${item.src}-${index}`} className="relative aspect-square overflow-hidden rounded-lg border border-border bg-[#fffdf8]">
                           {item.type === "youtube" ? (
                             <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-primary">YT</div>
                           ) : item.type === "video" ? (
                             <div className="flex h-full w-full items-center justify-center text-[10px] font-bold text-primary">MP4</div>
                           ) : (
-                            <img src={item.src} alt={item.alt} className="h-full w-full object-cover" />
+                            <img src={item.src} alt={item.alt} className="h-full w-full bg-[#fffdf8] object-contain p-1" />
                           )}
                           {index === 0 && (
                             <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground">CAPA</span>
@@ -6081,7 +6080,7 @@ function ProductAdminForm({
                 style={{ background: `linear-gradient(135deg, ${product.gradientFrom}, ${product.gradientTo})` }}
               >
                 {iconPreview && !previewFailed ? (
-                  <img src={iconPreview} alt={product.name} onError={() => setPreviewFailed(true)} className="h-full w-full object-cover" />
+                  <img src={iconPreview} alt={product.name} onError={() => setPreviewFailed(true)} className="h-full w-full bg-[#fffdf8] object-contain p-3" />
                 ) : (
                   <div className="rounded-xl border border-primary/25 bg-primary/10 p-4">
                     <Icon size={24} className="text-primary" />
