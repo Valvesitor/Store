@@ -4505,26 +4505,9 @@ function escapeDocsHtml(value: string) {
     .replace(/'/g, "&#39;");
 }
 
-function slugifyHeading(text: string) {
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-}
-
 function inlineDocsMarkdown(value: string) {
-  // Handle [text](url) links before escaping
-  const linkRx = /\[([^\]]+)\]\(([^)]+)\)/g;
-  const parts: string[] = [];
-  let last = 0;
-  let m: RegExpExecArray | null;
-  while ((m = linkRx.exec(value)) !== null) {
-    parts.push(escapeDocsHtml(value.slice(last, m.index)));
-    const isExt = /^https?:\/\//.test(m[2].trim());
-    parts.push(`<a href="${escapeDocsHtml(m[2].trim())}"${isExt ? ' target="_blank" rel="noopener noreferrer"' : ""}>${escapeDocsHtml(m[1])}</a>`);
-    last = m.index + m[0].length;
-  }
-  parts.push(escapeDocsHtml(value.slice(last)));
-  return parts.join("")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+  return escapeDocsHtml(value)
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/`([^`]+)`/g, "<code>$1</code>");
 }
 
@@ -4534,19 +4517,11 @@ function docsMarkdownToHtml(markdown: string) {
   let codeLines: string[] = [];
   let inCode = false;
   let inList = false;
-  let inOl = false;
-  let inBq = false;
-  let bqLines: string[] = [];
 
   const closeList = () => {
-    if (inList) { html += "</ul>"; inList = false; }
-    if (inOl) { html += "</ol>"; inOl = false; }
-  };
-  const flushBq = () => {
-    if (inBq) {
-      html += `<blockquote>${bqLines.map((l) => `<p>${inlineDocsMarkdown(l)}</p>`).join("")}</blockquote>`;
-      bqLines = [];
-      inBq = false;
+    if (inList) {
+      html += "</ul>";
+      inList = false;
     }
   };
 
@@ -4559,59 +4534,45 @@ function docsMarkdownToHtml(markdown: string) {
         codeLines = [];
         inCode = false;
       } else {
-        closeList(); flushBq(); inCode = true;
+        closeList();
+        inCode = true;
       }
       continue;
     }
-    if (inCode) { codeLines.push(rawLine); continue; }
-    if (!line.trim()) { closeList(); flushBq(); continue; }
-    if (/^-{3,}$/.test(line.trim())) { closeList(); flushBq(); html += "<hr />"; continue; }
 
-    if (line.startsWith("> ")) {
-      closeList(); inBq = true; bqLines.push(line.slice(2)); continue;
-    } else if (inBq) { flushBq(); }
-
-    if (line.startsWith(":::info") || line.startsWith(":::note")) {
-      closeList();
-      const t = line.replace(/^:::(info|note)\s*/, "");
-      html += `<div class="docs-callout docs-callout-info">${t ? inlineDocsMarkdown(t) : ""}</div>`;
+    if (inCode) {
+      codeLines.push(rawLine);
       continue;
     }
-    if (line.startsWith(":::warning") || line.startsWith(":::caution")) {
+
+    if (!line.trim()) {
       closeList();
-      const t = line.replace(/^:::(warning|caution)\s*/, "");
-      html += `<div class="docs-callout docs-callout-warning">${t ? inlineDocsMarkdown(t) : ""}</div>`;
       continue;
     }
 
     if (line.startsWith("# ")) {
       closeList();
-      const t = line.slice(2);
-      html += `<h1 id="${slugifyHeading(t)}">${escapeDocsHtml(t)}</h1>`;
-      continue;
-    }
-    if (line.startsWith("## ")) {
-      closeList();
-      const t = line.slice(3);
-      html += `<h2 id="${slugifyHeading(t)}">${escapeDocsHtml(t)}</h2>`;
-      continue;
-    }
-    if (line.startsWith("### ")) {
-      closeList();
-      const t = line.slice(4);
-      html += `<h3 id="${slugifyHeading(t)}">${escapeDocsHtml(t)}</h3>`;
+      html += `<h1>${escapeDocsHtml(line.slice(2))}</h1>`;
       continue;
     }
 
-    if (/^\d+\. /.test(line)) {
-      if (inList) { html += "</ul>"; inList = false; }
-      if (!inOl) { html += "<ol>"; inOl = true; }
-      html += `<li>${inlineDocsMarkdown(line.replace(/^\d+\. /, ""))}</li>`;
+    if (line.startsWith("## ")) {
+      closeList();
+      html += `<h2>${escapeDocsHtml(line.slice(3))}</h2>`;
       continue;
     }
+
+    if (line.startsWith("### ")) {
+      closeList();
+      html += `<h3>${escapeDocsHtml(line.slice(4))}</h3>`;
+      continue;
+    }
+
     if (line.startsWith("- ")) {
-      if (inOl) { html += "</ol>"; inOl = false; }
-      if (!inList) { html += "<ul>"; inList = true; }
+      if (!inList) {
+        html += "<ul>";
+        inList = true;
+      }
       html += `<li>${inlineDocsMarkdown(line.slice(2))}</li>`;
       continue;
     }
@@ -4620,8 +4581,12 @@ function docsMarkdownToHtml(markdown: string) {
     html += `<p>${inlineDocsMarkdown(line)}</p>`;
   }
 
-  closeList(); flushBq();
-  if (inCode) html += `<pre><code>${escapeDocsHtml(codeLines.join("\n"))}</code></pre>`;
+  closeList();
+
+  if (inCode) {
+    html += `<pre><code>${escapeDocsHtml(codeLines.join("\n"))}</code></pre>`;
+  }
+
   return html;
 }
 
@@ -4713,9 +4678,12 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   });
   const [selectedId, setSelectedId] = useState(OVERVIEW_ID);
   const [loading, setLoading] = useState(true);
-  const [expandedProducts, setExpandedProducts] = useState<string[]>([]);
+  const [expandedProducts, setExpandedProducts] = useState<string[]>(() => {
+    const param = new URLSearchParams(window.location.search).get("product");
+    return param ? [param] : [];
+  });
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-  const [sidebarSearch, setSidebarSearch] = useState("");
+  const [docsSearch, setDocsSearch] = useState("");
 
   const isEnglish = language === "en_US";
 
@@ -4745,8 +4713,23 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     return pages.filter((page) => getDocsProductId(page) === productId);
   }
 
+  function pageMatchesSearch(page: DocsPageRecord, query: string) {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return true;
+
+    const title = getDocsTitle(page, isEnglish).toLowerCase();
+    const category = translateDocsCategory(page.category, isEnglish).toLowerCase();
+    const content = getDocsContent(page, isEnglish).toLowerCase();
+    const slug = page.slug.toLowerCase();
+
+    return title.includes(normalizedQuery)
+      || category.includes(normalizedQuery)
+      || content.includes(normalizedQuery)
+      || slug.includes(normalizedQuery);
+  }
+
   function getProductCategoryEntries(productId: string) {
-    const productPages = getProductPages(productId);
+    const productPages = getProductPages(productId).filter((page) => pageMatchesSearch(page, docsSearch));
     const grouped = productPages.reduce<Record<string, DocsPageRecord[]>>((acc, page) => {
       const category = translateDocsCategory(page.category, isEnglish);
       if (!acc[category]) acc[category] = [];
@@ -4754,7 +4737,10 @@ function DocsPage({ language }: { language: SiteLanguage }) {
       return acc;
     }, {});
 
-    return Object.entries(grouped);
+    return Object.entries(grouped).map(([category, rows]) => [
+      category,
+      rows.sort((a, b) => a.orderIndex - b.orderIndex)
+    ] as [string, DocsPageRecord[]]);
   }
 
   const categoryEntries = getProductCategoryEntries(selectedProductId);
@@ -4764,6 +4750,24 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   const docsSiteTitle = "The Wanted Sole Studio Docs";
   const docsWelcomeTitle = "Welcome";
   const docsPageTitle = selected ? `${selectedTitle} | ${docsSiteTitle}` : `${docsWelcomeTitle} | ${docsSiteTitle}`;
+
+  const selectedHeadings = selectedContent
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => /^#{1,3}\s+/.test(line))
+    .map((line) => line.replace(/^#{1,3}\s+/, "").replace(/\*\*/g, "").trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  const overviewAnchors = isEnglish
+    ? ["Documentation Index", "Getting Started", "Products", "Credits"]
+    : ["Índice da documentação", "Começando", "Produtos", "Créditos"];
+
+  const visibleProducts = productOptions.filter((product) => {
+    const query = docsSearch.trim().toLowerCase();
+    if (!query) return true;
+    return product.label.toLowerCase().includes(query) || getProductPages(product.id).some((page) => pageMatchesSearch(page, docsSearch));
+  });
 
   useEffect(() => {
     document.title = docsPageTitle;
@@ -4815,100 +4819,114 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   }
 
   return (
-    <main className="h-[calc(100vh-4rem)] overflow-hidden bg-background">
+    <main className="min-h-[calc(100vh-4rem)] bg-background">
       <style>{`
-        .docs-markdown h1 { font-size: clamp(1.9rem, 3.2vw, 3.05rem); line-height: .98; letter-spacing: -.055em; margin: 0 0 1.15rem; color: hsl(var(--foreground)); }
-        .docs-markdown h2 { margin-top: 1.7rem; padding-top: 1.25rem; border-top: 1px solid hsl(var(--border)); color: hsl(var(--primary)); font-size: 1.2rem; font-weight: 800; scroll-margin-top: 4.5rem; }
-        .docs-markdown h3 { margin-top: 1.3rem; color: hsl(var(--foreground)); font-size: 1rem; font-weight: 800; scroll-margin-top: 4.5rem; }
-        .docs-markdown p { margin: .65rem 0; color: hsl(var(--muted-foreground)); line-height: 1.7; font-size: .94rem; }
-        .docs-markdown ul { list-style: none; padding: 0; display: grid; gap: .45rem; margin: .85rem 0; }
-        .docs-markdown ol { list-style: none; padding: 0; display: grid; gap: .45rem; margin: .85rem 0; counter-reset: docs-ol; }
-        .docs-markdown ul li { position: relative; padding-left: 1.35rem; color: hsl(var(--muted-foreground)); font-size: .94rem; line-height: 1.65; }
-        .docs-markdown ul li::before { content: "✦"; position: absolute; left: 0; color: hsl(var(--primary)); }
-        .docs-markdown ol li { position: relative; padding-left: 1.6rem; color: hsl(var(--muted-foreground)); font-size: .94rem; line-height: 1.65; counter-increment: docs-ol; }
-        .docs-markdown ol li::before { content: counter(docs-ol) "."; position: absolute; left: 0; color: hsl(var(--primary)); font-weight: 700; font-size: .85rem; }
-        .docs-markdown pre { overflow: auto; border-radius: .9rem; background: #15120f; color: #f6ecd8; padding: .9rem; border: 1px solid rgba(255,255,255,.08); font-size: .86rem; }
+        .docs-markdown h1 { font-size: clamp(2rem, 3.25vw, 3.1rem); line-height: 1.02; letter-spacing: -.055em; margin: 0 0 1.1rem; color: hsl(var(--foreground)); }
+        .docs-markdown h2 { margin-top: 2.2rem; padding-top: 1.3rem; border-top: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); font-size: 1.34rem; font-weight: 800; letter-spacing: -.025em; }
+        .docs-markdown h3 { margin-top: 1.45rem; color: hsl(var(--foreground)); font-size: 1.02rem; font-weight: 800; }
+        .docs-markdown p { margin: .75rem 0; color: hsl(var(--muted-foreground)); line-height: 1.82; font-size: .96rem; }
+        .docs-markdown ul { list-style: none; padding: 0; display: grid; gap: .48rem; margin: .95rem 0; }
+        .docs-markdown li { position: relative; padding-left: 1.35rem; color: hsl(var(--muted-foreground)); font-size: .95rem; line-height: 1.7; }
+        .docs-markdown li::before { content: "✦"; position: absolute; left: 0; color: hsl(var(--primary)); }
+        .docs-markdown blockquote { margin: 1rem 0; border-left: 3px solid hsl(var(--primary)); background: hsl(var(--primary) / .06); border-radius: 0 .9rem .9rem 0; padding: .8rem 1rem; color: hsl(var(--muted-foreground)); }
+        .docs-markdown pre { overflow: auto; border-radius: .9rem; background: #15120f; color: #f6ecd8; padding: 1rem; border: 1px solid rgba(255,255,255,.08); font-size: .86rem; }
         .docs-markdown code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: .9em; }
         .docs-markdown p code, .docs-markdown li code { background: hsl(var(--primary) / .12); color: hsl(var(--primary)); border-radius: .45rem; padding: .12rem .35rem; }
-        .docs-markdown a { color: hsl(var(--primary)); text-underline-offset: 3px; }
-        .docs-markdown a:hover { opacity: .75; }
-        .docs-markdown strong { color: hsl(var(--foreground)); }
-        .docs-markdown em { color: hsl(var(--foreground) / .75); }
-        .docs-markdown blockquote { margin: 1rem 0; padding: .7rem 1rem; border-left: 3px solid hsl(var(--primary) / .5); background: hsl(var(--primary) / .05); border-radius: 0 .7rem .7rem 0; }
-        .docs-markdown blockquote p { margin: 0; font-style: italic; }
-        .docs-markdown hr { border: none; border-top: 1px solid hsl(var(--border)); margin: 1.5rem 0; }
-        .docs-callout { margin: 1rem 0; padding: .7rem 1rem; border-radius: .75rem; font-size: .9rem; line-height: 1.6; }
-        .docs-callout-info { background: hsl(210 100% 50% / .07); border: 1px solid hsl(210 100% 50% / .18); color: hsl(210 80% 72%); }
-        .docs-callout-warning { background: hsl(38 95% 50% / .07); border: 1px solid hsl(38 95% 50% / .18); color: hsl(38 85% 68%); }
         .docs-scroll-area::-webkit-scrollbar { width: 8px; height: 8px; }
         .docs-scroll-area::-webkit-scrollbar-thumb { background: hsl(var(--primary) / .35); border-radius: 999px; }
         .docs-scroll-area::-webkit-scrollbar-track { background: transparent; }
-        .docs-toc-item { display: block; padding: .28rem .5rem; border-radius: .45rem; font-size: .76rem; color: hsl(var(--muted-foreground)); text-decoration: none; line-height: 1.4; transition: color .15s, background .15s; }
-        .docs-toc-item:hover { color: hsl(var(--foreground)); background: hsl(var(--primary) / .07); }
-        .docs-toc-item.h3 { padding-left: 1.1rem; font-size: .72rem; }
       `}</style>
 
-      <div className="mx-auto grid h-full max-w-[1540px] grid-cols-1 overflow-hidden border-x border-border bg-background lg:grid-cols-[318px_minmax(0,1fr)] xl:grid-cols-[318px_minmax(0,1fr)_240px]">
-        <aside className="docs-scroll-area flex min-h-0 flex-col border-b border-border bg-card/80 lg:border-b-0 lg:border-r">
-          <div className="shrink-0 border-b border-border p-4">
+      <div className="border-b border-border bg-background/95 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-[1560px] items-center gap-4 px-4 lg:px-6">
+          <a href="/" className="flex shrink-0 items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+              <BookOpen size={17} />
+            </span>
+            <span className="hidden sm:block">
+              <span className="block text-sm font-bold tracking-[0.02em] text-foreground/90">{docsSiteTitle}</span>
+              <span className="block text-[11px] text-muted-foreground">{isEnglish ? "Knowledge base" : "Base de conhecimento"}</span>
+            </span>
+          </a>
+
+          <div className="relative ml-auto hidden w-full max-w-xl md:block">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={docsSearch}
+              onChange={(e) => setDocsSearch(e.target.value)}
+              placeholder={isEnglish ? "Search documentation..." : "Buscar na documentação..."}
+              className="h-10 w-full rounded-xl border border-border bg-card px-9 text-sm outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+            />
+            <span className="absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground lg:inline-flex">
+              Ctrl K
+            </span>
+          </div>
+
+          <div className="hidden items-center gap-2 lg:flex">
+            <a href="/#products" className="rounded-xl border border-border px-3 py-2 text-xs font-bold text-foreground/65 transition-all hover:border-primary/30 hover:text-primary">
+              {isEnglish ? "Products" : "Produtos"}
+            </a>
+            <a href="/discord" className="rounded-xl border border-border px-3 py-2 text-xs font-bold text-foreground/65 transition-all hover:border-primary/30 hover:text-primary">
+              Discord
+            </a>
+            <a href="/admin/docs" className="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-all hover:brightness-105">
+              {isEnglish ? "Edit docs" : "Editar docs"}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto grid max-w-[1560px] grid-cols-1 lg:grid-cols-[318px_minmax(0,1fr)] xl:grid-cols-[318px_minmax(0,1fr)_260px]">
+        <aside className="docs-scroll-area max-h-[calc(100vh-8rem)] overflow-y-auto border-b border-border bg-card/65 lg:sticky lg:top-16 lg:border-b-0 lg:border-r">
+          <div className="border-b border-border p-4 md:hidden">
+            <div className="relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={docsSearch}
+                onChange={(e) => setDocsSearch(e.target.value)}
+                placeholder={isEnglish ? "Search documentation..." : "Buscar na documentação..."}
+                className="h-10 w-full rounded-xl border border-border bg-background px-9 text-sm outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+              />
+            </div>
+          </div>
+
+          <div className="border-b border-border p-4">
             <button
               onClick={() => setSelectedId(OVERVIEW_ID)}
-              className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-border bg-background px-3 py-3 text-left transition-all hover:border-primary/25 hover:bg-primary/5"
+              className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-all ${
+                selectedId === OVERVIEW_ID
+                  ? "border-primary/25 bg-primary/10"
+                  : "border-border bg-background hover:border-primary/25 hover:bg-primary/5"
+              }`}
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <BookOpen size={18} />
               </span>
               <span>
-                <span className="block text-sm font-bold text-foreground/90">The Wanted Sole Studio Docs</span>
+                <span className="block text-sm font-bold text-foreground/90">{docsWelcomeTitle}</span>
                 <span className="block text-[11px] text-muted-foreground">
-                  {isEnglish ? "Knowledge base" : "Documentação oficial"}
+                  {isEnglish ? "Documentation home" : "Início da documentação"}
                 </span>
               </span>
             </button>
-
-            <button
-              onClick={() => setSelectedId(OVERVIEW_ID)}
-              className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition-all ${
-                selectedId === OVERVIEW_ID
-                  ? "bg-primary/10 text-primary border border-primary/20"
-                  : "border border-transparent text-foreground/70 hover:bg-primary/5 hover:text-foreground"
-              }`}
-            >
-              <BookOpen size={14} />
-              Welcome
-            </button>
           </div>
 
-          <nav className="docs-scroll-area min-h-0 flex-1 overflow-y-auto p-3">
-            <div className="relative mb-3">
-              <Search size={13} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                value={sidebarSearch}
-                onChange={(e) => setSidebarSearch(e.target.value)}
-                placeholder={isEnglish ? "Search pages…" : "Buscar páginas…"}
-                className="h-9 w-full rounded-xl border border-border bg-background pl-8 pr-3 text-xs text-foreground outline-none focus:border-primary/40 placeholder:text-muted-foreground"
-              />
-            </div>
+          <nav className="p-3">
+            <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
+              {isEnglish ? "Navigation" : "Navegação"}
+            </p>
 
             {loading && <p className="px-3 py-2 text-xs text-muted-foreground">{isEnglish ? "Loading..." : "Carregando..."}</p>}
 
-            {productOptions.map((product) => {
-              const productPages = getProductPages(product.id);
+            {visibleProducts.length === 0 && !loading && (
+              <p className="rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
+                {isEnglish ? "No results found." : "Nenhum resultado encontrado."}
+              </p>
+            )}
+
+            {visibleProducts.map((product) => {
               const productCategoryEntries = getProductCategoryEntries(product.id);
-
-              const q = sidebarSearch.trim().toLowerCase();
-              const filteredEntries = q
-                ? productCategoryEntries
-                    .map(([cat, rows]) => [cat, rows.filter((p) =>
-                      getDocsTitle(p, isEnglish).toLowerCase().includes(q) ||
-                      p.slug.toLowerCase().includes(q)
-                    )] as [string, DocsPageRecord[]])
-                    .filter(([, rows]) => rows.length > 0)
-                : productCategoryEntries;
-
-              if (q && filteredEntries.length === 0) return null;
-
-              const productExpanded = expandedProducts.includes(product.id) || (q.length > 0 && filteredEntries.length > 0);
+              const productExpanded = expandedProducts.includes(product.id);
               const selectedProductActive = selectedProductId === product.id;
 
               return (
@@ -4918,27 +4936,24 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                     className={`group flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left transition-all ${
                       selectedProductActive && selectedId !== OVERVIEW_ID
                         ? "bg-primary/10 text-primary"
-                        : "text-foreground/70 hover:bg-primary/5 hover:text-foreground"
+                        : "text-foreground/70 hover:bg-background hover:text-foreground"
                     }`}
                   >
-                    <span className="min-w-0">
-                      <span className="block truncate text-[11px] font-bold uppercase tracking-[0.14em]">{product.label}</span>
-
-                    </span>
+                    <span className="block min-w-0 truncate text-[11px] font-bold uppercase tracking-[0.16em]">{product.label}</span>
                     <ChevronDown size={14} className={`shrink-0 transition-transform ${productExpanded ? "rotate-180" : ""}`} />
                   </button>
 
                   {productExpanded && (
                     <div className="mt-1 space-y-1 pl-2">
-                      {filteredEntries.length === 0 && (
+                      {productCategoryEntries.length === 0 && (
                         <p className="rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
                           {isEnglish ? "No pages yet." : "Ainda não existem páginas."}
                         </p>
                       )}
 
-                      {filteredEntries.map(([category, rows]) => {
+                      {productCategoryEntries.map(([category, rows]) => {
                         const categoryKey = `${product.id}:${category}`;
-                        const expanded = expandedCategories.includes(categoryKey) || sidebarSearch.trim().length > 0;
+                        const expanded = expandedCategories.includes(categoryKey);
                         const selectedInCategory = selected ? rows.some((page) => page.id === selected.id) : false;
 
                         return (
@@ -4951,9 +4966,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                                   : "text-foreground/65 hover:bg-background hover:text-foreground"
                               }`}
                             >
-                              <span className="min-w-0">
-                                <span className="block truncate text-[10px] font-bold uppercase tracking-[0.16em]">{category}</span>
-                              </span>
+                              <span className="block min-w-0 truncate text-[10px] font-bold uppercase tracking-[0.18em]">{category}</span>
                               <ChevronDown size={13} className={`shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
                             </button>
 
@@ -4969,7 +4982,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                                       onClick={() => handleSelectPage(page, category)}
                                       className={`flex w-full items-start gap-2 rounded-lg border px-3 py-2 text-left text-[13px] transition-all ${
                                         active
-                                          ? "border-primary/20 bg-primary/10 font-semibold text-primary"
+                                          ? "border-primary/25 bg-primary/10 font-semibold text-primary"
                                           : "border-transparent text-foreground/60 hover:border-border hover:bg-background hover:text-foreground"
                                       }`}
                                     >
@@ -4994,144 +5007,143 @@ function DocsPage({ language }: { language: SiteLanguage }) {
           </nav>
         </aside>
 
-        <article className="docs-scroll-area min-h-0 overflow-y-auto px-5 py-6 lg:px-10 lg:py-8">
+        <article className="min-h-[calc(100vh-8rem)] px-5 py-8 lg:px-10 xl:px-12">
           {selected ? (
-            <>
-              <div className="mb-5 flex flex-wrap items-center gap-2">
+            <div className="mx-auto max-w-3xl">
+              <div className="mb-6 flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setSelectedId(OVERVIEW_ID)}
+                  className="text-xs font-semibold text-primary hover:text-primary/75"
+                >
+                  {docsWelcomeTitle}
+                </button>
+                <span className="text-xs text-muted-foreground">/</span>
                 <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
                   {translateDocsCategory(selected.category, isEnglish)}
                 </span>
-                <span className="text-xs text-muted-foreground">{selectedTitle}</span>
               </div>
-              <DocsContent content={selectedContent} />
-            </>
-          ) : (
-            <section>
-              <SectionTag>{docsSiteTitle}</SectionTag>
-              <h1 className="mt-5 max-w-4xl text-4xl font-bold tracking-tight text-foreground/95 lg:text-6xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                {docsWelcomeTitle}
-              </h1>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
-                {isEnglish
-                  ? "Official documentation for The Wanted Sole Studio products. Select a product category on the left to expand its pages."
-                  : "Documentação oficial dos produtos da The Wanted Sole Studio. Clique no nome de um produto à esquerda para abrir o conteúdo dele."}
-              </p>
 
-              <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="rounded-[22px] border border-border bg-card p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Products" : "Produtos"}</p>
-                  <p className="mt-2 text-xl font-bold text-foreground/90">{productOptions.length}</p>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {isEnglish ? "Each product works like a collapsed section." : "Cada produto funciona como uma seção retraída."}
+              <DocsContent content={selectedContent} />
+            </div>
+          ) : (
+            <section className="mx-auto max-w-4xl">
+              <div className="rounded-[30px] border border-border bg-card p-6 shadow-[0_24px_80px_rgba(32,32,32,0.06)] lg:p-9">
+                <SectionTag>{isEnglish ? "Getting Started" : "Começando"}</SectionTag>
+                <h1 className="mt-5 text-4xl font-bold tracking-tight text-foreground/95 lg:text-6xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                  {docsSiteTitle}
+                </h1>
+                <p className="mt-4 max-w-3xl text-base leading-8 text-muted-foreground">
+                  {isEnglish
+                    ? "Welcome to the official documentation for The Wanted Sole Studio products. Use the navigation on the left to explore installation, configuration, usage, support, and reference pages."
+                    : "Bem-vindo à documentação oficial dos produtos The Wanted Sole Studio. Use a navegação à esquerda para acessar instalação, configuração, uso, suporte e páginas de referência."}
+                </p>
+
+                <div className="mt-6 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                  <p className="text-sm font-bold text-foreground/85">{isEnglish ? "Documentation Index" : "Índice da documentação"}</p>
+                  <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                    {isEnglish
+                      ? "Select a product section in the sidebar to expand all available pages. Keep this page as the clean welcome screen for your clients."
+                      : "Selecione uma seção de produto na barra lateral para expandir todas as páginas disponíveis. Esta tela funciona como a apresentação limpa para seus clientes."}
                   </p>
                 </div>
-                <div className="rounded-[22px] border border-border bg-card p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Selected product" : "Produto selecionado"}</p>
-                  <p className="mt-2 text-xl font-bold text-foreground/90">{selectedProductName}</p>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {isEnglish ? "Click a product name on the left to switch." : "Clique no nome do produto à esquerda para trocar."}
-                  </p>
-                </div>
-                <div className="rounded-[22px] border border-border bg-card p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">{isEnglish ? "Categories" : "Categorias"}</p>
-                  <p className="mt-2 text-xl font-bold text-foreground/90">{categoryEntries.length}</p>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {isEnglish ? "Categories open under each product." : "As categorias abrem dentro de cada produto."}
-                  </p>
-                </div>
+              </div>
+
+              <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+                {[
+                  {
+                    title: isEnglish ? "Installation" : "Instalação",
+                    text: isEnglish ? "Server requirements, resource order, and first setup." : "Requisitos do servidor, ordem do resource e primeira configuração."
+                  },
+                  {
+                    title: isEnglish ? "Configuration" : "Configuração",
+                    text: isEnglish ? "Settings, framework options, permissions, and license usage." : "Configurações, opções de framework, permissões e uso da licença."
+                  },
+                  {
+                    title: isEnglish ? "Studio Usage" : "Uso do Studio",
+                    text: isEnglish ? "Panels, tools, camera, favorites, and project workflow." : "Painéis, ferramentas, câmera, favoritos e fluxo de projetos."
+                  },
+                  {
+                    title: isEnglish ? "Support" : "Suporte",
+                    text: isEnglish ? "Troubleshooting, logs, common issues, and ticket information." : "Problemas comuns, logs, soluções e informações para ticket."
+                  }
+                ].map((item) => (
+                  <div key={item.title} className="rounded-[24px] border border-border bg-card p-5 transition-all hover:border-primary/25 hover:bg-primary/5">
+                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <BookOpen size={18} />
+                    </div>
+                    <h2 className="text-lg font-bold text-foreground/90">{item.title}</h2>
+                    <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.text}</p>
+                  </div>
+                ))}
               </div>
 
               <div className="mt-8 rounded-[26px] border border-border bg-card p-5 lg:p-6">
-                <div className="mb-5">
-                  <h2 className="text-xl font-bold text-foreground/90">{isEnglish ? "Browse products" : "Produtos da documentação"}</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {isEnglish ? "Click a product to expand its documentation." : "Clique em um produto para expandir a documentação dele."}
-                  </p>
+                <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground/90">{isEnglish ? "Products" : "Produtos"}</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {isEnglish ? "Open a product to browse its documentation." : "Abra um produto para navegar pelas páginas da documentação."}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  {productOptions.map((product) => {
-                    const productPages = getProductPages(product.id);
-                    const productCats = getProductCategoryEntries(product.id);
-
-                    return (
-                      <button
-                        key={product.id}
-                        onClick={() => toggleProduct(product.id)}
-                        className="rounded-2xl border border-border bg-background p-4 text-left transition-all hover:border-primary/30 hover:bg-primary/5"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="text-sm font-bold uppercase tracking-[0.14em] text-primary">{product.label}</span>
-                          <ChevronRight size={16} className="shrink-0 text-primary" />
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          <span className="rounded-md border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
-                            {productPages.length} {isEnglish ? "pages" : "páginas"}
-                          </span>
-                          {productCats.slice(0, 3).map(([cat]) => (
-                            <span key={cat} className="rounded-md border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
-                              {cat}
-                            </span>
-                          ))}
-                        </div>
-                      </button>
-                    );
-                  })}
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {productOptions.map((product) => (
+                    <button
+                      key={product.id}
+                      onClick={() => toggleProduct(product.id)}
+                      className="rounded-2xl border border-border bg-background p-4 text-left transition-all hover:border-primary/30 hover:bg-primary/5"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-bold uppercase tracking-[0.14em] text-primary">{product.label}</span>
+                        <ChevronRight size={16} className="text-primary" />
+                      </div>
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                        {isEnglish ? "Click to expand pages in the sidebar." : "Clique para expandir as páginas na barra lateral."}
+                      </p>
+                    </button>
+                  ))}
                 </div>
               </div>
             </section>
           )}
         </article>
 
-        <aside className="docs-scroll-area hidden min-h-0 overflow-y-auto border-l border-border bg-card/55 p-4 xl:block">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-            {isEnglish ? "On this page" : "Nesta página"}
-          </p>
+        <aside className="hidden border-l border-border bg-card/45 px-5 py-8 xl:block">
+          <div className="sticky top-24">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
+              {isEnglish ? "On this page" : "Nesta página"}
+            </p>
 
-          {selected ? (() => {
-            // Extract H2 / H3 headings from raw markdown for anchor TOC
-            const headings = Array.from(
-              selectedContent.matchAll(/^(#{2,3}) (.+)$/gm)
-            ).map((m) => ({
-              level: m[1].length as 2 | 3,
-              text: m[2].trim(),
-              id: slugifyHeading(m[2].trim()),
-            }));
-
-            return headings.length > 0 ? (
-              <nav className="space-y-0.5">
-                {headings.map((h) => (
-                  <a
-                    key={h.id}
-                    href={`#${h.id}`}
-                    className={`docs-toc-item${h.level === 3 ? " h3" : ""}`}
-                  >
-                    {h.text}
-                  </a>
-                ))}
-              </nav>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                {isEnglish ? "No sections on this page." : "Nenhuma seção nesta página."}
-              </p>
-            );
-          })() : (
             <div className="space-y-2">
-              <p className="rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground/75">
-                {docsWelcomeTitle}
-              </p>
-              <p className="text-xs leading-6 text-muted-foreground">
+              {(selected ? selectedHeadings : overviewAnchors).map((anchor, index) => (
+                <button
+                  key={`${anchor}-${index}`}
+                  className={`block w-full rounded-lg px-3 py-2 text-left text-xs transition-all ${
+                    index === 0 ? "bg-primary/10 font-bold text-primary" : "text-muted-foreground hover:bg-background hover:text-foreground"
+                  }`}
+                >
+                  {anchor}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-border bg-background p-4">
+              <p className="text-xs font-bold text-foreground/85">{isEnglish ? "Selected product" : "Produto selecionado"}</p>
+              <p className="mt-2 text-sm font-semibold text-primary">{selectedProductName}</p>
+              <p className="mt-2 text-xs leading-6 text-muted-foreground">
                 {isEnglish
-                  ? "Welcome stays at the top. Products are listed below it as collapsible sections."
-                  : "O Welcome fica no topo. Os produtos aparecem abaixo como seções retraídas."}
+                  ? "Products and categories stay collapsed until selected."
+                  : "Produtos e categorias ficam retraídos até serem selecionados."}
               </p>
             </div>
-          )}
+          </div>
         </aside>
       </div>
     </main>
   );
 }
+
 
 
 function DocsAdminPage() {
