@@ -2353,7 +2353,7 @@ function HeroSection({ onNavigate }: { onNavigate: (id: string) => void }) {
 function WhySection({ language }: { language: SiteLanguage }) {
   return (
     <section id="why" className="py-14 lg:py-16 px-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="mx-auto max-w-6xl">
         <div className="text-center mb-9">
           <SectionTag>{language === "en_US" ? "Why choose us" : "Por que nos escolher"}</SectionTag>
           <h2
@@ -3292,7 +3292,7 @@ function ProductDetail({ product, currency, language, onClose }: { product: Prod
                       Licença de Uso
                     </p>
                     <p
-                      className="text-xs text-muted-foreground leading-relaxed"
+                      className="text-xs leading-relaxed text-[#f7f1e6]/70"
                       style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
                       A compra concede licença de uso por servidor. É proibida revenda, redistribuição,
@@ -5492,26 +5492,32 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
     );
 
   return (
-    <footer className="border-t border-border py-14 px-6">
-      <div className="max-w-6xl mx-auto">
+    <footer className="border-t border-primary/20 bg-[#1f1c17] px-6 py-14 text-[#f7f1e6] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <div className="mx-auto max-w-6xl">
         <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.45fr)_0.85fr_0.85fr] gap-10 lg:gap-14 items-start">
           <div className="max-w-sm">
             <div className="mb-3">
               <span
-                className="text-lg font-bold tracking-[0.2em] uppercase block"
-                style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}
+                className="block text-lg font-bold uppercase tracking-[0.2em]"
+                style={{
+                  fontFamily: "'Cinzel', serif",
+                  background: "linear-gradient(135deg, #f7f1e6 0%, #b89458 45%, #ded2bc 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text"
+                }}
               >
             The Wanted Sole
           </span>
               <span
-                className="text-xs tracking-[0.35em] uppercase text-foreground/40"
+                className="text-xs uppercase tracking-[0.35em] text-[#f7f1e6]/55"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
             Studio
           </span>
             </div>
             <p
-              className="text-xs text-muted-foreground leading-relaxed"
+              className="text-xs leading-relaxed text-[#f7f1e6]/70"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               Scripts exclusivos, custom peds e sistemas premium para servidores RedM. Qualidade, originalidade e identidade própria.
@@ -5519,29 +5525,29 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
           </div>
 
           <div>
-            <p className="text-sm uppercase tracking-wide text-muted-foreground mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               Company
             </p>
             <nav className="flex flex-col items-start gap-2">
-              {companyLinks.map((link) => renderLink(link, "text-sm font-semibold text-muted-foreground hover:text-primary transition-colors text-left"))}
+              {companyLinks.map((link) => renderLink(link, "text-sm font-semibold text-[#f7f1e6]/72 transition-colors hover:text-[#d7bb82] text-left"))}
             </nav>
           </div>
 
           <div className="md:justify-self-start">
-            <p className="text-sm uppercase tracking-wide text-muted-foreground mb-4" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
               Tebex
             </p>
             <nav className="flex flex-col items-start gap-2">
-              {tebexLinks.map((link) => renderLink(link, "text-sm font-semibold text-muted-foreground hover:text-primary transition-colors text-left"))}
+              {tebexLinks.map((link) => renderLink(link, "text-sm font-semibold text-[#f7f1e6]/72 transition-colors hover:text-[#d7bb82] text-left"))}
             </nav>
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-muted-foreground/60" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 sm:flex-row">
+          <p className="text-xs text-[#f7f1e6]/55" style={{ fontFamily: "'DM Sans', sans-serif" }}>
             © 2026 The Wanted Sole Studio — Todos os direitos reservados.
           </p>
-          <p className="text-xs text-muted-foreground/40" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <p className="text-xs text-[#b89458]/75" style={{ fontFamily: "'DM Sans', sans-serif" }}>
             RedM · Scripts &amp; Custom Peds
           </p>
         </div>
