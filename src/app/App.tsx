@@ -5456,6 +5456,13 @@ function DocsAdminPage() {
 
 
 function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
+  const siteLinks = [
+    { label: "Home", href: "/" },
+    { label: "About", href: "/about" },
+    { label: "Script", href: "/#products" },
+    { label: "Docs", href: "/docs" },
+  ];
+
   const companyLinks = [
     { label: "About", href: "/about" },
     { label: "Terms of use", href: "/terms" },
@@ -5494,7 +5501,7 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
   return (
     <footer className="border-t border-primary/20 bg-[#1f1c17] px-6 py-14 text-[#f7f1e6] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
       <div className="mx-auto max-w-6xl">
-        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.45fr)_0.85fr_0.85fr] gap-10 lg:gap-14 items-start">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(0,1.35fr)_0.7fr_0.85fr_0.85fr] lg:gap-14 items-start">
           <div className="max-w-sm">
             <div className="mb-3">
               <span
@@ -5522,6 +5529,15 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
             >
               Scripts exclusivos, custom peds e sistemas premium para servidores RedM. Qualidade, originalidade e identidade própria.
             </p>
+          </div>
+
+          <div>
+            <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              Links
+            </p>
+            <nav className="flex flex-col items-start gap-2">
+              {siteLinks.map((link) => renderLink(link, "text-sm font-semibold text-[#f7f1e6]/72 transition-colors hover:text-[#d7bb82] text-left"))}
+            </nav>
           </div>
 
           <div>
