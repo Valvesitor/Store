@@ -4818,6 +4818,27 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     setSelectedId(page.id);
   }
 
+  function openFirstPageByCategory(categoryName: string) {
+    const normalizedTarget = translateDocsCategory(categoryName, isEnglish).toLowerCase();
+    const fallbackTarget = normalizeDocsCategoryName(categoryName).toLowerCase();
+
+    const currentProductMatch = selectedProductPages.find((page) => {
+      const category = translateDocsCategory(page.category, isEnglish).toLowerCase();
+      const rawCategory = normalizeDocsCategoryName(page.category).toLowerCase();
+      return category === normalizedTarget || rawCategory === fallbackTarget;
+    });
+
+    const globalMatch = currentProductMatch ?? pages.find((page) => {
+      const category = translateDocsCategory(page.category, isEnglish).toLowerCase();
+      const rawCategory = normalizeDocsCategoryName(page.category).toLowerCase();
+      return category === normalizedTarget || rawCategory === fallbackTarget;
+    });
+
+    if (!globalMatch) return;
+
+    handleSelectPage(globalMatch, translateDocsCategory(globalMatch.category, isEnglish));
+  }
+
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background">
       <style>{`
@@ -5052,29 +5073,54 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                 {[
                   {
                     title: isEnglish ? "Installation" : "Instalação",
+                    category: "Instalação",
                     text: isEnglish ? "Server requirements, resource order, and first setup." : "Requisitos do servidor, ordem do resource e primeira configuração."
                   },
                   {
                     title: isEnglish ? "Configuration" : "Configuração",
+                    category: "Configuração",
                     text: isEnglish ? "Settings, framework options, permissions, and license usage." : "Configurações, opções de framework, permissões e uso da licença."
                   },
                   {
                     title: isEnglish ? "Studio Usage" : "Uso do Studio",
+                    category: "Uso do Studio",
                     text: isEnglish ? "Panels, tools, camera, favorites, and project workflow." : "Painéis, ferramentas, câmera, favoritos e fluxo de projetos."
                   },
                   {
                     title: isEnglish ? "Support" : "Suporte",
+                    category: "Suporte",
                     text: isEnglish ? "Troubleshooting, logs, common issues, and ticket information." : "Problemas comuns, logs, soluções e informações para ticket."
                   }
-                ].map((item) => (
-                  <div key={item.title} className="rounded-[24px] border border-border bg-card p-5 transition-all hover:border-primary/25 hover:bg-primary/5">
-                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <BookOpen size={18} />
-                    </div>
-                    <h2 className="text-lg font-bold text-foreground/90">{item.title}</h2>
-                    <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.text}</p>
-                  </div>
-                ))}
+                ].map((item) => {
+                  const hasPage = selectedProductPages.some((page) =>
+                    normalizeDocsCategoryName(page.category) === normalizeDocsCategoryName(item.category)
+                  );
+
+                  return (
+                    <button
+                      key={item.title}
+                      type="button"
+                      onClick={() => openFirstPageByCategory(item.category)}
+                      disabled={!hasPage}
+                      className={`rounded-[24px] border p-5 text-left transition-all ${
+                        hasPage
+                          ? "border-border bg-card hover:border-primary/30 hover:bg-primary/5 hover:shadow-[0_16px_44px_rgba(32,32,32,0.06)]"
+                          : "cursor-not-allowed border-border bg-card opacity-55"
+                      }`}
+                    >
+                      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <BookOpen size={18} />
+                      </div>
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h2 className="text-lg font-bold text-foreground/90">{item.title}</h2>
+                          <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.text}</p>
+                        </div>
+                        {hasPage && <ChevronRight size={17} className="mt-1 shrink-0 text-primary" />}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="mt-8 rounded-[26px] border border-border bg-card p-5 lg:p-6">
