@@ -5511,7 +5511,11 @@ function DocsAdminPage() {
 
   return (
     <main className="bg-transparent p-0">
-      <div className="grid h-[calc(100vh-175px)] grid-cols-1 overflow-hidden rounded-[24px] border border-border bg-background shadow-[0_18px_55px_rgba(32,32,32,0.06)] xl:grid-cols-[240px_300px_minmax(0,1fr)]">
+      <div className={`grid grid-cols-1 rounded-[24px] border border-border bg-background shadow-[0_18px_55px_rgba(32,32,32,0.06)] xl:grid-cols-[240px_300px_minmax(0,1fr)] ${
+        docsViewMode === "preview"
+          ? "min-h-[calc(100vh-175px)] overflow-visible"
+          : "h-[calc(100vh-175px)] overflow-hidden"
+      }`}>
         {/* GitBook-style left rail */}
         <aside className="border-b border-border bg-card/80 p-3 xl:border-b-0 xl:border-r">
           <div className="mb-3 flex items-center gap-2">
@@ -5658,7 +5662,7 @@ function DocsAdminPage() {
         </aside>
 
         {/* Editor and preview */}
-        <section className="flex min-h-0 flex-col bg-background">
+        <section className={docsViewMode === "preview" ? "bg-background" : "flex min-h-0 flex-col bg-background"}>
           <div className="border-b border-border bg-card px-3 py-2 lg:px-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0">
@@ -5681,10 +5685,10 @@ function DocsAdminPage() {
                 </button>
                 <a
                   href={`/docs?product=${selectedProductId}`}
-                  className="inline-flex h-9 items-center gap-2 rounded-xl border border-border px-3 text-xs font-bold text-foreground/70 hover:bg-primary/5"
+                  className="inline-flex h-9 items-center gap-2 rounded-xl border border-primary/25 px-3 text-xs font-bold text-primary hover:bg-primary/5"
                 >
                   <ExternalLink size={13} />
-                  Abrir docs
+                  Sair do editor
                 </a>
                 <button
                   onClick={handleSave}
@@ -5829,7 +5833,7 @@ function DocsAdminPage() {
                 </div>
               </div>
             ) : (
-              <div className="min-h-0 overflow-y-auto bg-card/40 p-4 lg:p-6">
+              <div className="bg-card/40 p-4 lg:p-6">
                 <div className="mx-auto max-w-5xl rounded-[26px] border border-border bg-background p-6 lg:p-9 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
                   <div className="mb-6 flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -6833,7 +6837,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [activeAdminSection, setActiveAdminSection] = useState<"products" | "docs" | "coupons">("products");
+  const [activeAdminSection, setActiveAdminSection] = useState<"products" | "coupons">("products");
 
   const isLogged = !!token;
 
@@ -6935,7 +6939,6 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
 
   const adminNavItems = [
     { id: "products" as const, label: "Produtos", description: "Editor de produto", icon: Package },
-    { id: "docs" as const, label: "Documentação", description: "Editor de docs", icon: BookOpen },
     { id: "coupons" as const, label: "Cupons", description: "Coupon / Gift Card", icon: Crown },
   ];
 
@@ -7028,12 +7031,10 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
             <SectionTag>Admin Dashboard</SectionTag>
             <h1 className="mt-2 text-xl lg:text-2xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
               {activeAdminSection === "products" && "Produtos"}
-              {activeAdminSection === "docs" && "Documentação"}
               {activeAdminSection === "coupons" && "Cupom / Gift Card"}
             </h1>
             <p className="mt-1 text-xs text-muted-foreground max-w-xl">
               {activeAdminSection === "products" && "Cadastre, edite e publique os produtos da vitrine."}
-              {activeAdminSection === "docs" && "Crie e edite páginas de documentação separadas por produto."}
               {activeAdminSection === "coupons" && "Cadastre o nome público e o código original da Tebex para cupons e gift cards."}
             </p>
           </div>
@@ -7051,15 +7052,7 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
                 Novo produto
               </button>
             )}
-            {activeAdminSection === "docs" && (
-              <a
-                href="/docs"
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-primary/25 px-5 text-sm font-semibold text-primary hover:bg-primary/5"
-              >
-                <BookOpen size={15} />
-                Ver docs
-              </a>
-            )}
+
             {/* Mobile logout */}
             <button
               onClick={handleLogout}
@@ -7153,12 +7146,6 @@ function AdminPage({ currency, onCurrencyChange }: { currency: CurrencyCode; onC
                 saving={saving}
               />
             </div>
-          </div>
-        )}
-
-        {activeAdminSection === "docs" && (
-          <div className="rounded-[22px] border border-border bg-card/40 p-0 shadow-[0_14px_42px_rgba(32,32,32,0.04)]">
-            <DocsAdminPage />
           </div>
         )}
 
