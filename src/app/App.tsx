@@ -1516,6 +1516,7 @@ async function saveAdminProduct(token: string, product: Product) {
   const endpoint = editing ? `/api/admin/products/${encodeURIComponent(product.id)}` : "/api/admin/products";
   const normalizedProduct = {
     ...product,
+    media: normalizeProductMediaForDatabase(product),
     features: parseProductList(product.features),
     featuresEn: parseProductList(product.featuresEn),
     requirements: parseProductList(product.requirements),
@@ -5684,6 +5685,50 @@ function isUploadedDataMedia(item: ProductMedia) {
   return item.src.startsWith("data:");
 }
 
+function slugifyMediaPath(value: string) {
+  return String(value || "produto")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "produto";
+}
+
+function sanitizeMediaFilename(value: string, fallback = "imagem.png") {
+  const safeName = String(value || fallback)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return safeName || fallback;
+}
+
+function getProductMediaFolder(product: Pick<Product, "id" | "name" | "nameEn">) {
+  const source = product.id && !product.id.startsWith("new-")
+    ? product.id
+    : product.name || product.nameEn || product.id || "produto";
+
+  return `/products/${slugifyMediaPath(source)}`;
+}
+
+function getProductMediaPublicPath(product: Pick<Product, "id" | "name" | "nameEn">, filename: string, index = 0) {
+  const safeFilename = sanitizeMediaFilename(filename, `imagem-${index + 1}.png`);
+  return `${getProductMediaFolder(product)}/${safeFilename}`;
+}
+
+function normalizeProductMediaForDatabase(product: Product) {
+  return (product.media ?? []).map((item, index) => {
+    if (!isUploadedDataMedia(item)) return item;
+
+    return {
+      ...item,
+      src: getProductMediaPublicPath(product, item.filename || `imagem-${index + 1}.png`, index)
+    };
+  });
+}
+
 function getMediaDisplayName(item: ProductMedia, index: number) {
   if (item.filename) return item.filename;
   if (isUploadedDataMedia(item)) return `imagem-enviada-${index + 1}.png`;
@@ -5797,18 +5842,19 @@ function ProductAdminForm({
       const uploadedMedia: ProductMedia[] = [];
 
       for (const file of imageFiles) {
-        const dataUrl = await readFileAsDataUrl(file);
+        const mediaIndex = currentMedia.length + uploadedMedia.length;
         uploadedMedia.push({
           type: "image",
-          src: dataUrl,
+          src: getProductMediaPublicPath(product, file.name, mediaIndex),
           filename: file.name,
-          alt: file.name || getUploadedMediaAlt(product, currentMedia.length + uploadedMedia.length)
+          alt: file.name || getUploadedMediaAlt(product, mediaIndex)
         });
       }
 
       if (uploadedMedia.length > 0) {
         update({ media: [...currentMedia, ...uploadedMedia] });
         setPreviewFailed(false);
+        window.alert(`Caminho(s) criado(s). Agora coloque os arquivos na pasta ${getProductMediaFolder(product)} do projeto, ou envie para o Cloudflare R2 no futuro.`);
       }
     } catch (error) {
       console.error(error);
@@ -5981,16 +6027,16 @@ function ProductAdminForm({
 
           {/* 04 — Mídia */}
           <div className="rounded-[22px] border border-border bg-card p-5 lg:p-6 shadow-[0_8px_28px_rgba(32,32,32,0.04)]">
-            <SectionHeader number="04" title="Mídia" subtitle="Upload de imagens, imagem do card e galeria" />
+            <SectionHeader number="04" title="Mídia" subtitle="Caminhos de imagens, imagem do card e galeria" />
             <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_240px] gap-5">
               <div>
                 <span className={lbl}>Upload de imagens</span>
                 <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-sm font-bold text-foreground/85">Enviar imagens do produto</p>
+                      <p className="text-sm font-bold text-foreground/85">Adicionar imagens ao produto</p>
                       <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                        A primeira imagem vira capa/card. As próximas entram na galeria.
+                        A primeira imagem vira capa/card. As próximas entram na galeria. O arquivo precisa existir em /public/products ou R2.
                       </p>
                     </div>
 
@@ -6012,7 +6058,7 @@ function ProductAdminForm({
                   </div>
 
                   <p className="mt-3 rounded-xl border border-border bg-background px-3 py-2 text-[11px] leading-5 text-muted-foreground">
-                    As imagens enviadas aparecem abaixo pelo nome do arquivo, não como código base64. Use imagens otimizadas de até {PRODUCT_MEDIA_UPLOAD_MAX_MB}MB.
+                    O sistema salva apenas o caminho da imagem, não o arquivo em base64. Depois coloque a imagem em /public/products ou use Cloudflare R2.
                   </p>
                 </div>
 
@@ -6107,7 +6153,7 @@ function ProductAdminForm({
 
                 <div className="mt-3 rounded-2xl border border-amber-500/25 bg-amber-500/5 px-4 py-3 text-xs leading-5 text-muted-foreground">
                   <strong className="block text-amber-700">Importante sobre imagens</strong>
-                  O upload acima salva a imagem no próprio produto. Para produção em grande escala, o ideal é usar Cloudflare R2 ou imagens dentro de <code className="rounded bg-background px-1 py-0.5">/public/products</code>.
+                  Para evitar erro SQLITE_TOOBIG, o produto salva somente o caminho da imagem. Coloque os arquivos dentro de <code className="rounded bg-background px-1 py-0.5">/public/products</code>.
                   {hasDiscordMedia && (
                     <span className="mt-2 block font-semibold text-amber-700">
                       Este produto ainda tem {discordMediaCount} URL(s) do Discord. Troque por upload ou imagem hospedada no site.
