@@ -2450,14 +2450,14 @@ function ProductCard({ product, currency, language, onSelect }: { product: Produ
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.35 }}
-      className="group relative flex flex-col rounded-sm border border-border bg-card
+      className="group relative flex flex-col rounded-xl border border-border bg-card
         hover:border-primary/30 hover:shadow-[0_0_32px_rgba(201,168,76,0.07)]
         transition-all duration-300 overflow-hidden cursor-pointer"
       onClick={() => { window.location.href = getProductPagePath(product); }}
     >
       {/* Thumbnail */}
       <div
-        className="relative h-36 flex items-center justify-center overflow-hidden"
+        className="relative h-40 flex items-center justify-center overflow-hidden"
         style={{ background: `linear-gradient(135deg, ${product.gradientFrom}, ${product.gradientTo})` }}
       >
         <div
@@ -2469,14 +2469,14 @@ function ProductCard({ product, currency, language, onSelect }: { product: Produ
         />
 
         {showThumbnail ? (
-          <>
+          <div className="relative z-10 flex h-[calc(100%-24px)] w-[calc(100%-24px)] items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-[#fffdf8] p-3 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.65)]">
             <img
               src={thumbnailSrc}
               alt={localized.name || product.name}
               onError={() => setThumbnailFailed(true)}
-              className="absolute inset-0 h-full w-full bg-[#fffdf8] object-contain p-4 transition-transform duration-500 group-hover:scale-[1.03]"
+              className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
             />
-          </>
+          </div>
         ) : (
           <div className="relative z-10 p-4 rounded-sm border border-primary/20 bg-primary/10
             group-hover:border-primary/40 group-hover:bg-primary/15 transition-all duration-300">
