@@ -4721,6 +4721,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   });
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [docsSearch, setDocsSearch] = useState("");
+  const docsSearchInputRef = useRef<HTMLInputElement | null>(null);
 
   const isEnglish = language === "en_US";
   const isDocsAdminLogged = !!getAdminToken();
@@ -4751,19 +4752,29 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     return pages.filter((page) => getDocsProductId(page) === productId);
   }
 
+  function normalizeDocsSearchText(value: string) {
+    return String(value ?? "")
+      .normalize("NFD")
+      .replace(/[\\u0300-\\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  }
+
   function pageMatchesSearch(page: DocsPageRecord, query: string) {
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalizedQuery = normalizeDocsSearchText(query);
     if (!normalizedQuery) return true;
 
-    const title = getDocsTitle(page, isEnglish).toLowerCase();
-    const category = translateDocsCategory(page.category, isEnglish).toLowerCase();
-    const content = getDocsContent(page, isEnglish).toLowerCase();
-    const slug = page.slug.toLowerCase();
+    const title = normalizeDocsSearchText(getDocsTitle(page, isEnglish));
+    const category = normalizeDocsSearchText(translateDocsCategory(page.category, isEnglish));
+    const content = normalizeDocsSearchText(getDocsContent(page, isEnglish));
+    const slug = normalizeDocsSearchText(page.slug);
+    const productName = normalizeDocsSearchText(getDocsProductLabel(getDocsProductId(page)));
 
     return title.includes(normalizedQuery)
       || category.includes(normalizedQuery)
       || content.includes(normalizedQuery)
-      || slug.includes(normalizedQuery);
+      || slug.includes(normalizedQuery)
+      || productName.includes(normalizedQuery);
   }
 
   function getProductCategoryEntries(productId: string) {
@@ -4805,11 +4816,17 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     { label: isEnglish ? "Credits" : "Créditos", id: "credits" }
   ];
 
+  const hasDocsSearch = normalizeDocsSearchText(docsSearch).length > 0;
+
   const visibleProducts = productOptions.filter((product) => {
-    const query = docsSearch.trim().toLowerCase();
+    const query = normalizeDocsSearchText(docsSearch);
     if (!query) return true;
-    return product.label.toLowerCase().includes(query) || getProductPages(product.id).some((page) => pageMatchesSearch(page, docsSearch));
+    return normalizeDocsSearchText(product.label).includes(query) || getProductPages(product.id).some((page) => pageMatchesSearch(page, docsSearch));
   });
+
+  const docsSearchResultCount = hasDocsSearch
+    ? pages.filter((page) => pageMatchesSearch(page, docsSearch)).length
+    : 0;
 
   const creditPages = pages
     .filter((page) => page.visible !== false && isDocsCreditPage(page))
@@ -4818,6 +4835,19 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   useEffect(() => {
     document.title = docsPageTitle;
   }, [docsPageTitle]);
+
+  useEffect(() => {
+    function handleSearchShortcut(event: KeyboardEvent) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        docsSearchInputRef.current?.focus();
+        docsSearchInputRef.current?.select();
+      }
+    }
+
+    window.addEventListener("keydown", handleSearchShortcut);
+    return () => window.removeEventListener("keydown", handleSearchShortcut);
+  }, []);
 
   function setProductUrl(productId: string) {
     const url = new URL(window.location.href);
@@ -4862,6 +4892,27 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     openProduct(productId);
     openCategory(productId, category);
     setSelectedId(page.id);
+  }
+
+  function openFirstDocsSearchResult() {
+    const match = pages
+      .filter((page) => pageMatchesSearch(page, docsSearch))
+      .sort((a, b) => a.orderIndex - b.orderIndex)[0];
+
+    if (!match) return;
+
+    handleSelectPage(match, translateDocsCategory(match.category, isEnglish));
+  }
+
+  function handleDocsSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      openFirstDocsSearchResult();
+    }
+
+    if (event.key === "Escape") {
+      setDocsSearch("");
+    }
   }
 
   function scrollToDocsAnchor(id: string) {
@@ -4960,8 +5011,10 @@ function DocsPage({ language }: { language: SiteLanguage }) {
           <div className="relative ml-auto hidden w-full max-w-xl md:block">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
+              ref={docsSearchInputRef}
               value={docsSearch}
               onChange={(e) => setDocsSearch(e.target.value)}
+              onKeyDown={handleDocsSearchKeyDown}
               placeholder={isEnglish ? "Search documentation..." : "Buscar na documentação..."}
               className="h-10 w-full rounded-xl border border-border bg-card px-9 text-sm outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
             />
@@ -4994,6 +5047,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
               <input
                 value={docsSearch}
                 onChange={(e) => setDocsSearch(e.target.value)}
+                onKeyDown={handleDocsSearchKeyDown}
                 placeholder={isEnglish ? "Search documentation..." : "Buscar na documentação..."}
                 className="h-10 w-full rounded-xl border border-border bg-background px-9 text-sm outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
               />
@@ -5028,6 +5082,21 @@ function DocsPage({ language }: { language: SiteLanguage }) {
 
             {loading && <p className="px-3 py-2 text-xs text-muted-foreground">{isEnglish ? "Loading..." : "Carregando..."}</p>}
 
+            {hasDocsSearch && (
+              <div className="mb-3 rounded-2xl border border-primary/20 bg-primary/5 p-3">
+                <p className="text-[11px] font-semibold text-primary">
+                  {docsSearchResultCount} {isEnglish ? "result(s) for" : "resultado(s) para"} “{docsSearch}”
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setDocsSearch("")}
+                  className="mt-2 text-[11px] font-bold text-muted-foreground hover:text-primary"
+                >
+                  {isEnglish ? "Clear search" : "Limpar busca"}
+                </button>
+              </div>
+            )}
+
             {visibleProducts.length === 0 && !loading && (
               <p className="rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
                 {isEnglish ? "No results found." : "Nenhum resultado encontrado."}
@@ -5036,7 +5105,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
 
             {visibleProducts.map((product) => {
               const productCategoryEntries = getProductCategoryEntries(product.id);
-              const productExpanded = expandedProducts.includes(product.id);
+              const productExpanded = hasDocsSearch || expandedProducts.includes(product.id);
               const selectedProductActive = selectedProductId === product.id;
 
               return (
@@ -5063,7 +5132,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
 
                       {productCategoryEntries.map(([category, rows]) => {
                         const categoryKey = `${product.id}:${category}`;
-                        const expanded = expandedCategories.includes(categoryKey);
+                        const expanded = hasDocsSearch || expandedCategories.includes(categoryKey);
                         const selectedInCategory = selected ? rows.some((page) => page.id === selected.id) : false;
 
                         return (
