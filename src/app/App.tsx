@@ -5617,7 +5617,7 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
             </p>
           </div>
 
-          <div className="grid w-full grid-cols-1 gap-0 sm:grid-cols-3 lg:ml-12 lg:max-w-[620px] xl:ml-16 xl:max-w-[680px]">
+          <div className="grid w-full grid-cols-1 gap-0 sm:w-auto sm:grid-cols-[145px_220px_230px] lg:ml-12 xl:ml-16">
             <div className="border-b border-[#b89458]/25 pb-7 sm:border-b-0 sm:pb-0 sm:pr-6">
               <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 Links
