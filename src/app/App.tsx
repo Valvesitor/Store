@@ -4818,25 +4818,59 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     setSelectedId(page.id);
   }
 
+  function getDocsCategoryKey(value: string) {
+    const normalized = normalizeDocsCategoryName(value)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\\u0300-\\u036f]/g, "");
+
+    if (normalized.includes("instal") || normalized.includes("installation")) return "installation";
+    if (normalized.includes("config") || normalized.includes("configuration")) return "configuration";
+    if (normalized.includes("studio") || normalized.includes("usage") || normalized.includes("uso")) return "studio";
+    if (normalized.includes("suporte") || normalized.includes("support")) return "support";
+
+    return normalized;
+  }
+
+  function pageMatchesCategoryShortcut(page: DocsPageRecord, categoryName: string) {
+    const target = getDocsCategoryKey(categoryName);
+    const pageCategory = getDocsCategoryKey(page.category);
+
+    if (pageCategory === target) return true;
+
+    const title = getDocsTitle(page, isEnglish).toLowerCase();
+    const slug = page.slug.toLowerCase();
+    const content = getDocsContent(page, isEnglish).toLowerCase();
+
+    if (target === "installation") return title.includes("instala") || title.includes("install") || slug.includes("instal") || slug.includes("install");
+    if (target === "configuration") return title.includes("config") || slug.includes("config") || content.includes("config.lua");
+    if (target === "studio") return title.includes("studio") || title.includes("pain") || title.includes("panel") || slug.includes("studio") || slug.includes("panel");
+    if (target === "support") return title.includes("suporte") || title.includes("support") || title.includes("problema") || title.includes("faq") || slug.includes("support") || slug.includes("troubleshoot") || slug.includes("faq");
+
+    return false;
+  }
+
+  function findFirstPageByCategory(categoryName: string) {
+    const currentProductMatch = selectedProductPages.find((page) => pageMatchesCategoryShortcut(page, categoryName));
+    if (currentProductMatch) return currentProductMatch;
+
+    return pages.find((page) => pageMatchesCategoryShortcut(page, categoryName)) ?? null;
+  }
+
   function openFirstPageByCategory(categoryName: string) {
-    const normalizedTarget = translateDocsCategory(categoryName, isEnglish).toLowerCase();
-    const fallbackTarget = normalizeDocsCategoryName(categoryName).toLowerCase();
+    const match = findFirstPageByCategory(categoryName);
 
-    const currentProductMatch = selectedProductPages.find((page) => {
-      const category = translateDocsCategory(page.category, isEnglish).toLowerCase();
-      const rawCategory = normalizeDocsCategoryName(page.category).toLowerCase();
-      return category === normalizedTarget || rawCategory === fallbackTarget;
-    });
+    if (!match) {
+      const productId = selectedProductId || productOptions[0]?.id;
+      if (productId) {
+        setSelectedProductId(productId);
+        setProductUrl(productId);
+        openProduct(productId);
+      }
+      return;
+    }
 
-    const globalMatch = currentProductMatch ?? pages.find((page) => {
-      const category = translateDocsCategory(page.category, isEnglish).toLowerCase();
-      const rawCategory = normalizeDocsCategoryName(page.category).toLowerCase();
-      return category === normalizedTarget || rawCategory === fallbackTarget;
-    });
-
-    if (!globalMatch) return;
-
-    handleSelectPage(globalMatch, translateDocsCategory(globalMatch.category, isEnglish));
+    handleSelectPage(match, translateDocsCategory(match.category, isEnglish));
   }
 
   return (
@@ -5092,21 +5126,14 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                     text: isEnglish ? "Troubleshooting, logs, common issues, and ticket information." : "Problemas comuns, logs, soluções e informações para ticket."
                   }
                 ].map((item) => {
-                  const hasPage = selectedProductPages.some((page) =>
-                    normalizeDocsCategoryName(page.category) === normalizeDocsCategoryName(item.category)
-                  );
+                  const hasPage = !!findFirstPageByCategory(item.category);
 
                   return (
                     <button
                       key={item.title}
                       type="button"
                       onClick={() => openFirstPageByCategory(item.category)}
-                      disabled={!hasPage}
-                      className={`rounded-[24px] border p-5 text-left transition-all ${
-                        hasPage
-                          ? "border-border bg-card hover:border-primary/30 hover:bg-primary/5 hover:shadow-[0_16px_44px_rgba(32,32,32,0.06)]"
-                          : "cursor-not-allowed border-border bg-card opacity-55"
-                      }`}
+                      className="rounded-[24px] border border-border bg-card p-5 text-left transition-all hover:border-primary/30 hover:bg-primary/5 hover:shadow-[0_16px_44px_rgba(32,32,32,0.06)]"
                     >
                       <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                         <BookOpen size={18} />
@@ -5115,8 +5142,13 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                         <div>
                           <h2 className="text-lg font-bold text-foreground/90">{item.title}</h2>
                           <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.text}</p>
+                          {!hasPage && (
+                            <p className="mt-3 text-[11px] font-semibold text-primary/70">
+                              {isEnglish ? "Open this product in the sidebar to add pages." : "Abra o produto na lateral para adicionar páginas."}
+                            </p>
+                          )}
                         </div>
-                        {hasPage && <ChevronRight size={17} className="mt-1 shrink-0 text-primary" />}
+                        <ChevronRight size={17} className="mt-1 shrink-0 text-primary" />
                       </div>
                     </button>
                   );
