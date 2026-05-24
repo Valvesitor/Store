@@ -1891,15 +1891,15 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       scrolled ? "bg-background/90 backdrop-blur-md border-b border-border" : "bg-transparent"
     }`}>
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="mx-auto flex h-16 w-full max-w-[1540px] items-center justify-between gap-4 px-8 lg:gap-10">
         {/* Logo */}
         <button
           onClick={() => onNavigate("hero")}
-          className="flex items-center transition-opacity hover:opacity-80"
+          className="flex items-center transition-opacity hover:opacity-80 lg:min-w-[330px]"
           aria-label="The Wanted Sole Studio"
         >
           <span
-            className="text-base font-bold tracking-[0.18em] uppercase whitespace-nowrap"
+            className="text-sm font-bold tracking-[0.16em] uppercase whitespace-nowrap lg:text-base"
             style={{ fontFamily: "'Cinzel', serif", color: "#b89458" }}
           >
             The Wanted Sole Studio
@@ -1907,7 +1907,7 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
         </button>
 
         {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex flex-1 items-center justify-center gap-3">
           {links.map((link) =>
             link.external ? (
               <a
@@ -1938,7 +1938,7 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
         </nav>
 
         {/* CTA buttons */}
-        <div className="hidden lg:flex items-center gap-2">
+        <div className="hidden lg:flex min-w-[430px] items-center justify-end gap-2">
           <select
             value={language}
             onChange={(e) => onLanguageChange(e.target.value as SiteLanguage)}
