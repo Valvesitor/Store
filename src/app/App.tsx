@@ -4511,6 +4511,16 @@ function inlineDocsMarkdown(value: string) {
     .replace(/`([^`]+)`/g, "<code>$1</code>");
 }
 
+function docsAnchorId(value: string) {
+  return String(value || "section")
+    .replace(/\*\*/g, "")
+    .normalize("NFD")
+    .replace(/[\\u0300-\\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "section";
+}
+
 function docsMarkdownToHtml(markdown: string) {
   const lines = String(markdown ?? "").split("\n");
   let html = "";
@@ -4552,19 +4562,22 @@ function docsMarkdownToHtml(markdown: string) {
 
     if (line.startsWith("# ")) {
       closeList();
-      html += `<h1>${escapeDocsHtml(line.slice(2))}</h1>`;
+      const heading = line.slice(2);
+      html += `<h1 id="${docsAnchorId(heading)}">${escapeDocsHtml(heading)}</h1>`;
       continue;
     }
 
     if (line.startsWith("## ")) {
       closeList();
-      html += `<h2>${escapeDocsHtml(line.slice(3))}</h2>`;
+      const heading = line.slice(3);
+      html += `<h2 id="${docsAnchorId(heading)}">${escapeDocsHtml(heading)}</h2>`;
       continue;
     }
 
     if (line.startsWith("### ")) {
       closeList();
-      html += `<h3>${escapeDocsHtml(line.slice(4))}</h3>`;
+      const heading = line.slice(4);
+      html += `<h3 id="${docsAnchorId(heading)}">${escapeDocsHtml(heading)}</h3>`;
       continue;
     }
 
@@ -4600,6 +4613,7 @@ function normalizeDocsCategoryName(category: string) {
   if (["uso do studio", "studio usage"].includes(value)) return "Uso do Studio";
   if (["ferramentas", "tools"].includes(value)) return "Ferramentas";
   if (["suporte", "support"].includes(value)) return "Suporte";
+  if (["creditos", "créditos", "credits", "credit"].includes(value)) return "Créditos";
   if (["referncia", "referencia", "referência", "reference"].includes(value)) return "Referência";
 
   return category || "Geral";
@@ -4617,6 +4631,7 @@ function translateDocsCategory(category: string, isEnglish: boolean) {
     "Uso do Studio": "Studio usage",
     "Ferramentas": "Tools",
     "Suporte": "Support",
+    "Créditos": "Credits",
     "Referência": "Reference",
     "Geral": "General"
   };
@@ -4630,6 +4645,28 @@ function getDocsTitle(page: DocsPageRecord, isEnglish: boolean) {
 
 function getDocsContent(page: DocsPageRecord, isEnglish: boolean) {
   return isEnglish ? (page.contentEn || page.contentPt) : page.contentPt;
+}
+
+function isDocsCreditPage(page: DocsPageRecord) {
+  const normalizedCategory = normalizeDocsCategoryName(page.category);
+  const title = `${page.title} ${page.titleEn ?? ""}`.toLowerCase();
+
+  return normalizedCategory === "Créditos"
+    || title.includes("crédito")
+    || title.includes("credito")
+    || title.includes("credit");
+}
+
+function getDocsExcerpt(content: string, maxLength = 150) {
+  const plain = String(content ?? "")
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/[-*_`>#]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (plain.length <= maxLength) return plain;
+  return `${plain.slice(0, maxLength).trim()}...`;
 }
 
 
@@ -4757,17 +4794,25 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     .filter((line) => /^#{1,3}\s+/.test(line))
     .map((line) => line.replace(/^#{1,3}\s+/, "").replace(/\*\*/g, "").trim())
     .filter(Boolean)
-    .slice(0, 8);
+    .slice(0, 8)
+    .map((label) => ({ label, id: docsAnchorId(label) }));
 
-  const overviewAnchors = isEnglish
-    ? ["Documentation Index", "Getting Started", "Products", "Credits"]
-    : ["Índice da documentação", "Começando", "Produtos", "Créditos"];
+  const overviewAnchors = [
+    { label: isEnglish ? "Documentation Index" : "Índice da documentação", id: "documentation-index" },
+    { label: isEnglish ? "Getting Started" : "Começando", id: "getting-started" },
+    { label: isEnglish ? "Products" : "Produtos", id: "products" },
+    { label: isEnglish ? "Credits" : "Créditos", id: "credits" }
+  ];
 
   const visibleProducts = productOptions.filter((product) => {
     const query = docsSearch.trim().toLowerCase();
     if (!query) return true;
     return product.label.toLowerCase().includes(query) || getProductPages(product.id).some((page) => pageMatchesSearch(page, docsSearch));
   });
+
+  const creditPages = pages
+    .filter((page) => page.visible !== false && isDocsCreditPage(page))
+    .sort((a, b) => a.orderIndex - b.orderIndex);
 
   useEffect(() => {
     document.title = docsPageTitle;
@@ -4816,6 +4861,12 @@ function DocsPage({ language }: { language: SiteLanguage }) {
     openProduct(productId);
     openCategory(productId, category);
     setSelectedId(page.id);
+  }
+
+  function scrollToDocsAnchor(id: string) {
+    window.requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   function getDocsCategoryKey(value: string) {
@@ -4876,6 +4927,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background">
       <style>{`
+        .docs-markdown h1, .docs-markdown h2, .docs-markdown h3 { scroll-margin-top: 6rem; }
         .docs-markdown h1 { font-size: clamp(2rem, 3.25vw, 3.1rem); line-height: 1.02; letter-spacing: -.055em; margin: 0 0 1.1rem; color: hsl(var(--foreground)); }
         .docs-markdown h2 { margin-top: 2.2rem; padding-top: 1.3rem; border-top: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); font-size: 1.34rem; font-weight: 800; letter-spacing: -.025em; }
         .docs-markdown h3 { margin-top: 1.45rem; color: hsl(var(--foreground)); font-size: 1.02rem; font-weight: 800; }
@@ -5082,7 +5134,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
             </div>
           ) : (
             <section className="mx-auto max-w-4xl">
-              <div className="rounded-[30px] border border-border bg-card p-6 shadow-[0_24px_80px_rgba(32,32,32,0.06)] lg:p-9">
+              <div id="documentation-index" className="scroll-mt-24 rounded-[30px] border border-border bg-card p-6 shadow-[0_24px_80px_rgba(32,32,32,0.06)] lg:p-9">
                 <SectionTag>{isEnglish ? "Getting Started" : "Começando"}</SectionTag>
                 <h1 className="mt-5 text-4xl font-bold tracking-tight text-foreground/95 lg:text-6xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
                   {docsSiteTitle}
@@ -5103,7 +5155,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                 </div>
               </div>
 
-              <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div id="getting-started" className="scroll-mt-24 mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
                 {[
                   {
                     title: isEnglish ? "Installation" : "Instalação",
@@ -5155,7 +5207,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                 })}
               </div>
 
-              <div className="mt-8 rounded-[26px] border border-border bg-card p-5 lg:p-6">
+              <div id="products" className="scroll-mt-24 mt-8 rounded-[26px] border border-border bg-card p-5 lg:p-6">
                 <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h2 className="text-xl font-bold text-foreground/90">{isEnglish ? "Products" : "Produtos"}</h2>
@@ -5183,6 +5235,48 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                   ))}
                 </div>
               </div>
+
+              <div id="credits" className="scroll-mt-24 mt-8 rounded-[26px] border border-border bg-card p-5 lg:p-6">
+                <div className="mb-5">
+                  <h2 className="text-xl font-bold text-foreground/90">{isEnglish ? "Credits" : "Créditos"}</h2>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    {isEnglish
+                      ? "Credits for the studio, contributors, collaborators, and people involved with the project."
+                      : "Créditos do Studio, contribuidores, colaboradores e pessoas envolvidas no projeto."}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">
+                      {isEnglish ? "Official Studio" : "Studio oficial"}
+                    </p>
+                    <h3 className="mt-2 text-base font-bold text-foreground/90">The Wanted Sole Studio</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {isEnglish
+                        ? "Main development, design direction, product identity, documentation, and client support."
+                        : "Desenvolvimento principal, direção visual, identidade dos produtos, documentação e suporte ao cliente."}
+                    </p>
+                  </div>
+
+                  {creditPages.map((page) => (
+                    <button
+                      key={page.id}
+                      type="button"
+                      onClick={() => handleSelectPage(page, translateDocsCategory(page.category, isEnglish))}
+                      className="rounded-2xl border border-border bg-background p-4 text-left transition-all hover:border-primary/30 hover:bg-primary/5"
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">
+                        {translateDocsCategory(page.category, isEnglish)}
+                      </p>
+                      <h3 className="mt-2 text-base font-bold text-foreground/90">{getDocsTitle(page, isEnglish)}</h3>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {getDocsExcerpt(getDocsContent(page, isEnglish), 130)}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </section>
           )}
         </article>
@@ -5196,12 +5290,14 @@ function DocsPage({ language }: { language: SiteLanguage }) {
             <div className="space-y-2">
               {(selected ? selectedHeadings : overviewAnchors).map((anchor, index) => (
                 <button
-                  key={`${anchor}-${index}`}
+                  key={`${anchor.id}-${index}`}
+                  type="button"
+                  onClick={() => scrollToDocsAnchor(anchor.id)}
                   className={`block w-full rounded-lg px-3 py-2 text-left text-xs transition-all ${
                     index === 0 ? "bg-primary/10 font-bold text-primary" : "text-muted-foreground hover:bg-background hover:text-foreground"
                   }`}
                 >
-                  {anchor}
+                  {anchor.label}
                 </button>
               ))}
             </div>
@@ -5302,6 +5398,30 @@ function DocsAdminPage() {
 
   function handleNewPage(productId = selectedProductId) {
     const next = emptyDocsPage(productId);
+    setSelectedProductId(productId);
+    setSelected(next);
+    setEditorLanguage("pt");
+    setDocsViewMode("editor");
+  }
+
+  function handleNewCredit() {
+    const productId = selectedProductId || "tws-identity-forge";
+    const name = window.prompt("Nome do crédito / colaborador:", "The Wanted Sole Studio") || "Novo crédito";
+    const slug = slugifyClient(`creditos-${name}-${Date.now()}`);
+    const next: DocsPageRecord = {
+      ...emptyDocsPage(productId),
+      id: `credit-${Date.now()}`,
+      productId,
+      category: "Créditos",
+      title: name,
+      titleEn: name,
+      slug,
+      orderIndex: 900,
+      contentPt: `# ${name}\n\n**Função:** informe a função aqui.\n\n**Contribuição:** descreva a participação, serviço ou crédito desta pessoa/equipe.\n\n- Desenvolvimento\n- Design\n- Documentação\n- Suporte`,
+      contentEn: `# ${name}\n\n**Role:** describe the role here.\n\n**Contribution:** describe this person/team contribution or credit.\n\n- Development\n- Design\n- Documentation\n- Support`,
+      visible: true
+    };
+
     setSelectedProductId(productId);
     setSelected(next);
     setEditorLanguage("pt");
@@ -5459,13 +5579,22 @@ function DocsAdminPage() {
               <p className="text-sm font-bold text-foreground/90">Páginas</p>
               <p className="text-[11px] text-muted-foreground">{getDocsProductLabel(selectedProductId)}</p>
             </div>
-            <button
-              onClick={() => handleNewPage()}
-              className="inline-flex h-8 items-center gap-1 rounded-lg bg-primary px-2.5 text-[11px] font-bold text-primary-foreground hover:brightness-105"
-            >
-              <Plus size={13} />
-              Nova
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={handleNewCredit}
+                className="inline-flex h-8 items-center gap-1 rounded-lg border border-primary/25 px-2.5 text-[11px] font-bold text-primary hover:bg-primary/5"
+              >
+                <Plus size={13} />
+                Crédito
+              </button>
+              <button
+                onClick={() => handleNewPage()}
+                className="inline-flex h-8 items-center gap-1 rounded-lg bg-primary px-2.5 text-[11px] font-bold text-primary-foreground hover:brightness-105"
+              >
+                <Plus size={13} />
+                Nova
+              </button>
+            </div>
           </div>
 
           <div className="relative mb-3">
