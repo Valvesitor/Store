@@ -6039,7 +6039,8 @@ function ProductAdminForm({
 
                 {(product.media ?? []).length > 0 && (
                   <div className="rounded-2xl border border-border bg-background p-3">
-                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Prévia / arquivos enviados</p>
+                    <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Prévia / arquivos enviados</p>
+                    <p className="mb-2 text-[10px] leading-4 text-muted-foreground">Use o X em cada mídia para remover individualmente.</p>
                     <div className="grid grid-cols-3 gap-2">
                       {(product.media ?? []).slice(0, 6).map((item, index) => (
                         <div key={`${item.src}-${index}`} className="overflow-hidden rounded-lg border border-border bg-[#fffdf8]">
@@ -6051,9 +6052,25 @@ function ProductAdminForm({
                             ) : (
                               <img src={item.src} alt={item.alt} className="h-full w-full bg-[#fffdf8] object-contain p-1" />
                             )}
+
                             {index === 0 && (
                               <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground">CAPA</span>
                             )}
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const mediaName = getMediaDisplayName(item, index);
+                                if (window.confirm(`Remover "${mediaName}" deste produto?`)) {
+                                  update({ media: (product.media ?? []).filter((_, mediaIndex) => mediaIndex !== index) });
+                                  setPreviewFailed(false);
+                                }
+                              }}
+                              className="absolute right-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full border border-red-500/25 bg-background/95 text-red-600 shadow-sm transition-all hover:bg-red-500 hover:text-white"
+                              title={`Remover ${getMediaDisplayName(item, index)}`}
+                            >
+                              <X size={11} />
+                            </button>
                           </div>
                           <div className="border-t border-border bg-background px-1.5 py-1 text-[9px] font-semibold leading-3 text-muted-foreground truncate" title={getMediaDisplayName(item, index)}>
                             {getMediaDisplayName(item, index)}
