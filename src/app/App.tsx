@@ -1899,16 +1899,22 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
           aria-label="The Wanted Sole Studio"
         >
           <span
-            className="text-sm font-bold tracking-[0.18em] uppercase whitespace-nowrap lg:text-base"
-            style={{
-              fontFamily: "'Cinzel', serif",
-              background: "linear-gradient(135deg, #202020 0%, #b89458 45%, #ded2bc 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text"
-            }}
+            className="whitespace-nowrap text-sm font-bold uppercase tracking-[0.14em] lg:text-base"
+            style={{ fontFamily: "'Cinzel', serif" }}
           >
-            The Wanted Sole Studio
+            <span
+              style={{
+                background: "linear-gradient(135deg, #202020 0%, #8b714b 28%, #b89458 58%, #ded2bc 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text"
+              }}
+            >
+              The Wanted Sole
+            </span>
+            <span className="ml-2 text-foreground/90">
+              Studio
+            </span>
           </span>
         </button>
 
