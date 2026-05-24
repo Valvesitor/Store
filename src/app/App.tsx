@@ -3595,6 +3595,186 @@ function FAQSection({ language }: { language: SiteLanguage }) {
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
 
+
+type EditableSitePageKey = "about" | "terms" | "privacy";
+const SITE_PAGES_PRODUCT_ID = "site-pages";
+
+function getEditableSitePageId(pageKey: EditableSitePageKey) {
+  return `site-${pageKey}`;
+}
+
+function getEditableSitePageKeyFromId(value: string | null): EditableSitePageKey | null {
+  const normalized = String(value ?? "").toLowerCase().replace(/^site-/, "");
+
+  if (normalized === "about") return "about";
+  if (normalized === "terms" || normalized === "terms-of-use") return "terms";
+  if (normalized === "privacy" || normalized === "privacy-policy") return "privacy";
+
+  return null;
+}
+
+function getEditableSitePageConfig(pageKey: EditableSitePageKey, isEnglish = false) {
+  const configs: Record<EditableSitePageKey, { title: string; titleEn: string; slug: string; tag: string; path: string }> = {
+    about: {
+      title: "Sobre Nós",
+      titleEn: "About Us",
+      slug: "about",
+      tag: "About",
+      path: "/about"
+    },
+    terms: {
+      title: "Termos de Uso",
+      titleEn: "Terms of Use",
+      slug: "terms",
+      tag: "Terms of use",
+      path: "/terms"
+    },
+    privacy: {
+      title: "Política de Privacidade",
+      titleEn: "Privacy Policy",
+      slug: "privacy-policy",
+      tag: "Privacy Policy",
+      path: "/privacy-policy"
+    }
+  };
+
+  const config = configs[pageKey];
+
+  return {
+    ...config,
+    label: isEnglish ? config.titleEn : config.title
+  };
+}
+
+function createEditableSitePageTemplate(pageKey: EditableSitePageKey): DocsPageRecord {
+  const config = getEditableSitePageConfig(pageKey);
+
+  return {
+    id: getEditableSitePageId(pageKey),
+    productId: SITE_PAGES_PRODUCT_ID,
+    category: "Site Pages",
+    title: config.title,
+    titleEn: config.titleEn,
+    slug: config.slug,
+    orderIndex: pageKey === "about" ? 10 : pageKey === "terms" ? 20 : 30,
+    contentPt: `# ${config.title}\n\nEdite o conteúdo desta página pelo painel.\n\n## Conteúdo\n\nEscreva aqui o texto em português.`,
+    contentEn: `# ${config.titleEn}\n\nEdit this page content from the admin editor.\n\n## Content\n\nWrite the English content here.`,
+    visible: true
+  };
+}
+
+function findEditableSitePage(rows: DocsPageRecord[], pageKey: EditableSitePageKey) {
+  const pageId = getEditableSitePageId(pageKey);
+  const config = getEditableSitePageConfig(pageKey);
+
+  return rows.find((page) =>
+    page.visible !== false &&
+    getDocsProductId(page) === SITE_PAGES_PRODUCT_ID &&
+    (page.id === pageId || page.slug === config.slug || page.slug === pageId)
+  ) ?? null;
+}
+
+function useEditableSitePage(pageKey: EditableSitePageKey, language: SiteLanguage) {
+  const [page, setPage] = useState<DocsPageRecord | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    fetchDocsPages(false)
+      .then((rows) => {
+        if (!mounted) return;
+        setPage(findEditableSitePage(rows, pageKey));
+      })
+      .catch(() => {
+        if (mounted) setPage(null);
+      });
+
+    return () => { mounted = false; };
+  }, [pageKey, language]);
+
+  return page;
+}
+
+function AdminEditStaticPageButton({ pageKey, language }: { pageKey: EditableSitePageKey; language: SiteLanguage }) {
+  const [adminLogged, setAdminLogged] = useState(() => Boolean(getAdminToken()));
+  const isEnglish = language === "en_US";
+  const config = getEditableSitePageConfig(pageKey, isEnglish);
+
+  useEffect(() => {
+    const refresh = () => setAdminLogged(Boolean(getAdminToken()));
+
+    refresh();
+    window.addEventListener("storage", refresh);
+    window.addEventListener("tws:admin-session-changed", refresh);
+
+    return () => {
+      window.removeEventListener("storage", refresh);
+      window.removeEventListener("tws:admin-session-changed", refresh);
+    };
+  }, []);
+
+  if (!adminLogged) return null;
+
+  return (
+    <div className="fixed right-4 top-20 z-50">
+      <a
+        href={`/admin/docs?product=${SITE_PAGES_PRODUCT_ID}&page=${getEditableSitePageId(pageKey)}`}
+        className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-background/95 px-4 py-2 text-xs font-bold text-primary shadow-[0_14px_40px_rgba(32,32,32,0.14)] backdrop-blur transition-all hover:bg-primary hover:text-primary-foreground"
+      >
+        <BookOpen size={14} />
+        {isEnglish ? "Edit" : "Editar"} {config.tag}
+      </a>
+    </div>
+  );
+}
+
+function EditableSiteMarkdownPage({
+  pageKey,
+  page,
+  language
+}: {
+  pageKey: EditableSitePageKey;
+  page: DocsPageRecord;
+  language: SiteLanguage;
+}) {
+  const isEnglish = language === "en_US";
+  const config = getEditableSitePageConfig(pageKey, isEnglish);
+  const content = getDocsContent(page, isEnglish);
+
+  return (
+    <main className="relative overflow-hidden bg-background px-6 py-12 lg:py-16 text-foreground">
+      <AdminEditStaticPageButton pageKey={editablePageKey} language={language} />
+      <AdminEditStaticPageButton pageKey={pageKey} language={language} />
+
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute left-[-14%] top-[-12%] h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-5xl">
+        <header className="mb-10 text-center">
+          <div className="mb-5 inline-flex items-center rounded-full border border-primary/30 bg-primary/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-primary">
+            The Wanted Sole Studio
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight lg:text-6xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
+            {config.label}
+          </h1>
+          <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-muted-foreground lg:text-base">
+            {isEnglish
+              ? "This page content is managed by the admin editor."
+              : "Esta página está sendo gerenciada pelo editor admin."}
+          </p>
+        </header>
+
+        <section className="rounded-[30px] border border-border bg-card p-5 shadow-[0_24px_80px_rgba(32,32,32,0.08)] lg:p-8">
+          <DocsContent content={content || `# ${config.label}\n\n${isEnglish ? "No content published yet." : "Nenhum conteúdo publicado ainda."}`} />
+        </section>
+      </div>
+    </main>
+  );
+}
+
+
 function LegalPage({
   language,
   type
@@ -3603,6 +3783,12 @@ function LegalPage({
   type: "terms" | "privacy";
 }) {
   const isEnglish = language === "en_US";
+  const editablePageKey: EditableSitePageKey = type === "privacy" ? "privacy" : "terms";
+  const editableOverride = useEditableSitePage(editablePageKey, language);
+
+  if (editableOverride) {
+    return <EditableSiteMarkdownPage pageKey={editablePageKey} page={editableOverride} language={language} />;
+  }
 
   const termsPt: any[] = [
     {
@@ -4063,6 +4249,7 @@ function LegalPage({
 
   return (
     <main className="relative overflow-hidden bg-background px-6 py-12 lg:py-16 text-foreground">
+      <AdminEditStaticPageButton pageKey="about" language={language} />
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute left-[-14%] top-[-12%] h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
@@ -4168,6 +4355,11 @@ function PrivacyPolicyPage({ language }: { language: SiteLanguage }) {
 
 function AboutPage({ language }: { language: SiteLanguage }) {
   const isEnglish = language === "en_US";
+  const editableOverride = useEditableSitePage("about", language);
+
+  if (editableOverride) {
+    return <EditableSiteMarkdownPage pageKey="about" page={editableOverride} language={language} />;
+  }
 
   const sections = isEnglish ? [
     {
@@ -4685,6 +4877,8 @@ function getDocsProductId(page: DocsPageRecord) {
 }
 
 function getDocsProductLabel(productId: string) {
+  if (productId === SITE_PAGES_PRODUCT_ID) return "Site Pages";
+
   const product = PRODUCTS.find((item) => item.id === productId || slugifyClient(item.name) === productId);
   return product?.name ?? productId
     .split("-")
@@ -4697,6 +4891,7 @@ function getDocsProductOptions(pages: DocsPageRecord[]) {
   const ids = new Set<string>();
 
   PRODUCTS.forEach((product) => ids.add(product.id));
+  ids.add(SITE_PAGES_PRODUCT_ID);
   pages.forEach((page) => ids.add(getDocsProductId(page)));
 
   return Array.from(ids).map((id) => ({
@@ -5396,8 +5591,14 @@ function DocsAdminPage() {
   const [token, setToken] = useState(() => getAdminToken());
   const [tokenInput, setTokenInput] = useState("");
   const [pages, setPages] = useState<DocsPageRecord[]>([]);
-  const [selectedProductId, setSelectedProductId] = useState("tws-identity-forge");
-  const [selected, setSelected] = useState<DocsPageRecord>(() => emptyDocsPage("tws-identity-forge"));
+  const [selectedProductId, setSelectedProductId] = useState(() => new URLSearchParams(window.location.search).get("product") || "tws-identity-forge");
+  const [selected, setSelected] = useState<DocsPageRecord>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get("product") || "tws-identity-forge";
+    const pageKey = getEditableSitePageKeyFromId(params.get("page"));
+
+    return pageKey ? createEditableSitePageTemplate(pageKey) : emptyDocsPage(productId);
+  });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -5469,8 +5670,29 @@ function DocsAdminPage() {
     try {
       const rows = await fetchDocsPages(true, token);
       setPages(rows);
-      const firstProduct = selectedProductId || getDocsProductId(rows[0] ?? emptyDocsPage());
-      const firstPageForProduct = rows.find((page) => getDocsProductId(page) === firstProduct);
+
+      const params = new URLSearchParams(window.location.search);
+      const requestedProduct = params.get("product") || selectedProductId || getDocsProductId(rows[0] ?? emptyDocsPage());
+      const requestedPage = params.get("page");
+      const editablePageKey = getEditableSitePageKeyFromId(requestedPage);
+
+      const requestedPageRecord = requestedPage
+        ? rows.find((page) => page.id === requestedPage || page.slug === requestedPage)
+        : null;
+
+      if (requestedPageRecord) {
+        setSelectedProductId(getDocsProductId(requestedPageRecord));
+        setSelected(requestedPageRecord);
+        return;
+      }
+
+      if (requestedProduct === SITE_PAGES_PRODUCT_ID && editablePageKey) {
+        setSelectedProductId(SITE_PAGES_PRODUCT_ID);
+        setSelected(createEditableSitePageTemplate(editablePageKey));
+        return;
+      }
+
+      const firstPageForProduct = rows.find((page) => getDocsProductId(page) === requestedProduct);
       if (rows.length > 0 && selected.id.startsWith("new-") && firstPageForProduct) setSelected(firstPageForProduct);
     } catch (error) {
       console.error(error);
