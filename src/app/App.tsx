@@ -3603,6 +3603,12 @@ function getEditableSitePageId(pageKey: EditableSitePageKey) {
   return `site-${pageKey}`;
 }
 
+function getEditableSiteAdminPath(pageKey: EditableSitePageKey) {
+  if (pageKey === "about") return "/admin/about";
+  if (pageKey === "terms") return "/admin/terms";
+  return "/admin/privacy-policy";
+}
+
 function getEditableSitePageKeyFromId(value: string | null): EditableSitePageKey | null {
   const normalized = String(value ?? "").toLowerCase().replace(/^site-/, "");
 
@@ -3718,7 +3724,7 @@ function AdminEditStaticPageButton({ pageKey, language }: { pageKey: EditableSit
   return (
     <div className="fixed right-4 top-20 z-50">
       <a
-        href={`/admin/docs?product=${SITE_PAGES_PRODUCT_ID}&page=${getEditableSitePageId(pageKey)}`}
+        href={getEditableSiteAdminPath(pageKey)}
         className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-background/95 px-4 py-2 text-xs font-bold text-primary shadow-[0_14px_40px_rgba(32,32,32,0.14)] backdrop-blur transition-all hover:bg-primary hover:text-primary-foreground"
       >
         <BookOpen size={14} />
@@ -3743,7 +3749,6 @@ function EditableSiteMarkdownPage({
 
   return (
     <main className="relative overflow-hidden bg-background px-6 py-12 lg:py-16 text-foreground">
-      <AdminEditStaticPageButton pageKey={editablePageKey} language={language} />
       <AdminEditStaticPageButton pageKey={pageKey} language={language} />
 
       <div className="absolute inset-0 pointer-events-none">
@@ -3769,6 +3774,262 @@ function EditableSiteMarkdownPage({
         <section className="rounded-[30px] border border-border bg-card p-5 shadow-[0_24px_80px_rgba(32,32,32,0.08)] lg:p-8">
           <DocsContent content={content || `# ${config.label}\n\n${isEnglish ? "No content published yet." : "Nenhum conteúdo publicado ainda."}`} />
         </section>
+      </div>
+    </main>
+  );
+}
+
+function SitePageAdminEditor({ pageKey }: { pageKey: EditableSitePageKey }) {
+  const [token, setToken] = useState(() => getAdminToken());
+  const [tokenInput, setTokenInput] = useState("");
+  const [page, setPage] = useState<DocsPageRecord>(() => createEditableSitePageTemplate(pageKey));
+  const [editorLanguage, setEditorLanguage] = useState<"pt" | "en">("pt");
+  const [viewMode, setViewMode] = useState<"editor" | "preview">("editor");
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const config = getEditableSitePageConfig(pageKey, editorLanguage === "en");
+  const activeContent = editorLanguage === "pt" ? page.contentPt : page.contentEn ?? "";
+  const activeTitle = editorLanguage === "pt" ? page.title : page.titleEn || page.title;
+  const isLogged = !!token;
+
+  const load = useCallback(async () => {
+    if (!token) return;
+
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const rows = await fetchDocsPages(true, token);
+      const existing = findEditableSitePage(rows, pageKey);
+      setPage(existing ?? createEditableSitePageTemplate(pageKey));
+    } catch (error) {
+      console.error(error);
+      setMessage(error instanceof Error ? error.message : "Erro ao carregar a página.");
+    } finally {
+      setLoading(false);
+    }
+  }, [token, pageKey]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function handleLogin() {
+    storeAdminToken(tokenInput);
+    setToken(tokenInput.trim());
+    setTokenInput("");
+  }
+
+  function updateContent(value: string) {
+    if (editorLanguage === "pt") {
+      setPage({ ...page, contentPt: value });
+      return;
+    }
+
+    setPage({ ...page, contentEn: value });
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setMessage(null);
+
+    try {
+      const preparedPage: DocsPageRecord = {
+        ...page,
+        id: getEditableSitePageId(pageKey),
+        productId: SITE_PAGES_PRODUCT_ID,
+        category: "Site Pages",
+        slug: getEditableSitePageConfig(pageKey).slug,
+        visible: true
+      };
+
+      const saved = await saveAdminDocsPage(token, preparedPage);
+      setPage(saved);
+      setMessage(`${config.label} publicado com sucesso.`);
+    } catch (error) {
+      console.error(error);
+      setMessage(error instanceof Error ? error.message : "Não foi possível publicar.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!isLogged) {
+    return (
+      <main className="min-h-screen bg-background px-6 py-16">
+        <div className="mx-auto max-w-xl rounded-[30px] border border-border bg-card p-7 shadow-[0_22px_80px_rgba(32,32,32,0.08)]">
+          <SectionTag>Editor separado</SectionTag>
+          <h1 className="mt-4 text-3xl font-bold text-foreground/95">Editar {config.label}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Entre com o mesmo token admin da loja.</p>
+          <input
+            value={tokenInput}
+            onChange={(e) => setTokenInput(e.target.value)}
+            type="password"
+            placeholder="ADMIN_ACCESS_TOKEN"
+            className="mt-6 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary/40"
+          />
+          <button onClick={handleLogin} className="mt-4 w-full rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
+            Entrar
+          </button>
+          <a href={config.path} className="mt-4 block text-center text-sm font-semibold text-primary">
+            Voltar para a página
+          </a>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-[#f7f5f0] px-4 py-5 text-foreground lg:px-6" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-4 flex flex-col gap-3 rounded-[24px] border border-border bg-card p-4 shadow-[0_14px_42px_rgba(32,32,32,0.05)] lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <SectionTag>Editor separado</SectionTag>
+            <h1 className="mt-2 text-2xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+              Editar {config.label}
+            </h1>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Este editor controla somente esta página. Não mistura com Docs, produtos ou outras páginas legais.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <a href={config.path} className="inline-flex h-10 items-center justify-center rounded-xl border border-primary/25 px-4 text-xs font-bold text-primary hover:bg-primary/5">
+              Sair do editor
+            </a>
+            <button
+              onClick={() => setViewMode((current) => current === "preview" ? "editor" : "preview")}
+              className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-xs font-bold ${
+                viewMode === "preview" ? "border-primary/30 bg-primary/10 text-primary" : "border-border text-foreground/70 hover:bg-primary/5"
+              }`}
+            >
+              {viewMode === "preview" ? "Voltar editor" : "Ver preview"}
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-primary px-5 text-xs font-bold text-primary-foreground hover:brightness-105 disabled:opacity-60"
+            >
+              {saving ? "Publicando..." : "Publicar"}
+            </button>
+          </div>
+        </div>
+
+        {message && (
+          <div className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-xs font-semibold text-primary">
+            {message}
+          </div>
+        )}
+
+        {loading && (
+          <div className="mb-4 rounded-2xl border border-border bg-card px-4 py-3 text-xs text-muted-foreground">
+            Carregando página...
+          </div>
+        )}
+
+        {viewMode === "editor" ? (
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+            <aside className="rounded-[24px] border border-border bg-card p-4 shadow-[0_14px_42px_rgba(32,32,32,0.05)] xl:sticky xl:top-5">
+              <p className="text-sm font-bold text-foreground/90">Configuração da página</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Cada página tem seu próprio editor separado.
+              </p>
+
+              <div className="mt-4 space-y-3">
+                <label className="block">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Página</span>
+                  <div className="mt-1 rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold text-primary">
+                    {config.label}
+                  </div>
+                </label>
+
+                <label className="block">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Rota pública</span>
+                  <div className="mt-1 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground">
+                    {config.path}
+                  </div>
+                </label>
+
+                <label className="block">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Slug</span>
+                  <div className="mt-1 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground">
+                    {getEditableSitePageConfig(pageKey).slug}
+                  </div>
+                </label>
+              </div>
+            </aside>
+
+            <section className="rounded-[24px] border border-border bg-card shadow-[0_14px_42px_rgba(32,32,32,0.05)]">
+              <div className="flex flex-col gap-3 border-b border-border px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="text-sm font-bold text-foreground/90">Conteúdo</p>
+                  <p className="text-[11px] text-muted-foreground">Edite em Markdown.</p>
+                </div>
+                <div className="flex rounded-xl border border-border bg-background p-1">
+                  <button
+                    onClick={() => setEditorLanguage("pt")}
+                    className={`h-8 rounded-lg px-3 text-xs font-bold ${editorLanguage === "pt" ? "bg-primary text-primary-foreground" : "text-foreground/60 hover:text-foreground"}`}
+                  >
+                    PT-BR
+                  </button>
+                  <button
+                    onClick={() => setEditorLanguage("en")}
+                    className={`h-8 rounded-lg px-3 text-xs font-bold ${editorLanguage === "en" ? "bg-primary text-primary-foreground" : "text-foreground/60 hover:text-foreground"}`}
+                  >
+                    EN-US
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-0 border-b border-border lg:grid-cols-2">
+                <label className="border-b border-border p-4 lg:border-b-0 lg:border-r">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">{editorLanguage === "pt" ? "Título PT" : "Título EN"}</span>
+                  <input
+                    value={activeTitle}
+                    onChange={(e) => {
+                      if (editorLanguage === "pt") {
+                        setPage({ ...page, title: e.target.value });
+                      } else {
+                        setPage({ ...page, titleEn: e.target.value });
+                      }
+                    }}
+                    className="mt-2 w-full bg-transparent text-xl font-bold outline-none text-foreground/95"
+                  />
+                </label>
+                <div className="p-4">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Destino</span>
+                  <p className="mt-2 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-muted-foreground">
+                    {config.path}
+                  </p>
+                </div>
+              </div>
+
+              <textarea
+                value={activeContent}
+                onChange={(e) => updateContent(e.target.value)}
+                spellCheck={false}
+                className="h-[60vh] min-h-[420px] w-full resize-y border-0 bg-[#fffdf8] p-5 font-mono text-[13px] leading-6 text-foreground outline-none"
+                placeholder="# Título\n\nEscreva o conteúdo aqui..."
+              />
+            </section>
+          </div>
+        ) : (
+          <section className="rounded-[30px] border border-border bg-background p-5 shadow-[0_18px_55px_rgba(32,32,32,0.06)] lg:p-9">
+            <div className="mb-6 border-b border-border pb-5">
+              <span className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                Preview completo · {config.label} · {editorLanguage === "pt" ? "PT-BR" : "EN-US"}
+              </span>
+              <h1 className="mt-4 text-3xl font-bold text-foreground/95 lg:text-5xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                {activeTitle || config.label}
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground">{config.path}</p>
+            </div>
+
+            <DocsContent content={activeContent || `# ${config.label}\n\nComece a escrever para visualizar.`} />
+          </section>
+        )}
       </div>
     </main>
   );
@@ -4891,8 +5152,10 @@ function getDocsProductOptions(pages: DocsPageRecord[]) {
   const ids = new Set<string>();
 
   PRODUCTS.forEach((product) => ids.add(product.id));
-  ids.add(SITE_PAGES_PRODUCT_ID);
-  pages.forEach((page) => ids.add(getDocsProductId(page)));
+  pages.forEach((page) => {
+    const productId = getDocsProductId(page);
+    if (productId !== SITE_PAGES_PRODUCT_ID) ids.add(productId);
+  });
 
   return Array.from(ids).map((id) => ({
     id,
@@ -8548,6 +8811,18 @@ export default function App() {
 
   if (pathname === "/docs" || pathname === "/documentation") {
     return renderPageWithNavbar(<DocsPage language={language} />, true);
+  }
+
+  if (pathname === "/admin/about" || pathname === "/admin/about-us") {
+    return renderPageWithNavbar(<SitePageAdminEditor pageKey="about" />);
+  }
+
+  if (pathname === "/admin/terms" || pathname === "/admin/terms-of-use") {
+    return renderPageWithNavbar(<SitePageAdminEditor pageKey="terms" />);
+  }
+
+  if (pathname === "/admin/privacy" || pathname === "/admin/privacy-policy") {
+    return renderPageWithNavbar(<SitePageAdminEditor pageKey="privacy" />);
   }
 
   if (pathname === "/admin/docs") {
