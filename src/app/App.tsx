@@ -4510,7 +4510,7 @@ function LegalPage({
 
   return (
     <main className="relative overflow-hidden bg-background px-6 py-12 lg:py-16 text-foreground">
-      <AdminEditStaticPageButton pageKey="about" language={language} />
+      <AdminEditStaticPageButton pageKey={editablePageKey} language={language} />
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute left-[-14%] top-[-12%] h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
@@ -4784,6 +4784,7 @@ function AboutPage({ language }: { language: SiteLanguage }) {
 
   return (
     <main className="relative overflow-hidden bg-background px-6 py-12 lg:py-16 text-foreground">
+      <AdminEditStaticPageButton pageKey="about" language={language} />
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute left-[-14%] top-[-12%] h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute right-[-10%] bottom-[-10%] h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
