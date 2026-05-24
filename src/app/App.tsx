@@ -5364,6 +5364,35 @@ function DocsAdminPage() {
   const activeContent = editorLanguage === "pt" ? selected.contentPt : selected.contentEn ?? "";
   const activeTitle = editorLanguage === "pt" ? selected.title : selected.titleEn || selected.title;
 
+  const previewPages = (() => {
+    const productId = selected.productId || selectedProductId;
+    const pageMap = new Map<string, DocsPageRecord>();
+
+    selectedProductPages.forEach((page) => {
+      pageMap.set(page.id, page);
+    });
+
+    if (selected.id) {
+      pageMap.set(selected.id, {
+        ...selected,
+        productId
+      });
+    }
+
+    return Array.from(pageMap.values())
+      .filter((page) => getDocsProductId(page) === productId)
+      .sort((a, b) => a.orderIndex - b.orderIndex);
+  })();
+
+  const previewPagesByCategory = previewPages.reduce<Record<string, DocsPageRecord[]>>((acc, page) => {
+    const category = page.category || "Sem categoria";
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(page);
+    return acc;
+  }, {});
+
+  const previewProductName = getDocsProductLabel(selected.productId || selectedProductId);
+
   const load = useCallback(async () => {
     if (!token) return;
     setLoading(true);
@@ -5834,29 +5863,98 @@ function DocsAdminPage() {
               </div>
             ) : (
               <div className="bg-card/40 p-4 lg:p-6">
-                <div className="mx-auto max-w-5xl rounded-[26px] border border-border bg-background p-6 lg:p-9 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
-                  <div className="mb-6 flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="mx-auto max-w-6xl rounded-[26px] border border-border bg-background p-6 lg:p-9 shadow-[0_18px_55px_rgba(32,32,32,0.06)]">
+                  <div className="mb-7 flex flex-col gap-3 border-b border-border pb-6 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <span className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-                        Preview · {editorLanguage === "pt" ? "PT-BR" : "EN-US"}
+                        Preview completo · {editorLanguage === "pt" ? "PT-BR" : "EN-US"}
                       </span>
                       <h1 className="mt-4 text-3xl font-bold text-foreground/95 lg:text-5xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                        {activeTitle || "Nova página"}
+                        {previewProductName}
                       </h1>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {selected.category || "Categoria"} · /{selected.slug || "slug"}
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        Versão completa da documentação criada para este produto. Inclui páginas publicadas e a página atual em edição.
                       </p>
                     </div>
 
-                    <button
-                      onClick={() => setDocsViewMode("editor")}
-                      className="inline-flex h-10 items-center justify-center rounded-xl border border-primary/25 px-4 text-sm font-bold text-primary hover:bg-primary/5"
-                    >
-                      Voltar para editar
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <a
+                        href={`/docs?product=${selected.productId || selectedProductId}`}
+                        className="inline-flex h-10 items-center justify-center rounded-xl border border-primary/25 px-4 text-sm font-bold text-primary hover:bg-primary/5"
+                      >
+                        Sair do editor
+                      </a>
+                      <button
+                        onClick={() => setDocsViewMode("editor")}
+                        className="inline-flex h-10 items-center justify-center rounded-xl border border-border px-4 text-sm font-bold text-foreground/70 hover:bg-primary/5"
+                      >
+                        Voltar para editar
+                      </button>
+                    </div>
                   </div>
 
-                  <DocsContent content={activeContent || "# Preview\n\nComece a escrever para visualizar."} />
+                  <div className="mb-8 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">Índice do preview</p>
+                    <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
+                      {previewPages.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">Nenhuma página criada ainda.</p>
+                      ) : previewPages.map((page) => (
+                        <button
+                          key={`preview-index-${page.id}`}
+                          type="button"
+                          onClick={() => document.getElementById(`preview-page-${page.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                          className="rounded-xl border border-border bg-background px-3 py-2 text-left text-xs font-semibold text-foreground/75 transition-all hover:border-primary/30 hover:text-primary"
+                        >
+                          {getDocsTitle(page, editorLanguage === "en")}
+                          <span className="ml-2 text-[10px] font-normal text-muted-foreground">/{page.slug}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-10">
+                    {Object.entries(previewPagesByCategory).map(([category, rows]) => (
+                      <section key={`preview-category-${category}`} className="scroll-mt-24">
+                        <div className="mb-4 flex items-center gap-3">
+                          <span className="h-px flex-1 bg-border" />
+                          <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                            {category}
+                          </span>
+                          <span className="h-px flex-1 bg-border" />
+                        </div>
+
+                        <div className="space-y-8">
+                          {rows.map((page) => {
+                            const pageContent = editorLanguage === "pt" ? page.contentPt : page.contentEn || page.contentPt;
+                            const pageTitle = editorLanguage === "pt" ? page.title : page.titleEn || page.title;
+
+                            return (
+                              <article
+                                key={`preview-page-${page.id}`}
+                                id={`preview-page-${page.id}`}
+                                className={`scroll-mt-24 rounded-[22px] border p-5 lg:p-7 ${
+                                  page.id === selected.id
+                                    ? "border-primary/30 bg-primary/5"
+                                    : "border-border bg-card/35"
+                                }`}
+                              >
+                                <div className="mb-5 border-b border-border pb-4">
+                                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/75">
+                                    {page.visible ? "Publicado" : "Oculto"} · /{page.slug}
+                                  </p>
+                                  <h2 className="mt-2 text-2xl font-bold text-foreground/95" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                                    {pageTitle || "Sem título"}
+                                  </h2>
+                                </div>
+
+                                <DocsContent content={pageContent || "# Preview\n\nComece a escrever para visualizar."} />
+                              </article>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
