@@ -7222,9 +7222,9 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
 
   return (
     <footer className="border-t border-primary/20 bg-[#1f1c17] px-6 py-6 lg:py-7 text-[#f7f1e6] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-      <div className="mx-auto max-w-6xl">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-sm shrink-0 lg:max-w-[380px]">
+      <div className="w-full">
+        <div className="relative flex w-full flex-col items-center gap-6 lg:min-h-[108px] lg:block">
+          <div className="w-full max-w-sm shrink-0 lg:absolute lg:left-0 lg:top-0 lg:max-w-[390px]">
             <div className="mb-3">
               <span
                 className="block text-base font-bold uppercase tracking-[0.2em]"
@@ -7253,7 +7253,7 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
             </p>
           </div>
 
-          <div className="grid w-full grid-cols-1 gap-0 sm:w-auto sm:grid-cols-[130px_190px_205px] lg:ml-10 xl:ml-12">
+          <div className="mx-auto grid w-full max-w-[560px] grid-cols-1 gap-0 sm:grid-cols-[130px_190px_205px]">
             <div className="border-b border-[#b89458]/25 pb-4 sm:border-b-0 sm:pb-0 sm:pr-6">
               <p className="mb-2 text-xs uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 Links
@@ -7283,11 +7283,11 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 sm:flex-row">
-          <p className="text-xs text-[#f7f1e6]/55" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+        <div className="mt-5 flex w-full flex-col items-center justify-between gap-3 border-t border-white/10 pt-4 sm:flex-row">
+          <p className="text-xs text-[#f7f1e6]/55 sm:text-left" style={{ fontFamily: "'DM Sans', sans-serif" }}>
             © 2026 The Wanted Sole Studio — Todos os direitos reservados.
           </p>
-          <p className="text-xs text-[#b89458]/75" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+          <p className="text-xs text-[#b89458]/75 sm:text-right" style={{ fontFamily: "'DM Sans', sans-serif" }}>
             RedM · Scripts &amp; Custom Peds
           </p>
         </div>
