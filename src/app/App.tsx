@@ -3059,7 +3059,7 @@ function ProductPage({ product, currency, language }: { product: Product; curren
 
   return (
     <main className="mx-auto max-w-[1320px] px-5 py-4">
-      <div className="mb-3">
+      <div className="mb-2">
         <a href="/#products" className="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary/80">
           <ChevronRight size={13} className="rotate-180" />
           Voltar para produtos
@@ -3369,7 +3369,7 @@ function ProductDetail({ product, currency, language, onClose }: { product: Prod
                       Licença de Uso
                     </p>
                     <p
-                      className="text-xs leading-relaxed text-[#f7f1e6]/70"
+                      className="text-xs leading-6 text-[#f7f1e6]/70"
                       style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
                       A compra concede licença de uso por servidor. É proibida revenda, redistribuição,
@@ -6565,9 +6565,9 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
     );
 
   return (
-    <footer className="border-t border-primary/20 bg-[#1f1c17] px-6 py-14 text-[#f7f1e6] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+    <footer className="border-t border-primary/20 bg-[#1f1c17] px-6 py-8 lg:py-10 text-[#f7f1e6] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
       <div className="mx-auto max-w-6xl">
-        <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-sm shrink-0 lg:max-w-[380px]">
             <div className="mb-3">
               <span
@@ -6598,16 +6598,16 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
           </div>
 
           <div className="grid w-full grid-cols-1 gap-0 sm:w-auto sm:grid-cols-[145px_220px_230px] lg:ml-12 xl:ml-16">
-            <div className="border-b border-[#b89458]/25 pb-7 sm:border-b-0 sm:pb-0 sm:pr-6">
-              <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            <div className="border-b border-[#b89458]/25 pb-5 sm:border-b-0 sm:pb-0 sm:pr-6">
+              <p className="mb-3 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 Links
               </p>
-              <nav className="flex flex-col items-start gap-2">
+              <nav className="flex flex-col items-start gap-1.5">
                 {siteLinks.map((link) => renderLink(link, "text-sm font-semibold text-[#f7f1e6]/72 transition-colors hover:text-[#d7bb82] text-left"))}
               </nav>
             </div>
 
-            <div className="border-b border-[#b89458]/25 py-7 sm:border-b-0 sm:border-l sm:border-[#b89458]/55 sm:py-0 sm:pl-7 sm:pr-6">
+            <div className="border-b border-[#b89458]/25 py-5 sm:border-b-0 sm:border-l sm:border-[#b89458]/55 sm:py-0 sm:pl-7 sm:pr-6">
               <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 Company
               </p>
@@ -6616,7 +6616,7 @@ function Footer({ onNavigate }: { onNavigate: (id: string) => void }) {
               </nav>
             </div>
 
-            <div className="pt-7 sm:border-l sm:border-[#b89458]/55 sm:pt-0 sm:pl-7">
+            <div className="pt-5 sm:border-l sm:border-[#b89458]/55 sm:pt-0 sm:pl-7">
               <p className="mb-4 text-sm uppercase tracking-wide text-[#b89458]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 Tebex
               </p>
