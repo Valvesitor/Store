@@ -5105,7 +5105,7 @@ const PRODUCT_DOCS_PRESENTATIONS: Record<string, { pt: string; en?: string }> = 
   "tws-identity-forge": {
     pt: `# TWS Identity Forge — Editor Avançado de MetaPeds para RedM
 
-O **TWS Identity Forge** é um sistema avançado de criação, edição e personalização de MetaPeds para servidores **RedM**, desenvolvido para oferecer uma experiência completa dentro do jogo. Com uma interface moderna, organizada e intuitiva, o script permite editar personagens, testar roupas, aplicar componentes, ajustar cores, trabalhar com expressões, organizar projetos, carregar Presets CS e visualizar tudo em tempo real antes de salvar ou aplicar no ped final.
+O **TWS Identity Forge** é um sistema avançado de criação, edição e personalização de MetaPeds para servidores **RedM**, desenvolvido para oferecer uma experiência completa dentro do jogo. Com uma interface moderna, organizada e intuitiva, o script permite montar personagens pelo **Menu de Criação**, editar peds, testar roupas, aplicar componentes, ajustar cores, trabalhar com expressões, organizar projetos, carregar Presets CS e visualizar tudo em tempo real antes de salvar ou aplicar no ped final.
 
 Criado especialmente para servidores que trabalham com **custom peds**, lojas de roupas, criação de personagens, packs personalizados ou sistemas de identidade visual, o TWS Identity Forge entrega uma ferramenta prática tanto para administradores quanto para criadores de conteúdo.
 
@@ -5134,6 +5134,27 @@ Você pode trabalhar com categorias como:
 * Outros componentes
 
 Tudo é exibido de forma organizada, com busca, categorias e painel de itens aplicados.
+
+---
+
+### Menu de criação
+
+O **Menu de Criação** é a área principal para montar e editar o ped de forma prática dentro do jogo. Ele reúne as principais ferramentas de personalização em um painel organizado, permitindo selecionar componentes, testar variações e visualizar as alterações diretamente no preview.
+
+Por meio do Menu de Criação, o usuário consegue trabalhar com roupas, cabelos, barbas, acessórios, chapéus, corpo, cabeça e outros componentes MetaPed de forma rápida e intuitiva.
+
+Esse menu foi pensado para facilitar o fluxo de criação, permitindo que o criador monte o visual do ped passo a passo, sem depender de edições manuais constantes em arquivos externos.
+
+Ele é ideal para:
+
+* Montar outfits completos
+* Testar componentes MetaPed
+* Aplicar roupas e acessórios
+* Ajustar cabelos, barbas e chapéus
+* Visualizar alterações em tempo real
+* Organizar o processo de criação dentro do editor
+
+Com o Menu de Criação, o TWS Identity Forge entrega uma experiência mais completa e prática para quem deseja criar, testar e finalizar personagens personalizados no RedM.
 
 ---
 
@@ -5302,6 +5323,7 @@ O grande diferencial do TWS Identity Forge é unir em uma só ferramenta:
 
 * Preview em tempo real
 * Interface moderna
+* Menu de Criação completo para montagem de peds
 * Organização por categorias
 * Sistema de tint e cor
 * Suporte a XML
@@ -5345,7 +5367,272 @@ Peds que não possuem \`ExpressionSetName\`, por exemplo, podem não responder v
 
 O **TWS Identity Forge** é uma ferramenta profissional para criação e edição de MetaPeds no RedM. Ele permite testar, montar, personalizar, organizar projetos, trabalhar com Presets CS e exportar outfits completos diretamente dentro do jogo, com uma interface visual moderna e recursos avançados para quem trabalha com custom peds, roupas, acessórios, chapéus e identidade visual de personagens.
 
-É a solução ideal para servidores e criadores que desejam mais controle, agilidade e qualidade na personalização de personagens.`
+É a solução ideal para servidores e criadores que desejam mais controle, agilidade e qualidade na personalização de personagens.`,
+    en: `# TWS Identity Forge — Advanced MetaPed Editor for RedM
+
+**TWS Identity Forge** is an advanced system for creating, editing, and customizing MetaPeds for **RedM** servers, designed to deliver a complete in-game experience. With a modern, organized, and intuitive interface, the script allows you to build characters through the **Creation Menu**, edit peds, test clothing, apply components, adjust colors, work with expressions, organize projects, load CS Presets, and preview everything in real time before saving or applying it to the final ped.
+
+Created especially for servers that work with **custom peds**, clothing stores, character creation, custom packs, or visual identity systems, TWS Identity Forge delivers a practical tool for both administrators and content creators.
+
+---
+
+## Main Features
+
+### In-game visual editor
+
+The script includes a complete NUI interface, allowing the user to preview and edit the ped directly inside the server. Navigation is separated by categories, making item organization easier and making the creation process much faster.
+
+You can work with categories such as:
+
+* Head
+* Hair
+* Beard
+* Upper clothing
+* Lower clothing
+* Footwear
+* Neck
+* Hands
+* Waist
+* Accessories
+* Equipment
+* Body
+* Other components
+
+Everything is displayed in an organized way, with search, categories, and an applied-items panel.
+
+---
+
+### Creation Menu
+
+The **Creation Menu** is the main area for building and editing the ped in a practical way inside the game. It brings together the main customization tools in an organized panel, allowing users to select components, test variations, and preview changes directly in the preview system.
+
+Through the Creation Menu, the user can work with clothing, hair, beards, accessories, hats, body, head, and other MetaPed components quickly and intuitively.
+
+This menu was designed to simplify the creation workflow, allowing creators to build the ped's look step by step without constantly depending on manual edits in external files.
+
+It is ideal for:
+
+* Building complete outfits
+* Testing MetaPed components
+* Applying clothing and accessories
+* Adjusting hair, beards, and hats
+* Previewing changes in real time
+* Organizing the creation process inside the editor
+
+With the Creation Menu, TWS Identity Forge delivers a more complete and practical experience for anyone who wants to create, test, and finalize custom characters in RedM.
+
+---
+
+### Real-time preview
+
+The system includes a **preview mode separated from the player character**, allowing you to test clothing, hair, beards, accessories, hats, and expressions without directly changing the main character.
+
+The preview helps visualize the result before applying it, avoiding mistakes and making it easier to create complete outfits.
+
+---
+
+### MetaPed Drawable support
+
+TWS Identity Forge works with MetaPed components, allowing you to apply:
+
+* Drawables
+* Albedos
+* Normals
+* Materials
+* Palettes
+* Tints
+* Custom items
+* Original ped and custom ped components
+
+This makes the system ideal for anyone working with \`.ymt\` files, custom peds, and personalized RedM clothing.
+
+---
+
+### Color and tint system
+
+The editor allows colors to be changed directly through the interface, working with tint values and MetaPed palettes.
+
+You can adjust tones for:
+
+* Hair
+* Beard
+* Skin
+* Clothing
+* Accessories
+* Hats
+* Materials compatible with tint
+
+This system helps create visual variations without needing to manually edit files every time.
+
+---
+
+### Expression editor
+
+The script also includes support for **MetaPed Expressions**, allowing expressions to be tested and applied on compatible peds.
+
+With this feature, it is possible to work on facial details and visual face adjustments, as long as the ped has proper support inside \`metapeds.ymt\`, such as \`ExpressionSetName\`.
+
+---
+
+### Hat Studio
+
+**Hat Studio** is a dedicated tool for creating, adjusting, and testing hats on MetaPeds. With it, the user can work more precisely with hats, head accessories, and compatible variations for the ped.
+
+This feature allows combinations to be tested directly in the preview, making it easier to visually align the hat with the character and avoiding the need to manually edit and test outside the game.
+
+Hat Studio is ideal for creators who work with:
+
+* Custom hats
+* Head accessories
+* Model variations
+* Visual adjustments for MetaPeds
+* Fast testing on different peds
+* Hat preset organization
+
+With this feature, TWS Identity Forge becomes even more complete for anyone who creates, edits, or sells custom peds and outfits for RedM.
+
+---
+
+### Project system
+
+TWS Identity Forge includes a **project system**, allowing creations, tests, and outfits to be organized more practically inside the editor.
+
+With projects, the user can separate different works, keep combinations saved, and continue editing later without needing to rebuild everything from scratch.
+
+This feature is ideal for creators who work with multiple peds, packs, clients, or clothing variations, helping maintain a more organized and professional creation workflow.
+
+---
+
+### CS Presets
+
+The system includes support for **CS Presets**, making it easier to work with custom peds, story peds, and specific models that use their own structures.
+
+With CS Presets, the user can load, test, and organize specific configurations for custom peds, maintaining greater control over complex combinations of components, hair, beards, accessories, clothing, and visual variations.
+
+This feature is especially useful for anyone working with:
+
+* Custom peds
+* Story peds
+* Peds with multiple layers
+* Custom XMLs
+* Ready-to-reapply presets
+* Fast testing on different models
+
+---
+
+### Isolation system
+
+The isolation mode allows a specific item to be selected for viewing, making detailed editing of individual components easier.
+
+This feature is useful for testing hair, beards, accessories, clothing, hats, and specific pieces without confusing them with other items applied to the ped.
+
+---
+
+### Applied items
+
+The **Applied Items** panel shows everything currently being used in the outfit. This makes it easier to control what has been added to the character and allows components to be removed, reviewed, or reorganized.
+
+This feature is essential for creating clean and well-structured outfits.
+
+---
+
+### Favorites system
+
+The script includes a favorites panel for saving frequently used items. This speeds up the workflow for anyone creating peds, clothing, hats, or specific combinations, avoiding the need to search for the same components repeatedly.
+
+---
+
+### XML export
+
+TWS Identity Forge can generate XML blocks from the applied items, making it easier to use the data in MetaPed files or external systems.
+
+Example generated structure:
+
+\`\`\`xml
+<Item>
+  <drawable>example_drawable</drawable>
+  <albedo>example_albedo</albedo>
+  <normal>example_normal</normal>
+  <material>example_material</material>
+  <palette>metaped_tint_hair</palette>
+  <tint0 value="0" />
+  <tint1 value="0" />
+  <tint2 value="0" />
+  <probability value="255" />
+</Item>
+\`\`\`
+
+This makes the script a powerful tool for creators who need to build, test, and export components with precision.
+
+---
+
+## Ideal for
+
+TWS Identity Forge is recommended for:
+
+* RedM server owners
+* Custom ped creators
+* Clothing and accessory stores
+* Character system developers
+* Teams working with MetaPeds
+* Roleplay servers that want greater visual control
+* Creators who need to test XMLs and components quickly
+* Creators who work with hats, accessories, and visual presets
+* Creators who need to organize multiple projects and CS Presets
+
+---
+
+## Differentials
+
+The main differential of TWS Identity Forge is that it combines into one tool:
+
+* Real-time preview
+* Modern interface
+* Complete Creation Menu for building peds
+* Category-based organization
+* Tint and color system
+* XML support
+* Expression editor
+* Hat Studio for creating and testing hats
+* Project system for organizing creations
+* CS Presets for custom peds and specific peds
+* Item isolation
+* Favorites
+* Compatibility with custom peds
+* Workflow designed for RedM and MetaPeds
+
+Instead of manually editing files and testing on the server multiple times, the user can build, preview, organize, and adjust the ped directly inside the game.
+
+---
+
+## Compatibility
+
+The script was developed for **RedM** and can be used on different bases/frameworks, as long as the server has proper support for the required resources.
+
+Compatible with use on servers based on structures such as:
+
+* VORP
+* RedEM
+* QBCore RedM
+* Custom bases
+
+Final compatibility may depend on the server structure, the MetaPed files being used, and how the custom peds were configured.
+
+---
+
+## Important notes
+
+Some advanced features, such as expressions, certain multi-layer hair setups, CS Presets, and specific accessories, depend on the correct configuration of the ped itself inside \`metapeds.ymt\`.
+
+Peds that do not have \`ExpressionSetName\`, for example, may not visually respond to expression changes, even if the native is executed correctly.
+
+---
+
+## Commercial summary
+
+**TWS Identity Forge** is a professional tool for creating and editing MetaPeds in RedM. It allows users to test, build, customize, organize projects, work with CS Presets, and export complete outfits directly inside the game, with a modern visual interface and advanced features for anyone working with custom peds, clothing, accessories, hats, and character visual identity.
+
+It is the ideal solution for servers and creators who want more control, speed, and quality when customizing characters.`
   }
 };
 
