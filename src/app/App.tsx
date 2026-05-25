@@ -9244,6 +9244,29 @@ const orders = summary?.orders ?? [];
   );
 }
 
+function GlobalSiteScaleStyle() {
+  return (
+    <style>{`
+      /*
+        Escala visual do site em desktop:
+        16px padrão do navegador → 12px = aparência aproximada de 75%.
+        Mantém mobile/tablet com tamanho normal para não prejudicar leitura.
+      */
+      @media (min-width: 1024px) {
+        html {
+          font-size: 12px;
+        }
+      }
+
+      @media (max-width: 1023px) {
+        html {
+          font-size: 16px;
+        }
+      }
+    `}</style>
+  );
+}
+
 export default function App() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeSection, setActiveSection] = useState("hero");
@@ -9437,6 +9460,7 @@ export default function App() {
       className="flex min-h-screen flex-col bg-background text-foreground antialiased"
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
+      <GlobalSiteScaleStyle />
       <Navbar
         onNavigate={navigateFromPage}
         activeSection={activeSection}
@@ -9543,6 +9567,7 @@ export default function App() {
       className="min-h-screen bg-background text-foreground antialiased"
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
+      <GlobalSiteScaleStyle />
       <style>{`
         html { scroll-behavior: smooth; }
         ::-webkit-scrollbar { width: 4px; }
