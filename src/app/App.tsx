@@ -5101,6 +5101,299 @@ function getDocsContent(page: DocsPageRecord, isEnglish: boolean) {
   return isEnglish ? (page.contentEn || page.contentPt) : page.contentPt;
 }
 
+const PRODUCT_DOCS_PRESENTATIONS: Record<string, { pt: string; en?: string }> = {
+  "tws-identity-forge": {
+    pt: `# TWS Identity Forge — Editor Avançado de MetaPeds para RedM
+
+O **TWS Identity Forge** é um sistema avançado de criação, edição e personalização de MetaPeds para servidores **RedM**, desenvolvido para oferecer uma experiência completa dentro do jogo. Com uma interface moderna, organizada e intuitiva, o script permite editar personagens, testar roupas, aplicar componentes, ajustar cores, trabalhar com expressões, organizar projetos, carregar Presets CS e visualizar tudo em tempo real antes de salvar ou aplicar no ped final.
+
+Criado especialmente para servidores que trabalham com **custom peds**, lojas de roupas, criação de personagens, packs personalizados ou sistemas de identidade visual, o TWS Identity Forge entrega uma ferramenta prática tanto para administradores quanto para criadores de conteúdo.
+
+---
+
+## Principais Funcionalidades
+
+### Editor visual in-game
+
+O script possui uma interface NUI completa, permitindo que o usuário visualize e edite o ped diretamente dentro do servidor. A navegação é separada por categorias, facilitando a organização dos itens e tornando o processo de criação muito mais rápido.
+
+Você pode trabalhar com categorias como:
+
+* Cabeça
+* Cabelo
+* Barba
+* Vestuário superior
+* Vestuário inferior
+* Calçados
+* Pescoço
+* Mãos
+* Cintura
+* Acessórios
+* Equipamentos
+* Corpo
+* Outros componentes
+
+Tudo é exibido de forma organizada, com busca, categorias e painel de itens aplicados.
+
+---
+
+### Preview em tempo real
+
+O sistema conta com um modo de **preview separado do personagem do jogador**, permitindo testar roupas, cabelos, barbas, acessórios, chapéus e expressões sem alterar diretamente o personagem principal.
+
+O preview ajuda a visualizar o resultado antes de aplicar, evitando erros e facilitando a criação de outfits completos.
+
+---
+
+### Suporte a MetaPed Drawables
+
+O TWS Identity Forge trabalha com componentes MetaPed, permitindo aplicar:
+
+* Drawables
+* Albedos
+* Normals
+* Materials
+* Palettes
+* Tints
+* Itens customizados
+* Componentes de peds originais e custom peds
+
+Isso torna o sistema ideal para quem trabalha com arquivos \`.ymt\`, custom peds e roupas personalizadas para RedM.
+
+---
+
+### Sistema de cores e tint
+
+O editor permite alterar cores diretamente pela interface, trabalhando com valores de tint e paletas MetaPed.
+
+É possível ajustar tons de:
+
+* Cabelo
+* Barba
+* Pele
+* Roupas
+* Acessórios
+* Chapéus
+* Materiais compatíveis com tint
+
+Esse sistema ajuda na criação de variações visuais sem precisar editar arquivos manualmente toda vez.
+
+---
+
+### Editor de expressões
+
+O script também possui suporte para **MetaPed Expressions**, permitindo testar e aplicar expressões em peds compatíveis.
+
+Com isso, é possível trabalhar detalhes faciais e ajustes visuais do rosto, desde que o ped tenha suporte correto no \`metapeds.ymt\`, como \`ExpressionSetName\`.
+
+---
+
+### Hat Studio
+
+O **Hat Studio** é uma ferramenta dedicada para criação, ajuste e teste de chapéus em MetaPeds. Com ele, o usuário consegue trabalhar de forma mais precisa com chapéus, acessórios de cabeça e variações compatíveis com o ped.
+
+Esse recurso permite testar combinações diretamente no preview, facilitando o alinhamento visual do chapéu com o personagem e evitando a necessidade de editar e testar manualmente fora do jogo.
+
+O Hat Studio é ideal para criadores que trabalham com:
+
+* Chapéus customizados
+* Acessórios de cabeça
+* Variações de modelos
+* Ajustes visuais para MetaPeds
+* Testes rápidos em diferentes peds
+* Organização de presets de chapéu
+
+Com essa função, o TWS Identity Forge se torna ainda mais completo para quem cria, edita ou vende custom peds e outfits para RedM.
+
+---
+
+### Sistema de projetos
+
+O TWS Identity Forge conta com um sistema de **projetos**, permitindo organizar criações, testes e outfits de forma mais prática dentro do editor.
+
+Com os projetos, o usuário consegue separar diferentes trabalhos, manter combinações salvas e continuar a edição posteriormente sem precisar refazer tudo do zero.
+
+Esse recurso é ideal para criadores que trabalham com vários peds, packs, clientes ou variações de roupas, ajudando a manter o fluxo de criação mais organizado e profissional.
+
+---
+
+### Presets CS
+
+O sistema possui suporte a **Presets CS**, facilitando o trabalho com custom peds, peds de história e modelos específicos que utilizam estruturas próprias.
+
+Com os Presets CS, o usuário pode carregar, testar e organizar configurações específicas de peds customizados, mantendo maior controle sobre combinações complexas de componentes, cabelos, barbas, acessórios, roupas e variações visuais.
+
+Esse recurso é especialmente útil para quem trabalha com:
+
+* Custom peds
+* Peds de história
+* Peds com múltiplas camadas
+* XMLs personalizados
+* Presets prontos para reaplicação
+* Testes rápidos em diferentes modelos
+
+---
+
+### Sistema de isolamento
+
+O modo de isolamento permite selecionar um item específico para visualização, facilitando a edição detalhada de componentes individuais.
+
+Esse recurso é útil para testar cabelos, barbas, acessórios, roupas, chapéus e peças específicas sem confundir com outros itens aplicados ao ped.
+
+---
+
+### Itens aplicados
+
+O painel de **Itens Aplicados** mostra tudo que está atualmente no outfit. Isso facilita o controle do que foi colocado no personagem e permite remover, revisar ou reorganizar os componentes usados.
+
+Esse recurso é essencial para criação de outfits limpos e bem estruturados.
+
+---
+
+### Sistema de favoritos
+
+O script conta com painel de favoritos para salvar itens usados com frequência. Isso agiliza o trabalho de quem cria peds, roupas, chapéus ou combinações específicas, evitando procurar os mesmos componentes várias vezes.
+
+---
+
+### Exportação em XML
+
+O TWS Identity Forge permite gerar blocos de XML dos itens aplicados, facilitando o uso dos dados em arquivos MetaPed ou sistemas externos.
+
+Exemplo de estrutura gerada:
+
+\`\`\`xml
+<Item>
+  <drawable>example_drawable</drawable>
+  <albedo>example_albedo</albedo>
+  <normal>example_normal</normal>
+  <material>example_material</material>
+  <palette>metaped_tint_hair</palette>
+  <tint0 value="0" />
+  <tint1 value="0" />
+  <tint2 value="0" />
+  <probability value="255" />
+</Item>
+\`\`\`
+
+Isso torna o script uma ferramenta poderosa para criadores que precisam montar, testar e exportar componentes com precisão.
+
+---
+
+## Ideal para
+
+O TWS Identity Forge é indicado para:
+
+* Donos de servidores RedM
+* Criadores de custom peds
+* Lojas de roupas e acessórios
+* Desenvolvedores de sistemas de personagem
+* Equipes que trabalham com MetaPeds
+* Servidores roleplay que desejam mais controle visual
+* Criadores que precisam testar XMLs e componentes rapidamente
+* Criadores que trabalham com chapéus, acessórios e presets visuais
+* Criadores que precisam organizar vários projetos e Presets CS
+
+---
+
+## Diferenciais
+
+O grande diferencial do TWS Identity Forge é unir em uma só ferramenta:
+
+* Preview em tempo real
+* Interface moderna
+* Organização por categorias
+* Sistema de tint e cor
+* Suporte a XML
+* Editor de expressões
+* Hat Studio para criação e teste de chapéus
+* Sistema de projetos para organizar criações
+* Presets CS para custom peds e peds específicos
+* Isolamento de itens
+* Favoritos
+* Compatibilidade com custom peds
+* Fluxo pensado para RedM e MetaPeds
+
+Ao invés de editar arquivos manualmente e testar no servidor várias vezes, o usuário consegue montar, visualizar, organizar e ajustar o ped diretamente dentro do jogo.
+
+---
+
+## Compatibilidade
+
+O script foi desenvolvido para **RedM** e pode ser usado em diferentes bases/frameworks, desde que o servidor tenha suporte adequado aos recursos necessários.
+
+Compatível com uso em servidores baseados em estruturas como:
+
+* VORP
+* RedEM
+* QBCore RedM
+* Bases customizadas
+
+A compatibilidade final pode depender da estrutura do servidor, dos arquivos MetaPed utilizados e da forma como os peds customizados foram configurados.
+
+---
+
+## Observações importantes
+
+Alguns recursos avançados, como expressions, determinados cabelos em múltiplas camadas, Presets CS e alguns acessórios específicos, dependem da configuração correta do próprio ped no \`metapeds.ymt\`.
+
+Peds que não possuem \`ExpressionSetName\`, por exemplo, podem não responder visualmente às alterações de expressão, mesmo que a native seja executada corretamente.
+
+---
+
+## Resumo comercial
+
+O **TWS Identity Forge** é uma ferramenta profissional para criação e edição de MetaPeds no RedM. Ele permite testar, montar, personalizar, organizar projetos, trabalhar com Presets CS e exportar outfits completos diretamente dentro do jogo, com uma interface visual moderna e recursos avançados para quem trabalha com custom peds, roupas, acessórios, chapéus e identidade visual de personagens.
+
+É a solução ideal para servidores e criadores que desejam mais controle, agilidade e qualidade na personalização de personagens.`
+  }
+};
+
+function isDocsPresentationPage(page: DocsPageRecord) {
+  const normalizedCategory = normalizeDocsCategoryName(page.category).toLowerCase();
+  const title = `${page.title} ${page.titleEn ?? ""}`.toLowerCase();
+  const slug = page.slug.toLowerCase();
+
+  return normalizedCategory.includes("apresent")
+    || normalizedCategory.includes("presentation")
+    || normalizedCategory.includes("carta")
+    || title.includes("apresent")
+    || title.includes("presentation")
+    || title.includes("carta")
+    || slug.includes("apresentacao")
+    || slug.includes("presentation");
+}
+
+function getDocsProductPresentation(productId: string, rows: DocsPageRecord[], isEnglish: boolean) {
+  const customPage = rows
+    .filter((page) => page.visible !== false && getDocsProductId(page) === productId && isDocsPresentationPage(page))
+    .sort((a, b) => a.orderIndex - b.orderIndex)[0];
+
+  if (customPage) {
+    return {
+      title: getDocsTitle(customPage, isEnglish),
+      content: getDocsContent(customPage, isEnglish),
+      source: "custom" as const
+    };
+  }
+
+  const fallback = PRODUCT_DOCS_PRESENTATIONS[productId];
+
+  if (fallback) {
+    return {
+      title: getDocsProductLabel(productId),
+      content: isEnglish ? (fallback.en || fallback.pt) : fallback.pt,
+      source: "fallback" as const
+    };
+  }
+
+  return {
+    title: getDocsProductLabel(productId),
+    content: "",
+    source: "empty" as const
+  };
+}
+
 function isDocsCreditPage(page: DocsPageRecord) {
   const normalizedCategory = normalizeDocsCategoryName(page.category);
   const title = `${page.title} ${page.titleEn ?? ""}`.toLowerCase();
@@ -5206,6 +5499,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   const productOptions = getDocsProductOptions(pages);
   const selectedProductPages = pages.filter((page) => getDocsProductId(page) === selectedProductId);
   const selectedProductName = getDocsProductLabel(selectedProductId);
+  const selectedProductPresentation = getDocsProductPresentation(selectedProductId, pages, isEnglish);
 
   function getProductPages(productId: string) {
     return pages.filter((page) => getDocsProductId(page) === productId);
@@ -5270,6 +5564,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
 
   const overviewAnchors = [
     { label: isEnglish ? "Documentation Index" : "Índice da documentação", id: "documentation-index" },
+    { label: isEnglish ? "Product Presentation" : "Carta de apresentação", id: "product-presentation" },
     { label: isEnglish ? "Getting Started" : "Começando", id: "getting-started" },
     { label: isEnglish ? "Products" : "Produtos", id: "products" },
     { label: isEnglish ? "Credits" : "Créditos", id: "credits" }
@@ -5686,6 +5981,48 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                 </div>
               </div>
 
+              <div id="product-presentation" className="scroll-mt-24 mt-8 rounded-[30px] border border-border bg-card p-5 shadow-[0_24px_80px_rgba(32,32,32,0.06)] lg:p-8">
+                <div className="mb-6 flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <span className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                      {isEnglish ? "Product presentation" : "Carta de apresentação"}
+                    </span>
+                    <h2 className="mt-4 text-2xl font-bold tracking-tight text-foreground/95 lg:text-4xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
+                      {selectedProductName}
+                    </h2>
+                    <p className="mt-2 max-w-3xl text-sm leading-7 text-muted-foreground">
+                      {isEnglish
+                        ? "Each product can have its own presentation letter before the technical pages."
+                        : "Cada produto pode ter sua própria carta de apresentação antes das páginas técnicas."}
+                    </p>
+                  </div>
+
+                  {isDocsAdminLogged && (
+                    <a
+                      href={`/admin/docs?product=${selectedProductId}`}
+                      className="inline-flex h-10 items-center justify-center rounded-xl border border-primary/25 px-4 text-xs font-bold text-primary hover:bg-primary/5"
+                    >
+                      {isEnglish ? "Edit presentation" : "Editar apresentação"}
+                    </a>
+                  )}
+                </div>
+
+                {selectedProductPresentation.content ? (
+                  <DocsContent content={selectedProductPresentation.content} />
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-5">
+                    <h3 className="text-lg font-bold text-foreground/90">
+                      {isEnglish ? "No presentation letter yet." : "Ainda não existe carta de apresentação."}
+                    </h3>
+                    <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                      {isEnglish
+                        ? "Create a documentation page with the category “Presentation” for this product. It will appear here automatically."
+                        : "Crie uma página de documentação com a categoria “Apresentação” para este produto. Ela aparecerá aqui automaticamente."}
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div id="getting-started" className="scroll-mt-24 mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
                 {[
                   {
@@ -6015,6 +6352,31 @@ function DocsAdminPage() {
     setDocsViewMode("editor");
   }
 
+  function handleNewPresentation() {
+    const productId = selectedProductId || "tws-identity-forge";
+    const productName = getDocsProductLabel(productId);
+    const fallback = PRODUCT_DOCS_PRESENTATIONS[productId];
+
+    const next: DocsPageRecord = {
+      ...emptyDocsPage(productId),
+      id: `presentation-${Date.now()}`,
+      productId,
+      category: "Apresentação",
+      title: productName,
+      titleEn: productName,
+      slug: "apresentacao",
+      orderIndex: 5,
+      contentPt: fallback?.pt || `# ${productName}\n\nEscreva aqui a carta de apresentação comercial deste produto.\n\n## Resumo\n\nExplique para quem é o produto, o que ele entrega e por que o cliente deve usar.`,
+      contentEn: fallback?.en || `# ${productName}\n\nWrite the commercial presentation letter for this product here.\n\n## Summary\n\nExplain who the product is for, what it delivers, and why clients should use it.`,
+      visible: true
+    };
+
+    setSelectedProductId(productId);
+    setSelected(next);
+    setEditorLanguage("pt");
+    setDocsViewMode("editor");
+  }
+
   function updateSelectedContent(value: string) {
     if (editorLanguage === "pt") {
       setSelected({ ...selected, contentPt: value });
@@ -6171,6 +6533,13 @@ function DocsAdminPage() {
               <p className="text-[11px] text-muted-foreground">{getDocsProductLabel(selectedProductId)}</p>
             </div>
             <div className="flex items-center gap-1.5">
+              <button
+                onClick={handleNewPresentation}
+                className="inline-flex h-8 items-center gap-1 rounded-lg border border-primary/25 px-2.5 text-[11px] font-bold text-primary hover:bg-primary/5"
+              >
+                <Plus size={13} />
+                Apresentação
+              </button>
               <button
                 onClick={handleNewCredit}
                 className="inline-flex h-8 items-center gap-1 rounded-lg border border-primary/25 px-2.5 text-[11px] font-bold text-primary hover:bg-primary/5"
