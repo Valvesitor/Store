@@ -15,6 +15,7 @@ type Category = "Todos" | "Scripts" | "Custom Peds" | "Systems" | "Outfit / Crea
 type SortOrder = "recent" | "popular" | "price-asc" | "price-desc";
 type ProductStatus = "novo" | "atualizado" | "popular" | "em-breve" | "manutencao";
 type SiteLanguage = "pt_BR" | "en_US";
+type SiteTheme = "light" | "dark";
 type CurrencyCode = "AUD" | "BRL" | "CAD" | "DKK" | "EUR" | "NOK" | "NZD" | "GBP" | "SEK" | "USD" | "PLN";
 type ProductMedia = {
   type: "image" | "video" | "youtube";
@@ -451,6 +452,23 @@ function storeCurrency(currency: CurrencyCode) {
   window.localStorage.setItem(SITE_CURRENCY_KEY, currency);
 }
 
+function getStoredSiteTheme(): SiteTheme {
+  ensureDefaultSitePreferences();
+
+  const value = window.localStorage.getItem(SITE_THEME_KEY);
+  return value === "dark" ? "dark" : DEFAULT_SITE_THEME;
+}
+
+function storeSiteTheme(theme: SiteTheme) {
+  window.localStorage.setItem(SITE_THEME_KEY, theme);
+}
+
+function applySiteTheme(theme: SiteTheme) {
+  document.documentElement.dataset.siteTheme = theme;
+  document.documentElement.classList.toggle("dark", theme === "dark");
+  document.documentElement.style.colorScheme = theme === "dark" ? "dark" : "light";
+}
+
 function formatCurrencyValue(amount?: number, currency: CurrencyCode | string = "EUR") {
   if (typeof amount !== "number" || Number.isNaN(amount)) return "—";
   return new Intl.NumberFormat(getCurrencyLocale(currency), {
@@ -618,10 +636,12 @@ function getYouTubeThumbnail(url: string) {
 const TEBEX_BASKET_KEY = "tws_tebex_basket";
 const SITE_LANGUAGE_KEY = "tws_site_language";
 const SITE_CURRENCY_KEY = "tws_site_currency";
+const SITE_THEME_KEY = "tws_site_theme";
 const SITE_DEFAULTS_VERSION_KEY = "tws_site_defaults_version";
 const SITE_DEFAULTS_VERSION = "2026-english-usd-default";
 const DEFAULT_SITE_LANGUAGE: SiteLanguage = "en_US";
 const DEFAULT_SITE_CURRENCY: CurrencyCode = "USD";
+const DEFAULT_SITE_THEME: SiteTheme = "light";
 const CURRENCIES: CurrencyCode[] = ["USD", "BRL", "EUR", "GBP", "AUD", "CAD", "DKK", "NOK", "NZD", "SEK", "PLN"];
 let tebexCheckoutLocale: SiteLanguage = DEFAULT_SITE_LANGUAGE;
 
@@ -633,6 +653,7 @@ function ensureDefaultSitePreferences() {
   if (currentVersion !== SITE_DEFAULTS_VERSION) {
     window.localStorage.setItem(SITE_LANGUAGE_KEY, DEFAULT_SITE_LANGUAGE);
     window.localStorage.setItem(SITE_CURRENCY_KEY, DEFAULT_SITE_CURRENCY);
+    window.localStorage.setItem(SITE_THEME_KEY, DEFAULT_SITE_THEME);
     window.localStorage.setItem(SITE_DEFAULTS_VERSION_KEY, SITE_DEFAULTS_VERSION);
   }
 }
@@ -1828,7 +1849,7 @@ function SectionTag({ children }: { children: React.ReactNode }) {
 
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 
-function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLanguageChange, currency, onCurrencyChange }: {
+function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLanguageChange, currency, onCurrencyChange, theme, onThemeChange }: {
   onNavigate: (section: string) => void;
   activeSection: string;
   onLogin: () => void;
@@ -1837,6 +1858,8 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
   onLanguageChange: (language: SiteLanguage) => void;
   currency: CurrencyCode;
   onCurrencyChange: (currency: CurrencyCode) => void;
+  theme: SiteTheme;
+  onThemeChange: (theme: SiteTheme) => void;
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -1998,6 +2021,15 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
               <option key={item} value={item}>{item}</option>
             ))}
           </select>
+          <select
+            value={theme}
+            onChange={(e) => onThemeChange(e.target.value as SiteTheme)}
+            className="h-9 rounded-full border border-primary/20 bg-background/40 px-3 text-[11px] font-semibold tracking-wide text-foreground/70 outline-none transition-all hover:border-primary/35 hover:text-primary"
+            title={language === "en_US" ? "Theme" : "Tema"}
+          >
+            <option value="light">{language === "en_US" ? "Light" : "Claro"}</option>
+            <option value="dark">{language === "en_US" ? "Dark" : "Escuro"}</option>
+          </select>
           {adminLoggedIn ? (
             <div className="inline-flex h-9 items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2">
               <a
@@ -2132,6 +2164,15 @@ function Navbar({ onNavigate, activeSection, onLogin, onCart, language, onLangua
                   {CURRENCIES.map((item) => (
                     <option key={item} value={item}>{item}</option>
                   ))}
+                </select>
+                <select
+                  value={theme}
+                  onChange={(e) => onThemeChange(e.target.value as SiteTheme)}
+                  className="h-9 rounded-full border border-primary/20 bg-background/40 px-3 text-xs font-semibold text-foreground/70 outline-none"
+                  title={language === "en_US" ? "Theme" : "Tema"}
+                >
+                  <option value="light">{language === "en_US" ? "Light" : "Claro"}</option>
+                  <option value="dark">{language === "en_US" ? "Dark" : "Escuro"}</option>
                 </select>
               </div>
               <div className="flex gap-2">
@@ -9244,6 +9285,67 @@ const orders = summary?.orders ?? [];
   );
 }
 
+function GlobalThemeStyle({ theme }: { theme: SiteTheme }) {
+  return (
+    <style>{`
+      html[data-site-theme="dark"] {
+        --background: 30 13% 7%;
+        --foreground: 39 32% 92%;
+        --card: 30 12% 10%;
+        --card-foreground: 39 32% 92%;
+        --popover: 30 12% 10%;
+        --popover-foreground: 39 32% 92%;
+        --primary: 38 37% 53%;
+        --primary-foreground: 30 13% 7%;
+        --secondary: 32 10% 15%;
+        --secondary-foreground: 39 32% 92%;
+        --muted: 32 10% 15%;
+        --muted-foreground: 37 15% 66%;
+        --accent: 35 24% 18%;
+        --accent-foreground: 39 32% 92%;
+        --destructive: 0 64% 43%;
+        --destructive-foreground: 39 32% 92%;
+        --border: 36 15% 23%;
+        --input: 36 15% 23%;
+        --ring: 38 37% 53%;
+      }
+
+      html[data-site-theme="dark"],
+      html[data-site-theme="dark"] body {
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+      }
+
+      html[data-site-theme="dark"] .bg-\[\#f7f5f0\],
+      html[data-site-theme="dark"] .bg-\[\#fffdf8\],
+      html[data-site-theme="dark"] .bg-\[\#fbf8f0\],
+      html[data-site-theme="dark"] .bg-\[\#f5efe3\] {
+        background-color: #15120f !important;
+      }
+
+      html[data-site-theme="dark"] .text-\[\#202020\],
+      html[data-site-theme="dark"] .text-\[\#1f1c17\] {
+        color: #f7f1e6 !important;
+      }
+
+      html[data-site-theme="dark"] .border-\[\#d6c7ae\],
+      html[data-site-theme="dark"] .border-\[\#c9b894\] {
+        border-color: rgba(184, 148, 88, 0.35) !important;
+      }
+
+      html[data-site-theme="dark"] img {
+        color-scheme: dark;
+      }
+
+      html[data-site-theme="dark"] select,
+      html[data-site-theme="dark"] input,
+      html[data-site-theme="dark"] textarea {
+        color-scheme: dark;
+      }
+    `}</style>
+  );
+}
+
 function GlobalSiteScaleStyle() {
   return (
     <style>{`
@@ -9272,6 +9374,7 @@ export default function App() {
   const [activeSection, setActiveSection] = useState("hero");
   const [language, setLanguage] = useState<SiteLanguage>(() => getStoredSiteLanguage());
   const [currency, setCurrency] = useState<CurrencyCode>(() => getStoredCurrency());
+  const [theme, setTheme] = useState<SiteTheme>(() => getStoredSiteTheme());
   const [pathname, setPathname] = useState(() => window.location.pathname);
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
@@ -9310,6 +9413,11 @@ export default function App() {
   useEffect(() => {
     storeCurrency(currency);
   }, [currency]);
+
+  useEffect(() => {
+    storeSiteTheme(theme);
+    applySiteTheme(theme);
+  }, [theme]);
 
   useEffect(() => {
     if (pathname !== "/") return;
@@ -9461,6 +9569,7 @@ export default function App() {
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       <GlobalSiteScaleStyle />
+      <GlobalThemeStyle theme={theme} />
       <Navbar
         onNavigate={navigateFromPage}
         activeSection={activeSection}
@@ -9470,6 +9579,8 @@ export default function App() {
         onLanguageChange={setLanguage}
         currency={currency}
         onCurrencyChange={setCurrency}
+        theme={theme}
+        onThemeChange={setTheme}
       />
       <div className="flex-1 pt-16">
         {content}
@@ -9568,6 +9679,7 @@ export default function App() {
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       <GlobalSiteScaleStyle />
+      <GlobalThemeStyle theme={theme} />
       <style>{`
         html { scroll-behavior: smooth; }
         ::-webkit-scrollbar { width: 4px; }
@@ -9587,6 +9699,8 @@ export default function App() {
         onLanguageChange={setLanguage}
         currency={currency}
         onCurrencyChange={setCurrency}
+        theme={theme}
+        onThemeChange={setTheme}
       />
       <HeroSection onNavigate={scrollTo} />
       <WhySection language={language} />
