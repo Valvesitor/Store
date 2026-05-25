@@ -6020,7 +6020,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background">
       <style>{`
-        .docs-markdown h1, .docs-markdown h2, .docs-markdown h3 { scroll-margin-top: 6rem; }
+        .docs-markdown h1, .docs-markdown h2, .docs-markdown h3 { scroll-margin-top: 9rem; }
         .docs-markdown h1 { font-size: clamp(2rem, 3.25vw, 3.1rem); line-height: 1.02; letter-spacing: -.055em; margin: 0 0 1.1rem; color: hsl(var(--foreground)); }
         .docs-markdown h2 { margin-top: 2.2rem; padding-top: 1.3rem; border-top: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); font-size: 1.34rem; font-weight: 800; letter-spacing: -.025em; }
         .docs-markdown h3 { margin-top: 1.45rem; color: hsl(var(--foreground)); font-size: 1.02rem; font-weight: 800; }
@@ -6037,7 +6037,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
         .docs-scroll-area::-webkit-scrollbar-track { background: transparent; }
       `}</style>
 
-      <div className="border-b border-border bg-background/95 backdrop-blur">
+      <div className="sticky top-16 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
         <div className="mx-auto flex h-16 max-w-[1560px] items-center gap-4 px-4 lg:px-6">
           <a href="/" className="flex shrink-0 items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
@@ -6081,7 +6081,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
       </div>
 
       <div className="mx-auto grid max-w-[1560px] grid-cols-1 lg:grid-cols-[318px_minmax(0,1fr)] xl:grid-cols-[318px_minmax(0,1fr)_260px]">
-        <aside className="docs-scroll-area max-h-[calc(100vh-8rem)] overflow-y-auto border-b border-border bg-card/65 lg:sticky lg:top-16 lg:border-b-0 lg:border-r">
+        <aside className="docs-scroll-area max-h-[calc(100vh-8rem)] overflow-y-auto border-b border-border bg-card/65 lg:sticky lg:top-32 lg:h-[calc(100vh-8rem)] lg:self-start lg:border-b-0 lg:border-r">
           <div className="border-b border-border p-4 md:hidden">
             <div className="relative">
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -6247,7 +6247,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
             </div>
           ) : (
             <section className="mx-auto max-w-4xl">
-              <div id="documentation-index" className="scroll-mt-24 rounded-[30px] border border-border bg-card p-6 shadow-[0_24px_80px_rgba(32,32,32,0.06)] lg:p-9">
+              <div id="documentation-index" className="scroll-mt-36 rounded-[30px] border border-border bg-card p-6 shadow-[0_24px_80px_rgba(32,32,32,0.06)] lg:p-9">
                 <SectionTag>{isEnglish ? "Getting Started" : "Começando"}</SectionTag>
                 <h1 className="mt-5 text-4xl font-bold tracking-tight text-foreground/95 lg:text-6xl" style={{ fontFamily: "'Raleway', sans-serif" }}>
                   {docsSiteTitle}
@@ -6268,7 +6268,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                 </div>
               </div>
 
-              <div id="product-presentation" className="scroll-mt-24 mt-8 rounded-[30px] border border-border bg-card p-5 shadow-[0_24px_80px_rgba(32,32,32,0.06)] lg:p-8">
+              <div id="product-presentation" className="scroll-mt-36 mt-8 rounded-[30px] border border-border bg-card p-5 shadow-[0_24px_80px_rgba(32,32,32,0.06)] lg:p-8">
                 <div className="mb-6 flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <span className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
@@ -6310,7 +6310,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                 )}
               </div>
 
-              <div id="getting-started" className="scroll-mt-24 mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div id="getting-started" className="scroll-mt-36 mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
                 {[
                   {
                     title: isEnglish ? "Installation" : "Instalação",
@@ -6362,7 +6362,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                 })}
               </div>
 
-              <div id="products" className="scroll-mt-24 mt-8 rounded-[26px] border border-border bg-card p-5 lg:p-6">
+              <div id="products" className="scroll-mt-36 mt-8 rounded-[26px] border border-border bg-card p-5 lg:p-6">
                 <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h2 className="text-xl font-bold text-foreground/90">{isEnglish ? "Products" : "Produtos"}</h2>
@@ -6391,7 +6391,7 @@ function DocsPage({ language }: { language: SiteLanguage }) {
                 </div>
               </div>
 
-              <div id="credits" className="scroll-mt-24 mt-8 rounded-[26px] border border-border bg-card p-5 lg:p-6">
+              <div id="credits" className="scroll-mt-36 mt-8 rounded-[26px] border border-border bg-card p-5 lg:p-6">
                 <div className="mb-5">
                   <h2 className="text-xl font-bold text-foreground/90">{isEnglish ? "Credits" : "Créditos"}</h2>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
@@ -6436,8 +6436,8 @@ function DocsPage({ language }: { language: SiteLanguage }) {
           )}
         </article>
 
-        <aside className="hidden border-l border-border bg-card/45 px-5 py-8 xl:block">
-          <div className="sticky top-24">
+        <aside className="docs-scroll-area hidden border-l border-border bg-card/45 px-5 py-8 xl:sticky xl:top-32 xl:block xl:h-[calc(100vh-8rem)] xl:self-start xl:overflow-y-auto">
+          <div>
             <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
               {isEnglish ? "On this page" : "Nesta página"}
             </p>
@@ -7125,7 +7125,7 @@ function DocsAdminPage() {
 
                   <div className="space-y-10">
                     {Object.entries(previewPagesByCategory).map(([category, rows]) => (
-                      <section key={`preview-category-${category}`} className="scroll-mt-24">
+                      <section key={`preview-category-${category}`} className="scroll-mt-36">
                         <div className="mb-4 flex items-center gap-3">
                           <span className="h-px flex-1 bg-border" />
                           <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
