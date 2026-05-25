@@ -8776,9 +8776,9 @@ export default function App() {
     window.location.href = `/#${section}`;
   };
 
-  const renderPageWithNavbar = (content: React.ReactNode, showFooter = false) => (
+  const renderPageWithNavbar = (content: React.ReactNode, showFooter = true) => (
     <div
-      className="min-h-screen bg-background text-foreground antialiased"
+      className="flex min-h-screen flex-col bg-background text-foreground antialiased"
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       <Navbar
@@ -8791,7 +8791,7 @@ export default function App() {
         currency={currency}
         onCurrencyChange={setCurrency}
       />
-      <div className="pt-16">
+      <div className="flex-1 pt-16">
         {content}
       </div>
       {showFooter && <Footer onNavigate={navigateFromPage} />}
@@ -8815,19 +8815,19 @@ export default function App() {
   }
 
   if (pathname === "/admin/about" || pathname === "/admin/about-us") {
-    return renderPageWithNavbar(<SitePageAdminEditor pageKey="about" />);
+    return renderPageWithNavbar(<SitePageAdminEditor pageKey="about" />, true);
   }
 
   if (pathname === "/admin/terms" || pathname === "/admin/terms-of-use") {
-    return renderPageWithNavbar(<SitePageAdminEditor pageKey="terms" />);
+    return renderPageWithNavbar(<SitePageAdminEditor pageKey="terms" />, true);
   }
 
   if (pathname === "/admin/privacy" || pathname === "/admin/privacy-policy") {
-    return renderPageWithNavbar(<SitePageAdminEditor pageKey="privacy" />);
+    return renderPageWithNavbar(<SitePageAdminEditor pageKey="privacy" />, true);
   }
 
   if (pathname === "/admin/docs") {
-    return renderPageWithNavbar(<DocsAdminPage />);
+    return renderPageWithNavbar(<DocsAdminPage />, true);
   }
 
   const productRouteMatch = pathname.match(/^\/(script|scripts|custom-peds|systems|outfit-creator|add-ons)\/(.+)$/);
@@ -8863,11 +8863,11 @@ export default function App() {
   }
 
   if (pathname === "/login") {
-    return renderPageWithNavbar(<LoginPage currency={currency} onCurrencyChange={setCurrency} />);
+    return renderPageWithNavbar(<LoginPage currency={currency} onCurrencyChange={setCurrency} />, true);
   }
 
   if (pathname === "/checkout") {
-    return renderPageWithNavbar(<CheckoutPage currency={currency} onCurrencyChange={setCurrency} />);
+    return renderPageWithNavbar(<CheckoutPage currency={currency} onCurrencyChange={setCurrency} />, true);
   }
 
   if (pathname === "/account") {
@@ -8875,11 +8875,11 @@ export default function App() {
       window.location.href = "/admin";
       return null;
     }
-    return renderPageWithNavbar(<AccountPage currency={currency} onCurrencyChange={setCurrency} />);
+    return renderPageWithNavbar(<AccountPage currency={currency} onCurrencyChange={setCurrency} />, true);
   }
 
   if (pathname === "/admin") {
-    return renderPageWithNavbar(<AdminPage currency={currency} onCurrencyChange={setCurrency} />);
+    return renderPageWithNavbar(<AdminPage currency={currency} onCurrencyChange={setCurrency} />, true);
   }
 
   return (
