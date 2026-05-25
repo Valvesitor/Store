@@ -9248,19 +9248,43 @@ function GlobalSiteScaleStyle() {
   return (
     <style>{`
       /*
-        Escala visual do site em desktop:
-        16px padrão do navegador → 12px = aparência aproximada de 75%.
-        Mantém mobile/tablet com tamanho normal para não prejudicar leitura.
+        Auto ajuste visual:
+        - Desktop pequeno fica mais compacto.
+        - Desktop grande respira melhor.
+        - Mobile/tablet mantém leitura normal.
+        Como o site usa rem em grande parte do layout, o ajuste abaixo reduz textos,
+        cards, espaçamentos e altura geral sem precisar mexer em cada seção.
       */
+
+      html {
+        --site-font-scale: 16px;
+      }
+
       @media (min-width: 1024px) {
         html {
-          font-size: 12px;
+          --site-font-scale: clamp(12px, 0.78vw, 15px);
+          font-size: var(--site-font-scale);
+        }
+      }
+
+      @media (min-width: 1600px) {
+        html {
+          --site-font-scale: clamp(13px, 0.72vw, 15.5px);
+          font-size: var(--site-font-scale);
+        }
+      }
+
+      @media (min-width: 2200px) {
+        html {
+          --site-font-scale: 16px;
+          font-size: var(--site-font-scale);
         }
       }
 
       @media (max-width: 1023px) {
         html {
-          font-size: 16px;
+          --site-font-scale: 16px;
+          font-size: var(--site-font-scale);
         }
       }
     `}</style>
