@@ -814,10 +814,13 @@ const EN_TRANSLATIONS: Record<string, string> = {
   "Total atual": "Current total",
   "Cupom / Gift Card": "Coupon / Gift Card",
   "Digite seu cupom": "Enter your coupon",
-  "Digite seu coupon/gift card": "Enter your coupon/gift card",
+  "Digite seu cupom ou gift card": "Enter your coupon/gift card",
   "Coupon/Gift Card removido da cesta.": "Coupon/Gift Card removed from cart.",
   "Coupon/Gift Card removido da cesta. Se o checkout da Tebex estiver aberto, feche e abra novamente para atualizar o valor.": "Coupon/Gift Card removed from cart. If the Tebex checkout is already open, close and reopen it to refresh the value.",
   "Aplicar cupom": "Apply coupon",
+  "Aplicar desconto": "Apply discount",
+  "Tem um cupom ou gift card? Digite o código no campo ao lado para aplicar o desconto ao seu carrinho.": "Have a coupon or gift card? Enter the code in the field to apply the discount to your cart.",
+  "Digite seu cupom ou gift card": "Enter your coupon or gift card",
   "Histórico de compras": "Purchase history",
   "Pedidos reais chegam aqui pelo webhook da Tebex no Worker.": "Real orders arrive here through the Tebex webhook in the Worker.",
   "Nenhuma compra sincronizada ainda. Depois que a Tebex enviar o webhook de pagamento concluído, o pedido aparece aqui.": "No purchase synced yet. After Tebex sends the completed payment webhook, the order appears here.",
@@ -8783,10 +8786,10 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
             <div>
               <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Coupon/Gift Card</p>
               <h2 className="text-xl font-bold text-foreground/90" style={{ fontFamily: "'Raleway', sans-serif" }}>
-                Aplicar coupon/gift card
+                Aplicar desconto
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Digite o nome público ou o código original. Se existir no admin, o site aplica automaticamente o código original da Tebex.
+                Tem um cupom ou gift card? Digite o código no campo ao lado para aplicar o desconto ao seu carrinho.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 lg:min-w-[560px]">
@@ -8796,7 +8799,7 @@ function CheckoutPage({ currency, onCurrencyChange }: { currency: CurrencyCode; 
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleApplyCreatorCode();
                 }}
-                placeholder="Digite seu coupon/gift card"
+                placeholder="Digite seu cupom ou gift card"
                 className="h-11 flex-1 rounded-xl border border-border bg-background px-4 text-sm outline-none focus:border-primary/40"
               />
               <button
