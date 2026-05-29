@@ -3,10 +3,23 @@
   "name": "official-website-the-wanted-sole-studio",
   "main": "cloudflare/worker.mjs",
   "compatibility_date": "2025-11-01",
+  "routes": [
+    {
+      "pattern": "thewantedsolestudio.com/api/*",
+      "zone_name": "thewantedsolestudio.com"
+    },
+    {
+      "pattern": "www.thewantedsolestudio.com/api/*",
+      "zone_name": "thewantedsolestudio.com"
+    }
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*"
+    ]
   },
   "vars": {
     "TEBEX_PUBLIC_TOKEN": "132na-1c1984f72b78f7b52212dfbea35543ccb051bb66",
