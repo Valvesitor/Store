@@ -9,13 +9,20 @@
     "not_found_handling": "single-page-application"
   },
   "vars": {
-    "TEBEX_PUBLIC_TOKEN": "132na-1c1984f72b78f7b52212dfbea35543ccb051bb66"
+    "TEBEX_PUBLIC_TOKEN": "132na-1c1984f72b78f7b52212dfbea35543ccb051bb66",
+    "SITE_BASE_URL": "https://thewantedsolestudio.com"
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "tws_store_db",
       "database_id": "d305422f-2527-4d95-ae7d-a16c4f8bf968"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "PRODUCT_MEDIA",
+      "bucket_name": "tws-product-assets"
     }
   ]
 }

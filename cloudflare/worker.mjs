@@ -46,6 +46,134 @@ function safeJson(value, fallback) {
   return JSON.stringify(fallback);
 }
 
+const PRODUCT_MEDIA_MAX_BYTES = 8 * 1024 * 1024;
+const PRODUCT_MEDIA_ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
+
+function mediaCorsHeaders(extra = {}) {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+    ...extra
+  };
+}
+
+function sanitizeMediaFilename(value, fallback = "image.png") {
+  const safeName = String(value || fallback)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return safeName || fallback;
+}
+
+function getR2ObjectKeyFromPath(pathname) {
+  const key = decodeURIComponent(pathname.replace(/^\/api\/media\//, ""));
+  return key.replace(/^\/+/, "");
+}
+
+function buildProductMediaKey({ productId, productName, filename, index }) {
+  const folderSource = productId && !String(productId).startsWith("new-")
+    ? productId
+    : productName || productId || "produto";
+
+  const folder = slugify(folderSource);
+  const safeFilename = sanitizeMediaFilename(filename, `image-${Number(index || 0) + 1}.png`);
+  const timestamp = Date.now();
+
+  return `products/${folder}/${timestamp}-${Number(index || 0) + 1}-${safeFilename}`;
+}
+
+function mediaResponse(body, status = 200, headers = {}) {
+  return new Response(body, {
+    status,
+    headers: mediaCorsHeaders(headers)
+  });
+}
+
+async function handlePublicMediaRequest(request, env) {
+  if (!env.PRODUCT_MEDIA) {
+    return jsonResponse({ error: "Bucket R2 PRODUCT_MEDIA não configurado." }, 500);
+  }
+
+  const url = new URL(request.url);
+  const key = getR2ObjectKeyFromPath(url.pathname);
+
+  if (!key || key.includes("..")) {
+    return jsonResponse({ error: "Arquivo inválido." }, 400);
+  }
+
+  const object = await env.PRODUCT_MEDIA.get(key);
+
+  if (!object) {
+    return jsonResponse({ error: "Mídia não encontrada." }, 404);
+  }
+
+  const headers = {
+    "Content-Type": object.httpMetadata?.contentType || "application/octet-stream",
+    "Cache-Control": "public, max-age=31536000, immutable",
+    "ETag": object.httpEtag
+  };
+
+  return mediaResponse(object.body, 200, headers);
+}
+
+async function handleAdminMediaUpload(request, env) {
+  if (!requireAdmin(request, env)) return jsonResponse({ error: "Admin token inválido." }, 401);
+  if (!env.PRODUCT_MEDIA) return jsonResponse({ error: "Bucket R2 PRODUCT_MEDIA não configurado." }, 500);
+
+  const form = await request.formData();
+  const file = form.get("file");
+
+  if (!file || typeof file === "string" || typeof file.arrayBuffer !== "function") {
+    return jsonResponse({ error: "Nenhum arquivo enviado." }, 400);
+  }
+
+  const contentType = file.type || "application/octet-stream";
+
+  if (!PRODUCT_MEDIA_ALLOWED_TYPES.has(contentType)) {
+    return jsonResponse({ error: "Envie somente imagens JPG, PNG, WEBP, GIF ou AVIF." }, 400);
+  }
+
+  if (file.size > PRODUCT_MEDIA_MAX_BYTES) {
+    return jsonResponse({ error: "Imagem muito grande. Use arquivo com até 8MB." }, 413);
+  }
+
+  const productId = String(form.get("productId") || "");
+  const productName = String(form.get("productName") || "Produto");
+  const index = Number(form.get("index") || 0);
+  const key = buildProductMediaKey({ productId, productName, filename: file.name, index });
+  const body = await file.arrayBuffer();
+
+  await env.PRODUCT_MEDIA.put(key, body, {
+    httpMetadata: {
+      contentType,
+      cacheControl: "public, max-age=31536000, immutable"
+    },
+    customMetadata: {
+      originalName: file.name || "image",
+      productId,
+      productName
+    }
+  });
+
+  const src = `/api/media/${key}`;
+
+  return jsonResponse({
+    ok: true,
+    key,
+    src,
+    media: {
+      type: "image",
+      src,
+      filename: file.name || key.split("/").pop(),
+      alt: file.name || productName || "Product image"
+    }
+  });
+}
+
 function rowToProduct(row) {
   return {
     id: row.id,
@@ -572,6 +700,14 @@ async function handleApi(request, env) {
         "Access-Control-Allow-Headers": "Content-Type, Authorization"
       }
     });
+  }
+
+  if (pathname.startsWith("/api/media/") && request.method === "GET") {
+    return handlePublicMediaRequest(request, env);
+  }
+
+  if (pathname === "/api/admin/media/upload" && request.method === "POST") {
+    return handleAdminMediaUpload(request, env);
   }
 
   if (pathname === "/api/docs" && request.method === "GET") {

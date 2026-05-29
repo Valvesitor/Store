@@ -1,2 +1,5 @@
 ADMIN_ACCESS_TOKEN=troque-esse-token-admin
 TEBEX_WEBHOOK_SECRET=cole-a-secret-key-nova-da-tebex-aqui
+
+# Domínio público da loja
+SITE_BASE_URL=https://thewantedsolestudio.com

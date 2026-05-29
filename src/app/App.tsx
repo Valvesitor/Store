@@ -1546,6 +1546,30 @@ async function saveAdminProduct(token: string, product: Product) {
   return normalizeProductFromApi(payload.product ?? payload);
 }
 
+async function uploadAdminProductMedia(token: string, product: Pick<Product, "id" | "name" | "nameEn">, file: File, index: number) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("productId", product.id ?? "");
+  formData.append("productName", product.name || product.nameEn || "Produto");
+  formData.append("index", String(index));
+
+  const response = await fetch(apiUrl("/api/admin/media/upload"), {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+    body: formData
+  });
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(payload?.error ?? "Não foi possível enviar a imagem para o R2.");
+  }
+
+  return payload.media as ProductMedia;
+}
+
 async function deleteAdminProduct(token: string, productId: string) {
   const response = await fetch(apiUrl(`/api/admin/products/${encodeURIComponent(productId)}`), {
     method: "DELETE",
@@ -7325,6 +7349,14 @@ function isUploadedDataMedia(item: ProductMedia) {
   return item.src.startsWith("data:");
 }
 
+function isStoredProductMedia(item: ProductMedia) {
+  return item.src.startsWith("/api/media/products/") || item.src.startsWith("/products/");
+}
+
+function isUploadedProductMedia(item: ProductMedia) {
+  return isUploadedDataMedia(item) || isStoredProductMedia(item);
+}
+
 function slugifyMediaPath(value: string) {
   return String(value || "produto")
     .normalize("NFD")
@@ -7435,8 +7467,8 @@ function ProductAdminForm({
   const featuresEnText = (product.featuresEn ?? []).join("\n");
   const requirementsText = product.requirements.join("\n");
   const requirementsEnText = (product.requirementsEn ?? []).join("\n");
-  const uploadedMedia = (product.media ?? []).filter(isUploadedDataMedia);
-  const manualMedia = (product.media ?? []).filter((item) => !isUploadedDataMedia(item));
+  const uploadedMedia = (product.media ?? []).filter(isUploadedProductMedia);
+  const manualMedia = (product.media ?? []).filter((item) => !isUploadedProductMedia(item));
   const mediaText = manualMedia.map((item) => item.src).join("\n");
   const Icon = ICON_MAP[product.iconName] ?? Package;
   const status = STATUS_CONFIG[product.status];
@@ -7485,19 +7517,19 @@ function ProductAdminForm({
     try {
       setUploadBusy(true);
 
+      const token = getAdminToken();
+      if (!token) throw new Error("Faça login como admin antes de enviar imagens.");
+
       const currentMedia = product.media ?? [];
       const uploadedMedia: ProductMedia[] = [];
 
       for (const file of imageFiles) {
         const mediaIndex = currentMedia.length + uploadedMedia.length;
-        const previewSrc = await readFileAsDataUrl(file);
+        const uploaded = await uploadAdminProductMedia(token, product, file, mediaIndex);
 
         uploadedMedia.push({
-          type: "image",
-          src: getProductMediaPublicPath(product, file.name, mediaIndex),
-          previewSrc,
-          filename: file.name,
-          alt: file.name || getUploadedMediaAlt(product, mediaIndex)
+          ...uploaded,
+          alt: uploaded.alt || getUploadedMediaAlt(product, mediaIndex)
         });
       }
 
@@ -7676,7 +7708,7 @@ function ProductAdminForm({
 
           {/* 04 — Mídia */}
           <div className="rounded-[22px] border border-border bg-card p-5 lg:p-6 shadow-[0_8px_28px_rgba(32,32,32,0.04)]">
-            <SectionHeader number="04" title="Mídia" subtitle="Modo sem R2: caminhos de imagens, imagem do card e galeria" />
+            <SectionHeader number="04" title="Mídia" subtitle="Upload via Cloudflare R2, imagem do card e galeria" />
             <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_240px] gap-5">
               <div>
                 <span className={lbl}>Upload de imagens</span>
@@ -7685,7 +7717,7 @@ function ProductAdminForm({
                     <div>
                       <p className="text-sm font-bold text-foreground/85">Adicionar imagens ao produto</p>
                       <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                        A primeira imagem vira capa/card. As próximas entram na galeria. O admin cria o caminho /products/nome-do-produto/arquivo, mas o arquivo precisa ser colocado manualmente na pasta public.
+                        A primeira imagem vira capa/card. As próximas entram na galeria. O arquivo é enviado para o Cloudflare R2 e o produto salva apenas a URL pública.
                       </p>
                     </div>
 
@@ -7707,11 +7739,11 @@ function ProductAdminForm({
                   </div>
 
                   <p className="mt-3 rounded-xl border border-border bg-background px-3 py-2 text-[11px] leading-5 text-muted-foreground">
-                    Sem R2, o navegador mostra uma prévia temporária e o banco salva só o caminho. Depois coloque o arquivo em /public/products/nome-do-produto/ e publique o site.
+                    O upload salva a imagem no bucket R2 tws-product-assets. O banco D1 armazena somente a URL, evitando erro SQLITE_TOOBIG.
                   </p>
                   <div className="mt-3 rounded-xl border border-primary/20 bg-background px-3 py-2 text-[11px] leading-5 text-muted-foreground">
-                    <strong className="block text-primary">Pasta gerada para este produto</strong>
-                    <code className="break-all">/public{getProductMediaFolder(product)}/</code>
+                    <strong className="block text-primary">Pasta usada no R2 para este produto</strong>
+                    <code className="break-all">{getProductMediaFolder(product)}/</code>
                   </div>
                 </div>
 
@@ -7757,7 +7789,7 @@ function ProductAdminForm({
                                 {index === 0 ? "Capa · " : ""}{getMediaDisplayName(item, index)}
                               </p>
                               <p className="mt-0.5 text-[9px] uppercase tracking-widest text-muted-foreground">
-                                {item.type === "youtube" ? "YouTube" : item.type === "video" ? "Vídeo" : isUploadedDataMedia(item) ? "Upload" : "URL"}
+                                {item.type === "youtube" ? "YouTube" : item.type === "video" ? "Vídeo" : isUploadedProductMedia(item) ? "Upload R2" : "URL"}
                               </p>
                             </div>
                             <button
@@ -7806,7 +7838,7 @@ function ProductAdminForm({
 
                 <div className="mt-3 rounded-2xl border border-amber-500/25 bg-amber-500/5 px-4 py-3 text-xs leading-5 text-muted-foreground">
                   <strong className="block text-amber-700">Importante sobre imagens</strong>
-                  Para evitar erro SQLITE_TOOBIG, o produto salva somente o caminho da imagem. Sem R2, copie o arquivo para /public/products/nome-do-produto/ antes de publicar. Coloque os arquivos dentro de <code className="rounded bg-background px-1 py-0.5">/public/products</code>.
+                  Para evitar erro SQLITE_TOOBIG, o produto salva somente o caminho da imagem. O arquivo enviado fica no Cloudflare R2 e é servido pelo Worker em <code className="rounded bg-background px-1 py-0.5">/api/media/products/...</code>.
                   {hasDiscordMedia && (
                     <span className="mt-2 block font-semibold text-amber-700">
                       Este produto ainda tem {discordMediaCount} URL(s) do Discord. Troque por upload ou imagem hospedada no site.
