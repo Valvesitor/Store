@@ -803,18 +803,35 @@ async function handleApi(request, env) {
     return jsonResponse(await getAccountSummary(env, request));
   }
 
+  if (pathname === "/api/tebex/webhook" && request.method === "GET") {
+    return jsonResponse({
+      ok: true,
+      endpoint: "tebex-webhook",
+      message: "Webhook endpoint online. Tebex validation must use POST."
+    });
+  }
+
   if (pathname === "/api/tebex/webhook" && request.method === "POST") {
     const rawBody = await request.arrayBuffer();
+    const rawText = new TextDecoder().decode(rawBody);
+
+    let payload;
+    try {
+      payload = JSON.parse(rawText || "{}");
+    } catch {
+      return jsonResponse({ ok: false, error: "Invalid JSON body." }, 400);
+    }
+
+    // Tebex first sends a validation.webhook request.
+    // It must receive HTTP 200 with { id: payload.id }, otherwise the endpoint is not validated.
+    if (payload.type === "validation.webhook") {
+      return jsonResponse({ id: payload.id });
+    }
+
     const valid = await verifyTebexWebhook(request, env, rawBody);
 
     if (!valid) {
       return jsonResponse({ ok: false, error: "Assinatura Tebex inválida." }, 401);
-    }
-
-    const payload = JSON.parse(new TextDecoder().decode(rawBody));
-
-    if (payload.type === "validation.webhook") {
-      return jsonResponse({ id: payload.id });
     }
 
     const order = normalizeWebhookOrder(payload);
