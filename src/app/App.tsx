@@ -109,7 +109,7 @@ const PRODUCTS: Product[] = [
     status: "popular",
     tebexUrl: "https://the-wanted-sole-studio-webstore.tebex.io/package/7457637",
     packageId: "7457637",
-    docsUrl: "https://docs.thewantedsolestudio.workers.dev",
+    docsUrl: "https://thewantedsolestudio.com/docs?product=tws-identity-forge",
     features: [
       "Interface moderna e intuitiva",
       "Sistema otimizado para alta performance",
