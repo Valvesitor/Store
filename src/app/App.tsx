@@ -2353,11 +2353,11 @@ function HeroSection({ onNavigate }: { onNavigate: (id: string) => void }) {
             Ver Produtos
             <ArrowRight size={15} />
           </GoldButton>
-          <GhostButton href="https://discord.gg/qE29trG84u" external className="px-6 py-2.5 text-sm">
+          <GhostButton href="https://discord.gg/4f5At8hJqy" external className="px-6 py-2.5 text-sm">
             <MessageCircle size={15} />
             Acessar Discord
           </GhostButton>
-          <GhostButton href="https://docs.thewantedsolestudio.workers.dev" external className="px-6 py-2.5 text-sm">
+          <GhostButton href="https://thewantedsolestudio.com/docs" external className="px-6 py-2.5 text-sm">
             <BookOpen size={15} />
             Documentação
           </GhostButton>
