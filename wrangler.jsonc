@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "official-website-the-wanted-sole-studio",
+  "name": "store-test",
   "main": "cloudflare/worker.mjs",
   "compatibility_date": "2025-11-01",
   "routes": [
