@@ -6,7 +6,13 @@ import { Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { getStoredTebexCartCount } from "@/lib/tebex-client"
+import { getBasketUsername } from "@/lib/tebex-account"
+import {
+  fetchTebexBasket,
+  getStoredTebexBasket,
+  getStoredTebexCartCount,
+} from "@/lib/tebex-client"
+import { cn } from "@/lib/utils"
 
 const navLinks = [
   { label: "INICIO", href: "/" },
@@ -18,6 +24,7 @@ const navLinks = [
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
+  const [accountName, setAccountName] = useState<string>()
 
   useEffect(() => {
     function syncCartCount() {
@@ -31,6 +38,42 @@ export function SiteHeader() {
     return () => {
       window.removeEventListener("tws:tebex-cart-changed", syncCartCount)
       window.removeEventListener("storage", syncCartCount)
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+
+    async function syncAccountName() {
+      const basketIdent = getStoredTebexBasket()
+
+      if (!basketIdent) {
+        setAccountName(undefined)
+        return
+      }
+
+      try {
+        const basket = await fetchTebexBasket(basketIdent)
+        const username = getBasketUsername(basket)
+
+        if (active) {
+          setAccountName(username)
+        }
+      } catch {
+        if (active) {
+          setAccountName(undefined)
+        }
+      }
+    }
+
+    syncAccountName()
+    window.addEventListener("tws:tebex-session-changed", syncAccountName)
+    window.addEventListener("storage", syncAccountName)
+
+    return () => {
+      active = false
+      window.removeEventListener("tws:tebex-session-changed", syncAccountName)
+      window.removeEventListener("storage", syncAccountName)
     }
   }, [])
 
@@ -66,13 +109,22 @@ export function SiteHeader() {
           </div>
           <Button
             variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground"
-            aria-label="Minha conta"
+            className={cn(
+              "h-9 text-muted-foreground hover:text-foreground",
+              accountName
+                ? "max-w-44 gap-2 border border-primary/25 bg-primary/10 px-2.5 text-foreground hover:border-primary/50 hover:bg-primary/15"
+                : "w-9 px-0",
+            )}
+            aria-label={accountName ? `Minha conta: ${accountName}` : "Minha conta"}
             asChild
           >
             <Link href="/login">
-              <User className="h-5 w-5" />
+              <User className="h-5 w-5 shrink-0" />
+              {accountName && (
+                <span className="hidden max-w-28 truncate font-display text-xs uppercase tracking-widest sm:inline">
+                  {accountName}
+                </span>
+              )}
             </Link>
           </Button>
           <Button
@@ -119,7 +171,7 @@ export function SiteHeader() {
               onClick={() => setOpen(false)}
               className="rounded-md px-3 py-2.5 font-display text-sm tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
-              LOGIN
+              {accountName ? `CONTA: ${accountName}` : "LOGIN"}
             </Link>
             <Link
               href="/carrinho"
