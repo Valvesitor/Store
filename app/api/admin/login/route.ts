@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { ADMIN_COOKIE_NAME, createAdminSessionToken } from "@/lib/admin-auth"
+import {
+  ADMIN_COOKIE_NAME,
+  createAdminSessionToken,
+  getAdminAccessKey,
+} from "@/lib/admin-auth"
 
 function safeNextPath(value: FormDataEntryValue | null) {
   const nextPath = String(value || "/admin")
@@ -17,7 +21,7 @@ function safeNextPath(value: FormDataEntryValue | null) {
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData()
-  const adminKey = process.env.ADMIN_ACCESS_KEY?.trim()
+  const adminKey = getAdminAccessKey()
   const accessKey = String(formData.get("accessKey") || "").trim()
   const nextPath = safeNextPath(formData.get("next"))
   const loginUrl = new URL("/admin/login", request.url)
@@ -40,8 +44,8 @@ export async function POST(request: NextRequest) {
     {
       httpOnly: true,
       maxAge: 60 * 60 * 8,
-      path: "/admin",
-      sameSite: "strict",
+      path: "/",
+      sameSite: "lax",
       secure: request.nextUrl.protocol === "https:",
     },
   )

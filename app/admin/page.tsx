@@ -1,3 +1,5 @@
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -19,8 +21,14 @@ import {
   Users,
 } from "lucide-react"
 import { SiteFooter } from "@/components/site-footer"
+import {
+  ADMIN_COOKIE_NAME,
+  getAdminAccessKey,
+  isAdminSessionValid,
+} from "@/lib/admin-auth"
 import { SiteHeader } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
+import { getRuntimeEnvValue } from "@/lib/cloudflare-env"
 import {
   categoryToSlug,
   featuredProductIds,
@@ -53,7 +61,25 @@ function statusClass(enabled: boolean) {
     : "border-primary/30 bg-primary/10 text-primary"
 }
 
-export default function AdminPage() {
+export const dynamic = "force-dynamic"
+
+async function requireAdminSession() {
+  const adminKey = getAdminAccessKey()
+
+  if (!adminKey) {
+    redirect("/admin/login?erro=config")
+  }
+
+  const cookieStore = await cookies()
+  const sessionToken = cookieStore.get(ADMIN_COOKIE_NAME)?.value
+
+  if (!(await isAdminSessionValid(adminKey, sessionToken))) {
+    redirect("/admin/login?erro=login&next=/admin")
+  }
+}
+
+export default async function AdminPage() {
+  await requireAdminSession()
   const paidProducts = storeProducts.filter((product) => priceValue(product) > 0)
   const freeProducts = storeProducts.length - paidProducts.length
   const packageProducts = storeProducts.filter((product) => product.packageId)
@@ -61,13 +87,16 @@ export default function AdminPage() {
     (total, product) => total + priceValue(product),
     0,
   )
-  const tebexConfigured = Boolean(process.env.TEBEX_WEBSTORE_TOKEN)
-  const webhookConfigured = Boolean(process.env.TEBEX_WEBHOOK_SECRET)
+  const tebexConfigured = Boolean(
+    getRuntimeEnvValue("TEBEX_WEBSTORE_TOKEN") ||
+      getRuntimeEnvValue("VITE_TEBEX_WEBSTORE_TOKEN"),
+  )
+  const webhookConfigured = Boolean(getRuntimeEnvValue("TEBEX_WEBHOOK_SECRET"))
   const cfxReady = tebexConfigured
   const recentActions = [
     {
       title: "Tebex basket API",
-      detail: tebexConfigured ? "Token configurado" : "Aguardando .env.local",
+      detail: tebexConfigured ? "Token configurado" : "Aguardando variável no Cloudflare",
       done: tebexConfigured,
     },
     {
@@ -161,8 +190,9 @@ export default function AdminPage() {
                 <ShieldCheck className="h-8 w-8 text-primary" />
               </div>
               <p className="mt-4 text-sm leading-6 text-muted-foreground">
-                Esta area ja esta pronta visualmente. A protecao final deve ser
-                ligada ao usuario CFX/Tebex com role de admin antes de publicar.
+                Esta area agora exige ADMIN_ACCESS_KEY para entrar. A edição
+                real de produtos ainda precisa de banco/API, porque o catálogo
+                atual está salvo fixo em lib/store-data.ts.
               </p>
               <div className="mt-5 grid gap-2">
                 {recentActions.map((item) => (
@@ -375,6 +405,7 @@ export default function AdminPage() {
                                 variant="outline"
                                 size="icon-sm"
                                 className="border-border bg-background/70 text-muted-foreground hover:text-foreground"
+                                title="Edição real precisa de banco/API. Hoje os produtos estão fixos em lib/store-data.ts."
                                 disabled
                               >
                                 <FilePenLine className="h-4 w-4" />
@@ -487,10 +518,10 @@ export default function AdminPage() {
                 </h2>
               </div>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground">
-                Para colocar em producao, esta area precisa validar um usuario
-                admin real. O caminho natural e salvar o usuario CFX autenticado,
-                consultar uma lista de IDs autorizados e bloquear `/admin` para
-                qualquer conta sem permissao.
+                O login administrativo foi corrigido para usar ADMIN_ACCESS_KEY.
+                Para editar produtos direto pelo painel em produção, será preciso
+                trocar o catálogo fixo de lib/store-data.ts por D1/KV/R2 com rotas
+                de salvar, editar e excluir produtos.
               </p>
             </section>
           </div>

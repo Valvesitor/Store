@@ -1,3 +1,5 @@
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, KeyRound, ShieldCheck } from "lucide-react"
@@ -5,10 +7,15 @@ import { SiteFooter } from "@/components/site-footer"
 import { SiteHeader } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  ADMIN_COOKIE_NAME,
+  getAdminAccessKey,
+  isAdminSessionValid,
+} from "@/lib/admin-auth"
 
 function errorMessage(error?: string) {
   if (error === "config") {
-    return "Configure ADMIN_ACCESS_KEY no .env.local para liberar o painel."
+    return "Configure ADMIN_ACCESS_KEY nas variáveis do Cloudflare para liberar o painel."
   }
 
   if (error === "invalid") {
@@ -22,11 +29,21 @@ function errorMessage(error?: string) {
   return null
 }
 
+export const dynamic = "force-dynamic"
+
 export default async function AdminLoginPage({
   searchParams,
 }: {
   searchParams?: Promise<{ erro?: string; next?: string }>
 }) {
+  const adminKey = getAdminAccessKey()
+  const cookieStore = await cookies()
+  const sessionToken = cookieStore.get(ADMIN_COOKIE_NAME)?.value
+
+  if (adminKey && (await isAdminSessionValid(adminKey, sessionToken))) {
+    redirect("/admin")
+  }
+
   const params = await searchParams
   const message = errorMessage(params?.erro)
   const nextPath = params?.next?.startsWith("/admin") ? params.next : "/admin"

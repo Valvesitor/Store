@@ -1,10 +1,16 @@
+import { getRuntimeEnvValue } from "@/lib/cloudflare-env"
+
 const TEBEX_API_BASE = "https://headless.tebex.io/api"
 
 export function getTebexWebstoreToken() {
-  const token = process.env.TEBEX_WEBSTORE_TOKEN
+  const token =
+    getRuntimeEnvValue("TEBEX_WEBSTORE_TOKEN") ||
+    getRuntimeEnvValue("VITE_TEBEX_WEBSTORE_TOKEN")
 
   if (!token) {
-    throw new Error("Configure TEBEX_WEBSTORE_TOKEN no .env.local.")
+    throw new Error(
+      "Configure TEBEX_WEBSTORE_TOKEN e VITE_TEBEX_WEBSTORE_TOKEN nas variáveis do Cloudflare.",
+    )
   }
 
   return token

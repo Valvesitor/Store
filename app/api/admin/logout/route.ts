@@ -6,8 +6,8 @@ export async function POST(request: Request) {
   response.cookies.set(ADMIN_COOKIE_NAME, "", {
     httpOnly: true,
     maxAge: 0,
-    path: "/admin",
-    sameSite: "strict",
+    path: "/",
+    sameSite: "lax",
   })
 
   return response
