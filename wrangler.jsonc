@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "loja-official-store",
+  "name": "store-test",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-06-03",
   "compatibility_flags": [
@@ -20,7 +20,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "loja-official-store"
+      "service": "store-test"
     }
   ],
   "routes": [
