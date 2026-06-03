@@ -2,9 +2,15 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ProductCard } from "@/components/product-card"
-import { featuredProducts } from "@/lib/store-data"
+import { getProducts } from "@/lib/product-store"
+import { featuredProductIds } from "@/lib/store-data"
 
-export function FeaturedProducts() {
+export async function FeaturedProducts() {
+  const products = await getProducts()
+  const featuredProducts = products.filter((product) =>
+    featuredProductIds.includes(product.id as (typeof featuredProductIds)[number]),
+  )
+
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

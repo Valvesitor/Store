@@ -3,9 +3,9 @@ import Link from "next/link"
 import { ArrowRight, Package } from "lucide-react"
 import {
   storeCategories,
-  storeProducts,
   type ProductCategory,
 } from "@/lib/store-data"
+import { getProducts } from "@/lib/product-store"
 
 const categoryImages: Record<ProductCategory, string> = {
   Scripts: "/categories/sistemas.png",
@@ -16,7 +16,8 @@ const categoryImages: Record<ProductCategory, string> = {
   "Free Resources": "/categories/mapas.png",
 }
 
-export function HomeCategories() {
+export async function HomeCategories() {
+  const products = await getProducts()
   const categories = storeCategories.filter(
     (category): category is ProductCategory => category !== "All",
   )
@@ -46,7 +47,7 @@ export function HomeCategories() {
 
         <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
           {categories.map((category) => {
-            const count = storeProducts.filter(
+            const count = products.filter(
               (product) => product.category === category,
             ).length
 

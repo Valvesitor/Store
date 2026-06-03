@@ -25,12 +25,12 @@ import {
 
 type SortMode = "featured" | "price-asc" | "price-desc" | "name"
 
-function getCategoryCount(category: StoreCategory) {
+function getCategoryCount(category: StoreCategory, products: StoreProduct[]) {
   if (category === "All") {
-    return storeProducts.length
+    return products.length
   }
 
-  return storeProducts.filter((product) => product.category === category).length
+  return products.filter((product) => product.category === category).length
 }
 
 function normalize(value: string) {
@@ -113,7 +113,11 @@ function FeaturedCatalogBanner({ product }: { product: StoreProduct }) {
   )
 }
 
-export function ProductCatalog() {
+export function ProductCatalog({
+  products = storeProducts,
+}: {
+  products?: StoreProduct[]
+}) {
   const searchRef = useRef<HTMLInputElement>(null)
   const [selectedCategory, setSelectedCategory] = useState<StoreCategory>("All")
   const [query, setQuery] = useState("")
@@ -142,7 +146,7 @@ export function ProductCatalog() {
   const filteredProducts = useMemo(() => {
     const search = normalize(query.trim())
 
-    const filtered = storeProducts.filter((product) => {
+    const filtered = products.filter((product) => {
       const inCategory =
         selectedCategory === "All" || product.category === selectedCategory
       const matchesSearch =
@@ -158,9 +162,9 @@ export function ProductCatalog() {
       if (sortMode === "price-asc") return priceValue(a) - priceValue(b)
       if (sortMode === "price-desc") return priceValue(b) - priceValue(a)
       if (sortMode === "name") return a.title.localeCompare(b.title)
-      return storeProducts.indexOf(a) - storeProducts.indexOf(b)
+      return products.indexOf(a) - products.indexOf(b)
     })
-  }, [query, selectedCategory, sortMode])
+  }, [products, query, selectedCategory, sortMode])
 
   const featuredProduct =
     filteredProducts.find((product) => product.id === "tws-identity-forge") ??
@@ -299,7 +303,7 @@ export function ProductCatalog() {
                     <Package className="h-4 w-4" />
                     <span>{category}</span>
                     <span className="rounded bg-background/30 px-1.5 py-0.5 text-[0.65rem]">
-                      {getCategoryCount(category)}
+                      {getCategoryCount(category, products)}
                     </span>
                   </button>
                 )

@@ -5,6 +5,8 @@ import { HomeCategories } from "@/components/home-categories"
 import { FeaturedProducts } from "@/components/featured-products"
 import { SiteFooter } from "@/components/site-footer"
 
+export const dynamic = "force-dynamic"
+
 export default function Page() {
   return (
     <div className="flex min-h-screen flex-col bg-background">

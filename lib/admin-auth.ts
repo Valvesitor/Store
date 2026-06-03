@@ -19,3 +19,9 @@ export async function isAdminSessionValid(secret: string, token?: string) {
   if (!token) return false
   return token === (await createAdminSessionToken(secret))
 }
+
+export async function isAdminTokenValid(token?: string) {
+  const adminKey = getAdminAccessKey()
+  if (!adminKey) return false
+  return isAdminSessionValid(adminKey, token)
+}

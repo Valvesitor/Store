@@ -9,9 +9,11 @@ import { SiteHeader } from "@/components/site-header"
 import {
   categorySlugs,
   slugToCategory,
-  storeProducts,
   type ProductCategory,
 } from "@/lib/store-data"
+import { getProductsByCategory } from "@/lib/product-store"
+
+export const dynamic = "force-dynamic"
 
 export function generateStaticParams() {
   return Object.values(categorySlugs).map((slug) => ({ slug }))
@@ -29,9 +31,7 @@ export default async function CategoryPage({
     notFound()
   }
 
-  const products = storeProducts.filter(
-    (product) => product.category === (category as ProductCategory),
-  )
+  const products = await getProductsByCategory(category as ProductCategory)
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

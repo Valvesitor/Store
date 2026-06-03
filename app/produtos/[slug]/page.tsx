@@ -23,10 +23,12 @@ import { Button } from "@/components/ui/button"
 import {
   categoryToSlug,
   productToSlug,
-  slugToProduct,
   storeProducts,
 } from "@/lib/store-data"
+import { getProductBySlug, getProducts } from "@/lib/product-store"
 import { cn } from "@/lib/utils"
+
+export const dynamic = "force-dynamic"
 
 export function generateStaticParams() {
   return storeProducts.map((product) => ({ slug: productToSlug(product) }))
@@ -60,7 +62,7 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const product = slugToProduct(slug)
+  const product = await getProductBySlug(slug)
 
   if (!product) {
     notFound()
@@ -85,7 +87,7 @@ export default async function ProductPage({
       "Permissao para instalar resources",
       "Framework e dependencias compativeis",
     ]
-  const related = storeProducts
+  const related = (await getProducts())
     .filter((item) => item.category === product.category && item.id !== product.id)
     .slice(0, 3)
 
