@@ -94,6 +94,9 @@ export function ProductCatalog({
       if (sortMode === "price-asc") return priceValue(a) - priceValue(b)
       if (sortMode === "price-desc") return priceValue(b) - priceValue(a)
       if (sortMode === "name") return a.title.localeCompare(b.title)
+      if (Boolean(a.featured) !== Boolean(b.featured)) {
+        return a.featured ? -1 : 1
+      }
       return visibleProducts.indexOf(a) - visibleProducts.indexOf(b)
     })
   }, [visibleProducts, query, selectedCategory, sortMode])

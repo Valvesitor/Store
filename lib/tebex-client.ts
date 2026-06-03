@@ -69,10 +69,20 @@ export function getStoredTebexCartCount() {
   return Number.isFinite(count) && count > 0 ? count : 0
 }
 
-function bumpStoredTebexCartCount() {
-  const nextCount = getStoredTebexCartCount() + 1
-  window.localStorage.setItem(TEBEX_CART_COUNT_KEY, String(nextCount))
+export function storeTebexCartCount(count: number) {
+  const nextCount = Number.isFinite(count) && count > 0 ? Math.floor(count) : 0
+
+  if (nextCount > 0) {
+    window.localStorage.setItem(TEBEX_CART_COUNT_KEY, String(nextCount))
+  } else {
+    window.localStorage.removeItem(TEBEX_CART_COUNT_KEY)
+  }
+
   window.dispatchEvent(new Event("tws:tebex-cart-changed"))
+}
+
+function bumpStoredTebexCartCount() {
+  storeTebexCartCount(getStoredTebexCartCount() + 1)
 }
 
 export async function createTebexBasket() {
@@ -123,6 +133,23 @@ export async function addPackageToTebexBasket(
 
   bumpStoredTebexCartCount()
   return basketIdent
+}
+
+export async function removePackageFromTebexBasket(
+  basketIdent: string,
+  packageId: string,
+) {
+  const payload = await apiJson<{ data?: unknown } | unknown>(
+    `/api/tebex/basket/${encodeURIComponent(basketIdent)}/packages`,
+    {
+      method: "DELETE",
+      body: JSON.stringify({ packageId }),
+    },
+  )
+
+  return typeof payload === "object" && payload && "data" in payload
+    ? (payload as { data?: unknown }).data
+    : payload
 }
 
 export async function fetchTebexBasket(basketIdent: string) {

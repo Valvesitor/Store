@@ -6,7 +6,7 @@ import { Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { getStoredTebexCartCount, openTebexCart } from "@/lib/tebex-client"
+import { getStoredTebexCartCount } from "@/lib/tebex-client"
 
 const navLinks = [
   { label: "INICIO", href: "/" },
@@ -80,21 +80,14 @@ export function SiteHeader() {
             size="icon"
             className="relative text-muted-foreground hover:text-foreground"
             aria-label="Carrinho Tebex"
-            onClick={() => {
-              openTebexCart().catch((error) => {
-                console.error(error)
-                window.alert(
-                  error instanceof Error
-                    ? error.message
-                    : "Nao foi possivel abrir o carrinho da Tebex.",
-                )
-              })
-            }}
+            asChild
           >
-            <ShoppingCart className="h-5 w-5" />
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[0.6rem] font-bold text-primary-foreground">
-              {cartCount}
-            </span>
+            <Link href="/carrinho">
+              <ShoppingCart className="h-5 w-5" />
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[0.6rem] font-bold text-primary-foreground">
+                {cartCount}
+              </span>
+            </Link>
           </Button>
           <Button
             variant="ghost"
@@ -127,6 +120,13 @@ export function SiteHeader() {
               className="rounded-md px-3 py-2.5 font-display text-sm tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               LOGIN
+            </Link>
+            <Link
+              href="/carrinho"
+              onClick={() => setOpen(false)}
+              className="rounded-md px-3 py-2.5 font-display text-sm tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              CARRINHO
             </Link>
             <div className="relative mt-2">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

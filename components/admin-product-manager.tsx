@@ -8,6 +8,7 @@ import {
   FilePenLine,
   Plus,
   RotateCcw,
+  Star,
   Trash2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -88,6 +89,31 @@ export function AdminProductManager({
     }
   }
 
+  async function toggleFeatured(product: StoreProduct) {
+    setSaving(true)
+    setMessage("")
+
+    try {
+      const response = await fetch(`/api/admin/products/${encodeURIComponent(product.id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...product, featured: !product.featured }),
+      })
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Erro ao atualizar destaque.")
+      }
+
+      await refreshProducts(data.products)
+      setMessage(product.featured ? "Produto removido dos destaques." : "Produto marcado como destaque.")
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Erro inesperado ao atualizar destaque.")
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function resetCatalog() {
     if (!confirm("Resetar o catálogo para os produtos padrão do código?")) return
 
@@ -161,7 +187,7 @@ export function AdminProductManager({
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px] text-left">
+        <table className="w-full min-w-[1000px] text-left">
           <thead className="border-b border-border bg-background/35">
             <tr className="font-display text-xs uppercase text-muted-foreground">
               <th className="px-5 py-3 font-medium">Produto</th>
@@ -170,6 +196,7 @@ export function AdminProductManager({
               <th className="px-5 py-3 font-medium">Mídia</th>
               <th className="px-5 py-3 font-medium">Package</th>
               <th className="px-5 py-3 font-medium">Status</th>
+              <th className="px-5 py-3 font-medium">Home</th>
               <th className="px-5 py-3 font-medium">Ações</th>
             </tr>
           </thead>
@@ -210,7 +237,14 @@ export function AdminProductManager({
                   </Link>
                 </td>
                 <td className="px-5 py-4 font-display text-base text-primary">
-                  {product.price}
+                  <div className="grid gap-1">
+                    <span>{product.price}</span>
+                    {product.priceSource === "tebex" && (
+                      <span className="font-sans text-[0.65rem] uppercase tracking-widest text-muted-foreground">
+                        Tebex
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-5 py-4 text-muted-foreground">
                   {product.videoUrl ? "Imagem + vídeo" : product.gallery?.length ? "Galeria" : "Imagem"}
@@ -224,6 +258,22 @@ export function AdminProductManager({
                   >
                     {product.packageId ? "Tebex OK" : "Configurar"}
                   </span>
+                </td>
+                <td className="px-5 py-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={
+                      product.featured
+                        ? "h-9 border-primary/45 bg-primary/10 px-3 font-display text-xs uppercase text-primary hover:border-primary/70"
+                        : "h-9 border-border bg-background/70 px-3 font-display text-xs uppercase text-muted-foreground hover:text-foreground"
+                    }
+                    onClick={() => toggleFeatured(product)}
+                    disabled={saving || !persistence.canWrite}
+                  >
+                    <Star className={product.featured ? "h-4 w-4 fill-current" : "h-4 w-4"} />
+                    {product.featured ? "Destaque" : "Normal"}
+                  </Button>
                 </td>
                 <td className="px-5 py-4">
                   <div className="flex gap-2">

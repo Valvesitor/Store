@@ -19,3 +19,22 @@ export async function POST(
     }),
   })
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ ident: string }> },
+) {
+  const { ident } = await params
+  const body = await request.json()
+
+  if (!body.packageId) {
+    return Response.json({ error: "packageId Ã© obrigatÃ³rio." }, { status: 400 })
+  }
+
+  return tebexRequest(`/baskets/${encodeURIComponent(ident)}/packages/remove`, {
+    method: "POST",
+    body: JSON.stringify({
+      package_id: String(body.packageId),
+    }),
+  })
+}

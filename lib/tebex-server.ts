@@ -2,6 +2,14 @@ import { getRuntimeEnvValue } from "@/lib/cloudflare-env"
 
 const TEBEX_API_BASE = "https://headless.tebex.io/api"
 
+type TebexPackagePayload = {
+  id?: number | string
+  base_price?: number | string | null
+  total_price?: number | string | null
+  price?: number | string | null
+  currency?: string | null
+}
+
 function cleanUrl(value?: string | null) {
   if (!value) return undefined
   try {
@@ -34,6 +42,82 @@ export function getTebexWebstoreToken() {
   }
 
   return token.trim()
+}
+
+function packagePayload(value: unknown): TebexPackagePayload | undefined {
+  if (!value || typeof value !== "object") return undefined
+
+  const record = value as Record<string, unknown>
+  const data = record.data
+
+  if (Array.isArray(data)) {
+    return packagePayload(data[0])
+  }
+
+  if (data && typeof data === "object") {
+    return data as TebexPackagePayload
+  }
+
+  return record as TebexPackagePayload
+}
+
+function numberFromPrice(value: unknown) {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : undefined
+}
+
+export function formatTebexPrice(
+  amount: number,
+  currency = "BRL",
+  locale = "pt-BR",
+) {
+  try {
+    return new Intl.NumberFormat(locale, {
+      currency: currency.toUpperCase(),
+      style: "currency",
+    }).format(amount)
+  } catch {
+    return `${currency.toUpperCase()} ${amount.toFixed(2)}`
+  }
+}
+
+export async function getTebexPackagePrice(packageId?: string | null) {
+  const id = packageId?.trim()
+  if (!id) return undefined
+
+  try {
+    const token = getTebexWebstoreToken()
+    const response = await fetch(
+      `${TEBEX_API_BASE}/accounts/${token}/packages/${encodeURIComponent(id)}`,
+      {
+        headers: { Accept: "application/json" },
+        next: { revalidate: 300 },
+      },
+    )
+
+    if (!response.ok) return undefined
+
+    const payload = packagePayload(await response.json())
+    const amount =
+      numberFromPrice(payload?.total_price) ??
+      numberFromPrice(payload?.base_price) ??
+      numberFromPrice(payload?.price)
+
+    if (amount === undefined) return undefined
+
+    const currency =
+      typeof payload?.currency === "string" && payload.currency.trim()
+        ? payload.currency.trim()
+        : "BRL"
+
+    return {
+      amount,
+      currency,
+      formatted: formatTebexPrice(amount, currency),
+    }
+  } catch {
+    return undefined
+  }
 }
 
 export async function tebexRequest(path: string, init?: RequestInit) {

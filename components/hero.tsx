@@ -3,9 +3,8 @@ import Link from "next/link"
 import { ArrowRight, Box, Headphones, ShieldCheck, Sparkles } from "lucide-react"
 import { DiscordIcon } from "@/components/icons"
 import { Button } from "@/components/ui/button"
-import { featuredProducts } from "@/lib/store-data"
-
-const heroProduct = featuredProducts[0]
+import { getProducts } from "@/lib/product-store"
+import { getFeaturedProducts, storeProducts } from "@/lib/store-data"
 
 const highlights = [
   { label: "Scripts", value: "Premium" },
@@ -13,7 +12,10 @@ const highlights = [
   { label: "Suporte", value: "Discord" },
 ]
 
-export function Hero() {
+export async function Hero() {
+  const products = await getProducts()
+  const heroProduct = getFeaturedProducts(products, 1)[0] || storeProducts[0]
+
   return (
     <section id="inicio" className="relative overflow-hidden border-b border-border">
       <div className="absolute inset-0">
@@ -93,11 +95,15 @@ export function Hero() {
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
             <div className="relative aspect-[16/10]">
               <Image
-                src={heroProduct.image}
+                src={heroProduct.image || "/placeholder.jpg"}
                 alt={heroProduct.title}
                 fill
                 sizes="(min-width: 1024px) 40vw, 100vw"
-                className="object-cover"
+                className={
+                  heroProduct.imageMode === "contain"
+                    ? "object-contain p-8"
+                    : "object-cover"
+                }
               />
               <div className="absolute inset-0 bg-gradient-to-t from-card via-card/35 to-transparent" />
               <span className="absolute left-4 top-4 rounded border border-primary/30 bg-background/80 px-3 py-1 font-display text-xs uppercase text-primary">

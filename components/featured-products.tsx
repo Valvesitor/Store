@@ -3,13 +3,11 @@ import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ProductCard } from "@/components/product-card"
 import { getProducts } from "@/lib/product-store"
-import { featuredProductIds } from "@/lib/store-data"
+import { getFeaturedProducts } from "@/lib/store-data"
 
 export async function FeaturedProducts() {
   const products = await getProducts()
-  const featuredProducts = products.filter((product) =>
-    featuredProductIds.includes(product.id as (typeof featuredProductIds)[number]),
-  )
+  const featuredProducts = getFeaturedProducts(products)
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">

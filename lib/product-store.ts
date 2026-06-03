@@ -1,4 +1,5 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare"
+import { getTebexPackagePrice } from "@/lib/tebex-server"
 import {
   productToSlug,
   slugifyProduct,
@@ -53,6 +54,15 @@ function numberValue(value: unknown, fallback: number) {
   return Number.isFinite(number) ? number : fallback
 }
 
+function booleanValue(value: unknown, fallback = false) {
+  if (typeof value === "boolean") return value
+  if (typeof value === "string") {
+    return ["1", "true", "sim", "yes", "on"].includes(value.trim().toLowerCase())
+  }
+
+  return fallback
+}
+
 function stringArray(value: unknown) {
   if (Array.isArray(value)) {
     return value.map((item) => String(item).trim()).filter(Boolean)
@@ -73,6 +83,10 @@ function categoryValue(value: unknown, fallback: ProductCategory = "Scripts") {
   return PRODUCT_CATEGORIES.includes(category as ProductCategory)
     ? (category as ProductCategory)
     : fallback
+}
+
+function hasOwnValue(source: Record<string, unknown>, key: string) {
+  return Object.prototype.hasOwnProperty.call(source, key)
 }
 
 export function normalizeProduct(input: unknown, fallback?: Partial<StoreProduct>) {
@@ -101,13 +115,16 @@ export function normalizeProduct(input: unknown, fallback?: Partial<StoreProduct
     videoUrl: stringValue(source.videoUrl, fallback?.videoUrl || "") || undefined,
     fullDescription:
       stringValue(source.fullDescription, fallback?.fullDescription || "") || undefined,
-    features: stringArray(source.features).length
+    features: hasOwnValue(source, "features")
       ? stringArray(source.features)
       : fallback?.features,
-    requirements: stringArray(source.requirements).length
+    requirements: hasOwnValue(source, "requirements")
       ? stringArray(source.requirements)
       : fallback?.requirements,
-    gallery: stringArray(source.gallery).length ? stringArray(source.gallery) : fallback?.gallery,
+    gallery: hasOwnValue(source, "gallery")
+      ? stringArray(source.gallery)
+      : fallback?.gallery,
+    featured: booleanValue(source.featured, fallback?.featured ?? false),
   } satisfies StoreProduct
 }
 
@@ -123,6 +140,40 @@ export function normalizeProducts(input: unknown) {
 
   const result = Array.from(unique.values())
   return result.length > 0 ? result : [...storeProducts]
+}
+
+async function applyTebexPrices(products: StoreProduct[]) {
+  const packageIds = Array.from(
+    new Set(
+      products
+        .map((product) => product.packageId?.trim())
+        .filter((packageId): packageId is string => Boolean(packageId)),
+    ),
+  )
+
+  if (packageIds.length === 0) return products
+
+  const prices = new Map<string, Awaited<ReturnType<typeof getTebexPackagePrice>>>()
+
+  await Promise.all(
+    packageIds.map(async (packageId) => {
+      prices.set(packageId, await getTebexPackagePrice(packageId))
+    }),
+  )
+
+  return products.map((product) => {
+    const packageId = product.packageId?.trim()
+    if (!packageId) return product
+
+    const tebexPrice = prices.get(packageId)
+    if (!tebexPrice?.formatted) return product
+
+    return {
+      ...product,
+      price: tebexPrice.formatted,
+      priceSource: "tebex" as const,
+    }
+  })
 }
 
 export function getProductPersistence(): ProductPersistence {
@@ -162,9 +213,9 @@ async function readProductsFromR2(bucket: R2BucketLike) {
 
 export async function getProducts() {
   const bucket = getProductMediaBucket()
-  if (!bucket) return [...storeProducts]
+  if (!bucket) return applyTebexPrices([...storeProducts])
 
-  return readProductsFromR2(bucket)
+  return applyTebexPrices(await readProductsFromR2(bucket))
 }
 
 export async function saveProducts(products: StoreProduct[]) {

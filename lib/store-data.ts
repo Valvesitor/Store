@@ -45,6 +45,7 @@ export type StoreProduct = {
   subtitle: string
   category: ProductCategory
   price: string
+  priceSource?: "manual" | "tebex"
   rating: number
   reviews: number
   image: string
@@ -58,6 +59,7 @@ export type StoreProduct = {
   features?: string[]
   requirements?: string[]
   gallery?: string[]
+  featured?: boolean
 }
 
 export const storeProducts: StoreProduct[] = [
@@ -75,6 +77,7 @@ export const storeProducts: StoreProduct[] = [
     tebexUrl: "https://the-wanted-sole-studio-webstore.tebex.io/package/7457637",
     packageId: "7457637",
     docsUrl: "/docs?product=tws-identity-forge",
+    featured: true,
     fullDescription:
       "Sistema premium para criação, edição e gerenciamento de identidade visual, personagens e outfits para RedM. Interface moderna com organização por projetos, favoritos, preview em tempo real e recursos avançados de customização.",
     features: [
@@ -107,6 +110,7 @@ export const storeProducts: StoreProduct[] = [
     reviews: 120,
     image: "/products/wanted-menu.png",
     badge: "Popular",
+    featured: true,
   },
   {
     id: "banking-system",
@@ -117,6 +121,7 @@ export const storeProducts: StoreProduct[] = [
     rating: 5,
     reviews: 85,
     image: "/products/banking-system.png",
+    featured: true,
   },
   {
     id: "illegal-activities",
@@ -127,6 +132,7 @@ export const storeProducts: StoreProduct[] = [
     rating: 4,
     reviews: 64,
     image: "/products/illegal-activities.png",
+    featured: true,
   },
   {
     id: "vehicle-control",
@@ -245,3 +251,17 @@ export const featuredProductIds = [
 export const featuredProducts = storeProducts.filter((product) =>
   featuredProductIds.includes(product.id as (typeof featuredProductIds)[number]),
 )
+
+export function getFeaturedProducts(products: StoreProduct[], limit = 4) {
+  const explicitFeatured = products.filter((product) => product.featured)
+
+  if (explicitFeatured.length > 0) {
+    return explicitFeatured.slice(0, limit)
+  }
+
+  const legacyFeatured = products.filter((product) =>
+    featuredProductIds.includes(product.id as (typeof featuredProductIds)[number]),
+  )
+
+  return (legacyFeatured.length > 0 ? legacyFeatured : products).slice(0, limit)
+}

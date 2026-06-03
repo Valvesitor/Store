@@ -63,7 +63,7 @@ export default function LoginPage() {
                   return (
                     <div
                       key={benefit.title}
-                      className="mx-auto flex w-full max-w-md gap-3 border-t border-border pt-3"
+                      className="mx-auto flex w-full max-w-xl gap-3 border-t border-border pt-3"
                     >
                       <span className="mt-0.5 text-primary">
                         <Icon className="h-4 w-4" />

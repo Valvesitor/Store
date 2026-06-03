@@ -4,9 +4,10 @@ import Image from "next/image"
 import Link from "next/link"
 import { useMemo, useState, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, ExternalLink, ImageIcon, Save, Video } from "lucide-react"
+import { ArrowLeft, ExternalLink, ImageIcon, Save, Star, Trash2, Video } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import {
   productToSlug,
@@ -35,6 +36,7 @@ export type ProductFormState = {
   features: string
   requirements: string
   gallery: string
+  featured: boolean
 }
 
 const productCategories = storeCategories.filter(
@@ -61,6 +63,7 @@ function productToForm(product: StoreProduct): ProductFormState {
     features: (product.features ?? []).join("\n"),
     requirements: (product.requirements ?? []).join("\n"),
     gallery: (product.gallery ?? []).join("\n"),
+    featured: Boolean(product.featured),
   }
 }
 
@@ -86,6 +89,7 @@ function blankProduct(): ProductFormState {
     features: "Instalação guiada\nSuporte via Discord",
     requirements: "Servidor RedM atualizado",
     gallery: "",
+    featured: false,
   }
 }
 
@@ -152,6 +156,15 @@ export function AdminProductEditor({
 
   function update<K extends keyof ProductFormState>(key: K, value: ProductFormState[K]) {
     setForm((current) => ({ ...current, [key]: value }))
+  }
+
+  function removeGalleryItem(index: number) {
+    const nextGallery = galleryItems.filter((_, itemIndex) => itemIndex !== index)
+    update("gallery", nextGallery.join("\n"))
+  }
+
+  function removeMainImage() {
+    update("image", "")
   }
 
   async function saveProduct() {
@@ -273,10 +286,17 @@ export function AdminProductEditor({
                 <Input
                   value={form.price}
                   onChange={(event) => update("price", event.target.value)}
+                  disabled={Boolean(form.packageId)}
                   className="bg-background/80"
                   placeholder="R$ 0,00 ou Grátis"
                 />
               </Field>
+              {form.packageId && (
+                <span className="-mt-2 text-xs leading-5 text-muted-foreground">
+                  O preco exibido na loja vem da Tebex pelo Package ID. Este
+                  valor fica apenas como fallback.
+                </span>
+              )}
               <div className="md:col-span-2">
                 <Field label="Descrição curta">
                   <Input
@@ -313,6 +333,24 @@ export function AdminProductEditor({
                   placeholder="Popular, Tebex, Free..."
                 />
               </Field>
+              <div className="rounded-md border border-border bg-background/55 p-4 md:col-span-2">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 font-display text-xs uppercase tracking-wide text-foreground">
+                      <Star className="h-4 w-4 text-primary" />
+                      Produto em destaque na tela inicial
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                      Produtos marcados aqui aparecem no bloco de destaques da home; o primeiro tambem vira o produto recomendado do topo.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={form.featured}
+                    onCheckedChange={(checked) => update("featured", checked)}
+                    aria-label="Marcar produto como destaque na tela inicial"
+                  />
+                </div>
+              </div>
               <Field label="Modo da imagem">
                 <select
                   value={form.imageMode}
@@ -329,14 +367,29 @@ export function AdminProductEditor({
           <div className="rounded-lg border border-border bg-card/70 p-5">
             <p className="font-display text-xs uppercase text-primary">Mídia do produto</p>
             <div className="mt-5 grid gap-4">
-              <Field label="Imagem principal">
-                <Input
-                  value={form.image}
-                  onChange={(event) => update("image", event.target.value)}
-                  className="bg-background/80"
-                  placeholder="/products/produto.png ou https://..."
-                />
-              </Field>
+              <div className="grid gap-2">
+                <span className="font-display text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+                  Imagem principal
+                </span>
+                <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                  <Input
+                    value={form.image}
+                    onChange={(event) => update("image", event.target.value)}
+                    className="bg-background/80"
+                    placeholder="/products/produto.png ou https://..."
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10 border-red-500/30 bg-background/70 px-3 font-display text-xs uppercase text-red-300 hover:border-red-500/60 hover:text-red-200"
+                    onClick={removeMainImage}
+                    disabled={!form.image}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Remover
+                  </Button>
+                </div>
+              </div>
               <Field label="Vídeo do produto">
                 <Input
                   value={form.videoUrl}
@@ -353,6 +406,32 @@ export function AdminProductEditor({
                   placeholder="/products/produto-1.png\n/products/produto-2.png"
                 />
               </Field>
+              {galleryItems.length > 0 && (
+                <div className="grid gap-2">
+                  {galleryItems.map((item, index) => (
+                    <div
+                      key={`${item}-${index}`}
+                      className="grid gap-2 rounded-md border border-border bg-background/55 p-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+                        <ImageIcon className="h-4 w-4" />
+                      </span>
+                      <p className="min-w-0 break-all text-xs leading-5 text-muted-foreground">
+                        {item}
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-9 border-red-500/30 bg-background/70 px-3 font-display text-xs uppercase text-red-300 hover:border-red-500/60 hover:text-red-200"
+                        onClick={() => removeGalleryItem(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Remover
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <p className="text-xs leading-5 text-muted-foreground">
                 Na página do produto, a imagem principal, as imagens da galeria e o vídeo aparecem em um slide com botões de anterior/próximo.
               </p>
@@ -462,6 +541,7 @@ export function AdminProductEditor({
 
             <div className="mt-4 grid gap-2 text-xs text-muted-foreground">
               <p>Galeria: {galleryItems.length} imagem(ns)</p>
+              <p>Destaque na home: {form.featured ? "sim" : "nao"}</p>
               <p>Package ID: {form.packageId || "pendente"}</p>
               <p>Categoria: {form.category}</p>
             </div>
