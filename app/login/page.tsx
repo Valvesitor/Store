@@ -1,8 +1,8 @@
 import Image from "next/image"
-import { BadgeCheck, Download, ShieldCheck, User } from "lucide-react"
+import { Download, ShieldCheck, User } from "lucide-react"
+import { LoginAccountPanel } from "@/components/login-account-panel"
 import { SiteFooter } from "@/components/site-footer"
 import { SiteHeader } from "@/components/site-header"
-import { TebexLoginButton } from "@/components/tebex-login-button"
 
 const benefits = [
   {
@@ -17,8 +17,8 @@ const benefits = [
   },
   {
     icon: ShieldCheck,
-    title: "Segurança",
-    desc: "Autenticação centralizada para reduzir contas duplicadas.",
+    title: "Seguranca",
+    desc: "Autenticacao centralizada para reduzir contas duplicadas.",
   },
 ]
 
@@ -42,43 +42,29 @@ export default function LoginPage() {
         <section className="relative mx-auto grid w-full max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-12 lg:px-8">
           <div className="flex flex-col justify-center lg:col-span-5">
             <p className="font-display text-xs uppercase text-primary">
-              Área do cliente
+              Area do cliente
             </p>
             <h1 className="mt-3 font-display text-4xl font-bold uppercase leading-tight text-foreground sm:text-5xl">
-              Login via CFX.re
+              Login e conta CFX.re
             </h1>
             <p className="mt-4 max-w-md text-pretty leading-relaxed text-muted-foreground">
-              Acesse sua conta usando CFX.re para acompanhar compras, downloads
-              e suporte dos seus produtos RedM.
+              Entre com CFX.re para vincular sua sessao da loja, acompanhar o
+              carrinho e finalizar compras dos seus produtos RedM.
             </p>
           </div>
 
           <div className="lg:col-span-7">
-            <div className="mx-auto max-w-md rounded-lg border border-border bg-card/85 p-6 backdrop-blur">
-              <div className="flex h-12 w-12 items-center justify-center rounded-md border border-primary/30 bg-primary/10 text-primary">
-                <BadgeCheck className="h-5 w-5" />
-              </div>
+            <div className="grid gap-5">
+              <LoginAccountPanel />
 
-              <div className="mt-6">
-                <p className="font-display text-xs uppercase text-primary">
-                  CFX.re Account
-                </p>
-                <h2 className="mt-2 font-display text-2xl font-bold uppercase text-foreground">
-                  Entrar com CFX.re
-                </h2>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  Você será enviado para autenticar sua conta CFX.re e depois
-                  poderá voltar para acessar seus recursos.
-                </p>
-              </div>
-
-              <TebexLoginButton />
-
-              <div className="mt-6 grid gap-3">
+              <div className="grid gap-3">
                 {benefits.map((benefit) => {
                   const Icon = benefit.icon
                   return (
-                    <div key={benefit.title} className="flex gap-3 border-t border-border pt-3">
+                    <div
+                      key={benefit.title}
+                      className="mx-auto flex w-full max-w-md gap-3 border-t border-border pt-3"
+                    >
                       <span className="mt-0.5 text-primary">
                         <Icon className="h-4 w-4" />
                       </span>
