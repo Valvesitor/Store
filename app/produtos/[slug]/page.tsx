@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import { ProductAddToCartButton } from "@/components/product-add-to-cart-button"
 import { ProductBuyButton } from "@/components/product-buy-button"
+import { ProductMediaCarousel } from "@/components/product-media-carousel"
 import { SiteFooter } from "@/components/site-footer"
 import { SiteHeader } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
@@ -26,7 +27,6 @@ import {
   storeProducts,
 } from "@/lib/store-data"
 import { getProductBySlug, getProducts } from "@/lib/product-store"
-import { cn } from "@/lib/utils"
 
 export const dynamic = "force-dynamic"
 
@@ -68,9 +68,12 @@ export default async function ProductPage({
     notFound()
   }
 
-  const gallery = Array.from(
-    new Set([product.image, ...(product.gallery ?? [])]),
-  ).slice(0, 4)
+  const imageItems = Array.from(new Set([product.image, ...(product.gallery ?? [])]))
+    .filter(Boolean)
+    .map((src) => ({ type: "image" as const, src }))
+  const mediaItems = product.videoUrl
+    ? [...imageItems, { type: "video" as const, src: product.videoUrl }]
+    : imageItems
   const imageMode = product.imageMode ?? "cover"
   const features =
     product.features ??
@@ -188,65 +191,13 @@ export default async function ProductPage({
                   )}
                 </div>
 
-                <div className="mt-8 overflow-hidden rounded-lg border border-primary/25 bg-[#0f0f10] shadow-2xl shadow-black/30">
-                  <div className="relative aspect-[16/9] min-h-[260px]">
-                    <Image
-                      src={product.image}
-                      alt={product.title}
-                      fill
-                      priority
-                      sizes="(min-width: 1024px) 65vw, 100vw"
-                      className={cn(
-                        imageMode === "contain"
-                          ? "object-contain p-8 sm:p-12"
-                          : "object-cover",
-                      )}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-end justify-between gap-3">
-                      <div>
-                        <p className="font-display text-xs uppercase text-primary">
-                          Produto oficial
-                        </p>
-                        <p className="mt-1 font-display text-2xl font-bold uppercase text-foreground">
-                          {product.badge || "The Wanted Sole Studio"}
-                        </p>
-                      </div>
-                      <div className="rounded border border-primary/30 bg-background/85 px-4 py-2 text-right">
-                        <p className="font-display text-xs uppercase text-muted-foreground">
-                          Preco
-                        </p>
-                        <p className="font-display text-xl font-bold text-primary">
-                          {product.price}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid gap-3 sm:grid-cols-4">
-                  {gallery.map((image, index) => (
-                    <div
-                      key={`${image}-${index}`}
-                      className="overflow-hidden rounded-md border border-border bg-[#0f0f10]"
-                    >
-                      <div className="relative aspect-[5/3]">
-                        <Image
-                          src={image}
-                          alt={`${product.title} preview ${index + 1}`}
-                          fill
-                          sizes="(min-width: 1024px) 16vw, 50vw"
-                          className={cn(
-                            "opacity-90",
-                            index === 0 && imageMode === "contain"
-                              ? "object-contain p-4"
-                              : "object-cover",
-                          )}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <ProductMediaCarousel
+                  title={product.title}
+                  price={product.price}
+                  badge={product.badge}
+                  imageMode={imageMode}
+                  media={mediaItems}
+                />
               </div>
 
               <aside className="lg:sticky lg:top-24 lg:self-start">

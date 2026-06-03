@@ -1,22 +1,17 @@
 "use client"
 
-import Image from "next/image"
-import Link from "next/link"
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
-  ArrowRight,
   CheckCircle2,
   Filter,
   Package,
   Search,
   SlidersHorizontal,
 } from "lucide-react"
-import { ProductAddToCartButton } from "@/components/product-add-to-cart-button"
 import { ProductCard } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
-  productToSlug,
   storeCategories,
   storeProducts,
   type StoreCategory,
@@ -46,71 +41,6 @@ function priceValue(product: StoreProduct) {
   const normalized = product.price.replace(/[^\d,.-]/g, "").replace(",", ".")
   const value = Number.parseFloat(normalized)
   return Number.isFinite(value) ? value : 0
-}
-
-function FeaturedCatalogBanner({ product }: { product: StoreProduct }) {
-  return (
-    <article className="overflow-hidden rounded-lg border border-primary/25 bg-card/85 shadow-2xl shadow-black/30">
-      <Link
-        href={`/produtos/${productToSlug(product)}`}
-        className="relative block aspect-[4/1] min-h-36 overflow-hidden bg-[#0f0f10] sm:aspect-[6/1]"
-      >
-        <Image
-          src="/hero-bg.png"
-          alt=""
-          fill
-          sizes="100vw"
-          className="object-cover opacity-40"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/45 to-primary/20" />
-        <div className="absolute inset-0 flex items-center justify-center px-5">
-          <Image
-            src={product.image}
-            alt={product.title}
-            width={520}
-            height={180}
-            className="max-h-24 w-auto max-w-[78%] object-contain drop-shadow-2xl"
-            priority
-          />
-        </div>
-        <span className="absolute left-4 top-4 rounded border border-primary/30 bg-background/85 px-3 py-1 font-display text-xs uppercase text-primary">
-          Destaque
-        </span>
-      </Link>
-
-      <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="font-display text-sm uppercase text-muted-foreground">
-            {product.category}
-          </p>
-          <Link href={`/produtos/${productToSlug(product)}`}>
-            <h3 className="mt-1 font-display text-2xl font-bold uppercase text-foreground transition-colors hover:text-primary">
-              {product.title}
-            </h3>
-          </Link>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-            {product.subtitle}
-          </p>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-3">
-          <p className="font-display text-2xl font-bold text-primary">
-            {product.price}
-          </p>
-          <Button
-            className="h-11 bg-primary px-5 font-display text-xs uppercase text-primary-foreground hover:bg-primary/90"
-            asChild
-          >
-            <Link href={`/produtos/${productToSlug(product)}`}>
-              Ver produto
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-          <ProductAddToCartButton product={product} iconOnly />
-        </div>
-      </div>
-    </article>
-  )
 }
 
 export function ProductCatalog({
@@ -165,13 +95,6 @@ export function ProductCatalog({
       return products.indexOf(a) - products.indexOf(b)
     })
   }, [products, query, selectedCategory, sortMode])
-
-  const featuredProduct =
-    filteredProducts.find((product) => product.id === "tws-identity-forge") ??
-    filteredProducts[0]
-  const gridProducts = featuredProduct
-    ? filteredProducts.filter((product) => product.id !== featuredProduct.id)
-    : filteredProducts
 
   return (
     <section
@@ -313,11 +236,9 @@ export function ProductCatalog({
         )}
 
         <div className="mt-8 grid gap-6">
-          {featuredProduct && <FeaturedCatalogBanner product={featuredProduct} />}
-
-          {gridProducts.length > 0 ? (
+          {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {gridProducts.map((product) => (
+              {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>

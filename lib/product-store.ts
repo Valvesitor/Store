@@ -98,6 +98,7 @@ export function normalizeProduct(input: unknown, fallback?: Partial<StoreProduct
     tebexUrl: stringValue(source.tebexUrl, fallback?.tebexUrl || "") || undefined,
     packageId: stringValue(source.packageId, fallback?.packageId || "") || undefined,
     docsUrl: stringValue(source.docsUrl, fallback?.docsUrl || "") || undefined,
+    videoUrl: stringValue(source.videoUrl, fallback?.videoUrl || "") || undefined,
     fullDescription:
       stringValue(source.fullDescription, fallback?.fullDescription || "") || undefined,
     features: stringArray(source.features).length

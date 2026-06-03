@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getTebexWebstoreToken } from "@/lib/tebex-server"
+import { getPublicSiteOrigin, getTebexWebstoreToken } from "@/lib/tebex-server"
 
 export async function GET(request: NextRequest) {
   const token = getTebexWebstoreToken()
-  const origin = request.nextUrl.origin
+  const origin = getPublicSiteOrigin(request.nextUrl.origin)
 
   const basketResponse = await fetch(
     `https://headless.tebex.io/api/accounts/${token}/baskets`,
@@ -37,9 +37,7 @@ export async function GET(request: NextRequest) {
 
   const authResponse = await fetch(
     `https://headless.tebex.io/api/accounts/${token}/baskets/${basketIdent}/auth?returnUrl=${encodeURIComponent(returnUrl.toString())}`,
-    {
-      headers: { Accept: "application/json" },
-    },
+    { headers: { Accept: "application/json" } },
   )
 
   if (!authResponse.ok) {

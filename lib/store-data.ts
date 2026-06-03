@@ -53,6 +53,7 @@ export type StoreProduct = {
   tebexUrl?: string
   packageId?: string
   docsUrl?: string
+  videoUrl?: string
   fullDescription?: string
   features?: string[]
   requirements?: string[]

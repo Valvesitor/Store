@@ -37,10 +37,6 @@ async function apiJson<T>(url: string, init?: RequestInit): Promise<T> {
   const payload = await response.json().catch(() => null)
 
   if (!response.ok) {
-    if (!payload && response.status === 500) {
-      throw new Error("Configure TEBEX_WEBSTORE_TOKEN no .env.local para usar o carrinho Tebex.")
-    }
-
     throw new Error(
       payload?.message ||
         payload?.detail ||
@@ -100,6 +96,13 @@ export async function createTebexBasket() {
   return ident
 }
 
+export async function createFreshTebexBasket() {
+  clearTebexBasket()
+  const ident = await createTebexBasket()
+  storeTebexBasket(ident)
+  return ident
+}
+
 export async function getOrCreateTebexBasket() {
   const existing = getStoredTebexBasket()
   if (existing) return existing
@@ -132,13 +135,21 @@ export async function fetchTebexBasket(basketIdent: string) {
     : payload
 }
 
+function buildReturnUrl(returnPath = "/loja") {
+  try {
+    return new URL(returnPath, window.location.origin)
+  } catch {
+    return new URL("/loja", window.location.origin)
+  }
+}
+
 export async function getTebexAuthUrl(
   basketIdent: string,
   packageId?: string,
   returnPath = "/loja",
   action: "checkout" | "cart" = "checkout",
 ) {
-  const returnUrl = new URL(window.location.origin + returnPath)
+  const returnUrl = buildReturnUrl(returnPath)
   returnUrl.searchParams.set("tebexBasket", basketIdent)
   returnUrl.searchParams.set("tebexAction", action)
 
@@ -166,7 +177,9 @@ export async function getTebexAuthUrl(
 }
 
 export async function startTebexLogin(returnPath = "/login") {
-  const basketIdent = await getOrCreateTebexBasket()
+  // CFX/Tebex costuma falhar quando o basket antigo fica salvo no navegador.
+  // Para login manual, sempre cria uma basket nova.
+  const basketIdent = await createFreshTebexBasket()
   const authUrl = await getTebexAuthUrl(basketIdent, undefined, returnPath)
   window.location.href = authUrl
 }
@@ -182,7 +195,9 @@ function isTebexLoginRequiredError(error: unknown) {
     normalized.includes("log in before") ||
     normalized.includes("before adding packages") ||
     normalized.includes("unauthorized") ||
-    normalized.includes("not authenticated")
+    normalized.includes("not authenticated") ||
+    normalized.includes("username") ||
+    normalized.includes("authentication")
   )
 }
 
@@ -196,7 +211,7 @@ export async function addProductToTebexCart(product: StoreProduct) {
     throw new Error("Produto ainda não configurado com packageId da Tebex.")
   }
 
-  const basketIdent = await getOrCreateTebexBasket()
+  let basketIdent = await getOrCreateTebexBasket()
 
   try {
     await addPackageToTebexBasket(basketIdent, product.packageId)
@@ -204,6 +219,8 @@ export async function addProductToTebexCart(product: StoreProduct) {
     return fetchTebexBasket(basketIdent)
   } catch (error) {
     if (isTebexLoginRequiredError(error)) {
+      // Evita reutilizar basket antiga/stale no retorno da CFX.re.
+      basketIdent = await createFreshTebexBasket()
       const authUrl = await getTebexAuthUrl(
         basketIdent,
         product.packageId,
@@ -214,6 +231,7 @@ export async function addProductToTebexCart(product: StoreProduct) {
       return null
     }
 
+    clearTebexBasket()
     throw error
   }
 }
@@ -228,7 +246,7 @@ export async function startTebexProductCheckout(product: StoreProduct) {
     throw new Error("Produto ainda não configurado com packageId da Tebex.")
   }
 
-  const basketIdent = await getOrCreateTebexBasket()
+  const basketIdent = await createFreshTebexBasket()
   const authUrl = await getTebexAuthUrl(basketIdent, product.packageId, "/loja")
   window.location.href = authUrl
 }

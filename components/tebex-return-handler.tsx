@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import {
   addPackageToTebexBasket,
+  clearTebexBasket,
   launchTebexCheckoutFromBasket,
   storeTebexBasket,
 } from "@/lib/tebex-client"
@@ -33,10 +34,11 @@ export function TebexReturnHandler() {
         })
         .catch((error) => {
           console.error(error)
+          clearTebexBasket()
           window.alert(
             error instanceof Error
               ? error.message
-              : "NÃ£o foi possÃ­vel adicionar o produto ao carrinho.",
+              : "Não foi possível adicionar o produto ao carrinho.",
           )
         })
       return
@@ -44,6 +46,7 @@ export function TebexReturnHandler() {
 
     launchTebexCheckoutFromBasket(basketIdent, packageId).catch((error) => {
       console.error(error)
+      clearTebexBasket()
       window.alert(
         error instanceof Error
           ? error.message
