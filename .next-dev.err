@@ -1,0 +1,162 @@
+$ next dev "--hostname" "127.0.0.1" "--port" "3000"
+[browser] Image with src "/categories/economia.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "/products/illegal-activities.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "/products/illegal-activities.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "/hero-gunslinger.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "/hero-gunslinger.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "/hero-gunslinger.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "/products/banking-system.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Failed to fetch RSC payload for http://127.0.0.1:3000/api/auth/cfx. Falling back to browser navigation. TypeError: Failed to fetch
+[browser] Image with src "/hero-gunslinger.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "/hero-gunslinger.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+⨯ Error: Configure TEBEX_WEBSTORE_TOKEN no .env.local.
+    at getTebexWebstoreToken (lib\tebex-server.ts:7:11)
+    at POST (app\api\tebex\basket\route.ts:5:38)
+   5 |
+   6 |   if (!token) {
+>  7 |     throw new Error("Configure TEBEX_WEBSTORE_TOKEN no .env.local.")
+     |           ^
+   8 |   }
+   9 |
+  10 |   return token
+[browser] Error: Não foi possível comunicar com a Tebex.
+    at apiJson (lib/tebex-client.ts:39:11)
+    at async createTebexBasket (lib/tebex-client.ts:65:19)
+    at async getOrCreateTebexBasket (lib/tebex-client.ts:89:17)
+    at async startTebexProductCheckout (lib/tebex-client.ts:163:23)
+    at async handleBuy (components/product-card.tsx:36:7)
+  37 |
+  38 |   if (!response.ok) {
+> 39 |     throw new Error(
+     |           ^
+  40 |       payload?.message ||
+  41 |         payload?.detail ||
+  42 |         payload?.error || (components/product-card.tsx:38:15)
+⨯ Error: Configure TEBEX_WEBSTORE_TOKEN no .env.local.
+    at getTebexWebstoreToken (lib\tebex-server.ts:7:11)
+    at POST (app\api\tebex\basket\route.ts:5:38)
+   5 |
+   6 |   if (!token) {
+>  7 |     throw new Error("Configure TEBEX_WEBSTORE_TOKEN no .env.local.")
+     |           ^
+   8 |   }
+   9 |
+  10 |   return token
+[browser] Error: Não foi possível comunicar com a Tebex.
+    at apiJson (lib/tebex-client.ts:39:11)
+    at async createTebexBasket (lib/tebex-client.ts:65:19)
+    at async getOrCreateTebexBasket (lib/tebex-client.ts:89:17)
+    at async startTebexProductCheckout (lib/tebex-client.ts:163:23)
+    at async handleBuy (components/product-card.tsx:36:7)
+  37 |
+  38 |   if (!response.ok) {
+> 39 |     throw new Error(
+     |           ^
+  40 |       payload?.message ||
+  41 |         payload?.detail ||
+  42 |         payload?.error || (components/product-card.tsx:38:15)
+[browser] Image with src "/products/wanted-menu.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "/hero-gunslinger.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+⨯ Error: Configure TEBEX_WEBSTORE_TOKEN no .env.local.
+    at getTebexWebstoreToken (lib\tebex-server.ts:7:11)
+    at POST (app\api\tebex\basket\route.ts:5:38)
+   5 |
+   6 |   if (!token) {
+>  7 |     throw new Error("Configure TEBEX_WEBSTORE_TOKEN no .env.local.")
+     |           ^
+   8 |   }
+   9 |
+  10 |   return token
+[browser] Error: Não foi possível comunicar com a Tebex.
+    at apiJson (lib/tebex-client.ts:39:11)
+    at async createTebexBasket (lib/tebex-client.ts:65:19)
+    at async getOrCreateTebexBasket (lib/tebex-client.ts:89:17)
+    at async startTebexLogin (lib/tebex-client.ts:148:23)
+    at async openTebexCart (lib/tebex-client.ts:206:5)
+  37 |
+  38 |   if (!response.ok) {
+> 39 |     throw new Error(
+     |           ^
+  40 |       payload?.message ||
+  41 |         payload?.detail ||
+  42 |         payload?.error || (components/site-header.tsx:70:25)
+[browser] Error: Produto ainda não configurado com packageId da Tebex.
+    at startTebexProductCheckout (lib/tebex-client.ts:160:11)
+    at handleBuy (components/product-card.tsx:36:38)
+  158 |     }
+  159 |
+> 160 |     throw new Error("Produto ainda não configurado com packageId da Tebex.")
+      |           ^
+  161 |   }
+  162 |
+  163 |   const basketIdent = await getOrCreateTebexBasket() (components/product-card.tsx:38:15)
+⨯ Error: Configure TEBEX_WEBSTORE_TOKEN no .env.local.
+    at getTebexWebstoreToken (lib\tebex-server.ts:7:11)
+    at POST (app\api\tebex\basket\route.ts:5:38)
+   5 |
+   6 |   if (!token) {
+>  7 |     throw new Error("Configure TEBEX_WEBSTORE_TOKEN no .env.local.")
+     |           ^
+   8 |   }
+   9 |
+  10 |   return token
+[browser] Error: Não foi possível comunicar com a Tebex.
+    at apiJson (lib/tebex-client.ts:39:11)
+    at async createTebexBasket (lib/tebex-client.ts:65:19)
+    at async getOrCreateTebexBasket (lib/tebex-client.ts:89:17)
+    at async startTebexProductCheckout (lib/tebex-client.ts:163:23)
+    at async handleBuy (components/product-buy-button.tsx:23:7)
+  37 |
+  38 |   if (!response.ok) {
+> 39 |     throw new Error(
+     |           ^
+  40 |       payload?.message ||
+  41 |         payload?.detail ||
+  42 |         payload?.error || (components/product-buy-button.tsx:25:15)
+[browser] Image with src "/products/tws-identity-forge/logo.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "/products/tws-identity-forge/logo-transparent.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+⨯ ./app/loja/page.tsx:1:1
+Module not found: Can't resolve '@/components/product-catalog'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m { [33mProductCatalog[0m } [36mfrom[0m [32m"@/components/product-catalog"[0m
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m [36mimport[0m { [33mFeaturesStrip[0m } [36mfrom[0m [32m"@/components/features-strip"[0m
+  [90m3 |[0m [36mimport[0m { [33mDiscordCta[0m } [36mfrom[0m [32m"@/components/discord-cta"[0m
+  [90m4 |[0m [36mimport[0m { [33mSiteFooter[0m } [36mfrom[0m [32m"@/components/site-footer"[0m
+
+Import map: aliased to relative './components/product-catalog' inside of [project]/
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/loja/page.tsx:1:1
+Module not found: Can't resolve '@/components/product-catalog'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m { [33mProductCatalog[0m } [36mfrom[0m [32m"@/components/product-catalog"[0m
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m [36mimport[0m { [33mFeaturesStrip[0m } [36mfrom[0m [32m"@/components/features-strip"[0m
+  [90m3 |[0m [36mimport[0m { [33mDiscordCta[0m } [36mfrom[0m [32m"@/components/discord-cta"[0m
+  [90m4 |[0m [36mimport[0m { [33mSiteFooter[0m } [36mfrom[0m [32m"@/components/site-footer"[0m
+
+Import map: aliased to relative './components/product-catalog' inside of [project]/
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[browser] Image with src "/hero-bg.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[browser] Image with src "/hero-bg.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
