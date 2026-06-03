@@ -112,7 +112,7 @@ export function normalizeProduct(input: unknown, fallback?: Partial<StoreProduct
 }
 
 export function normalizeProducts(input: unknown) {
-  if (!Array.isArray(input)) return [...storeProducts]
+  if (!Array.isArray(input) || input.length === 0) return [...storeProducts]
 
   const products = input.map((product) => normalizeProduct(product))
   const unique = new Map<string, StoreProduct>()
@@ -121,7 +121,8 @@ export function normalizeProducts(input: unknown) {
     unique.set(product.id, product)
   }
 
-  return Array.from(unique.values())
+  const result = Array.from(unique.values())
+  return result.length > 0 ? result : [...storeProducts]
 }
 
 export function getProductPersistence(): ProductPersistence {

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
   CheckCircle2,
@@ -53,6 +54,7 @@ export function ProductCatalog({
   const [query, setQuery] = useState("")
   const [sortMode, setSortMode] = useState<SortMode>("featured")
   const [filtersOpen, setFiltersOpen] = useState(true)
+  const visibleProducts = products.length > 0 ? products : storeProducts
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -76,7 +78,7 @@ export function ProductCatalog({
   const filteredProducts = useMemo(() => {
     const search = normalize(query.trim())
 
-    const filtered = products.filter((product) => {
+    const filtered = visibleProducts.filter((product) => {
       const inCategory =
         selectedCategory === "All" || product.category === selectedCategory
       const matchesSearch =
@@ -92,9 +94,9 @@ export function ProductCatalog({
       if (sortMode === "price-asc") return priceValue(a) - priceValue(b)
       if (sortMode === "price-desc") return priceValue(b) - priceValue(a)
       if (sortMode === "name") return a.title.localeCompare(b.title)
-      return products.indexOf(a) - products.indexOf(b)
+      return visibleProducts.indexOf(a) - visibleProducts.indexOf(b)
     })
-  }, [products, query, selectedCategory, sortMode])
+  }, [visibleProducts, query, selectedCategory, sortMode])
 
   return (
     <section
@@ -226,7 +228,7 @@ export function ProductCatalog({
                     <Package className="h-4 w-4" />
                     <span>{category}</span>
                     <span className="rounded bg-background/30 px-1.5 py-0.5 text-[0.65rem]">
-                      {getCategoryCount(category, products)}
+                      {getCategoryCount(category, visibleProducts)}
                     </span>
                   </button>
                 )
