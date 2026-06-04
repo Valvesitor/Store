@@ -5,6 +5,7 @@ import Link from "next/link"
 import { ArrowRight, Star } from "lucide-react"
 import { ProductAddToCartButton } from "@/components/product-add-to-cart-button"
 import { productToSlug, type StoreProduct } from "@/lib/store-data"
+import { cn } from "@/lib/utils"
 
 function Stars({ rating, reviews }: { rating: number; reviews: number }) {
   return (
@@ -40,7 +41,12 @@ export function ProductCard({ product }: { product: StoreProduct }) {
           alt={product.title}
           fill
           sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw"
-          className="object-contain p-4 transition-opacity duration-300 group-hover:opacity-90"
+          className={cn(
+            "transition-transform duration-500 group-hover:scale-105",
+            product.imageMode === "contain"
+              ? "object-contain p-7"
+              : "object-cover",
+          )}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/25 to-transparent" />
         <span className="absolute left-3 top-3 rounded border border-primary/30 bg-background/85 px-2 py-1 font-display text-[0.65rem] text-primary">

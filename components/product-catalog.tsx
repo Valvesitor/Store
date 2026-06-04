@@ -101,9 +101,25 @@ export function ProductCatalog({
   }, [visibleProducts, query, selectedCategory, sortMode])
 
   return (
-    <section id="produtos" className="border-b border-border bg-background">
-      <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-6 border-b border-border pb-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
+    <section
+      id="produtos"
+      className="relative overflow-hidden border-b border-border bg-background"
+    >
+      <div className="absolute inset-x-0 top-0 h-[520px]">
+        <Image
+          src="/store-background.png"
+          alt="Paisagem do velho oeste ao por do sol"
+          fill
+          sizes="100vw"
+          className="object-cover object-[66%_center] opacity-45"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/82 to-background/35" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/45 to-background/85" />
+      </div>
+
+      <div className="relative mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-3 border-b border-border pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="font-display text-xs uppercase tracking-[0.28em] text-primary">
               Loja RedM
@@ -122,22 +138,6 @@ export function ProductCatalog({
                 {visibleProducts.length} produtos
               </span>
             </div>
-          </div>
-
-          <div className="relative hidden h-44 overflow-hidden rounded-lg border border-primary/25 bg-card/70 shadow-2xl shadow-black/25 lg:block">
-            <Image
-              src="/store-background.png"
-              alt="Paisagem do velho oeste ao por do sol"
-              fill
-              sizes="360px"
-              className="object-cover object-[68%_center]"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-background/75 via-background/20 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-background/20" />
-            <span className="absolute bottom-4 left-4 rounded border border-primary/30 bg-background/80 px-3 py-1 font-display text-[0.65rem] uppercase tracking-widest text-primary">
-              The Wanted Sole Studio
-            </span>
           </div>
         </div>
 
