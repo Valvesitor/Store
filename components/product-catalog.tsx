@@ -1,9 +1,7 @@
 "use client"
 
-import Image from "next/image"
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
-  CheckCircle2,
   Filter,
   Package,
   Search,
@@ -102,75 +100,31 @@ export function ProductCatalog({
   }, [visibleProducts, query, selectedCategory, sortMode])
 
   return (
-    <section
-      id="produtos"
-      className="relative overflow-hidden border-b border-border bg-background"
-    >
-      <div className="absolute inset-x-0 top-0 h-[620px]">
-        <Image
-          src="/store-background.png"
-          alt="Paisagem do velho oeste ao por do sol"
-          fill
-          sizes="100vw"
-          className="object-cover object-[62%_center] opacity-60"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/82 to-background/35" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-background/80" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
-      </div>
-
-      <div className="relative mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-end">
-          <div className="grid min-h-[260px] gap-6 sm:grid-cols-[220px_minmax(0,1fr)] sm:items-end">
-            <div className="relative hidden h-64 sm:block">
-              <Image
-                src="/store-background.png"
-                alt="RedM"
-                fill
-                sizes="220px"
-                className="rounded-lg object-cover object-[62%_center] opacity-90"
-                priority
-              />
-              <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-background via-transparent to-transparent" />
-            </div>
-
-            <div className="pb-3">
-              <p className="font-display text-xs uppercase tracking-[0.28em] text-primary">
-                The Wanted Sole Studio
-              </p>
-              <h1 className="mt-4 font-display text-6xl font-bold uppercase leading-none text-primary sm:text-7xl">
-                RedM
-              </h1>
-              <p className="mt-2 font-display text-xl font-semibold uppercase italic text-foreground">
-                Sistemas exclusivos para servidores
-              </p>
-              <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
-                Scripts, systems, peds, add-ons e recursos prontos para vender
-                em uma loja integrada com Tebex.
-              </p>
-            </div>
+    <section id="produtos" className="border-b border-border bg-background">
+      <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-3 border-b border-border pb-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="font-display text-xs uppercase tracking-[0.28em] text-primary">
+              Loja RedM
+            </p>
+            <h1 className="mt-2 font-display text-4xl font-bold uppercase leading-none text-foreground sm:text-5xl">
+              Produtos digitais
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
+              Scripts, systems, peds e add-ons organizados por categoria, com
+              compra integrada pela Tebex.
+            </p>
           </div>
 
-          <div className="rounded-lg border border-border bg-card/70 p-5">
-            <div className="flex items-start gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-primary/30 bg-primary/15">
-                <CheckCircle2 className="h-7 w-7 text-primary" />
-              </div>
-              <div>
-                <p className="font-display text-lg font-bold uppercase text-foreground">
-                  Bom saber
-                </p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Os produtos ficam organizados por categoria, com pagina propria
-                  e acao direta para carrinho/checkout Tebex.
-                </p>
-              </div>
-            </div>
+          <div className="flex w-fit items-center gap-2 rounded-md border border-primary/25 bg-card/60 px-3 py-2">
+            <Package className="h-4 w-4 text-primary" />
+            <span className="font-display text-xs uppercase tracking-widest text-foreground">
+              {visibleProducts.length} produtos
+            </span>
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
