@@ -20,15 +20,15 @@ export async function Hero() {
     <section id="inicio" className="relative overflow-hidden border-b border-border">
       <div className="absolute inset-0">
         <Image
-          src="/hero-gunslinger.png"
+          src="/store-background.png"
           alt="Pistoleiro em uma cidade do velho oeste ao por do sol"
           fill
           priority
-          className="object-cover object-center"
+          className="object-cover object-[62%_center]"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/88 to-background/35" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-background/70" />
-        <div className="absolute inset-0 tech-grid opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/82 to-background/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/25 to-background/75" />
+        <div className="absolute inset-0 bg-background/10" />
       </div>
 
       <div className="relative mx-auto grid min-h-[680px] w-full max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:items-center lg:px-8">

@@ -106,6 +106,19 @@ export function ProductCatalog({
       id="produtos"
       className="relative overflow-hidden border-b border-border bg-[#101014]"
     >
+      <div className="absolute inset-x-0 top-0 h-[620px]">
+        <Image
+          src="/store-background.png"
+          alt="Paisagem do velho oeste ao por do sol"
+          fill
+          sizes="100vw"
+          className="object-cover object-[62%_center] opacity-60"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/82 to-background/35" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-background/80" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[#101014]" />
+      </div>
       <div className="absolute inset-0 tech-grid opacity-35" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
 
@@ -114,11 +127,11 @@ export function ProductCatalog({
           <div className="grid min-h-[260px] gap-6 sm:grid-cols-[220px_minmax(0,1fr)] sm:items-end">
             <div className="relative hidden h-64 sm:block">
               <Image
-                src="/hero-gunslinger.png"
+                src="/store-background.png"
                 alt="RedM"
                 fill
                 sizes="220px"
-                className="rounded-lg object-cover object-center opacity-90"
+                className="rounded-lg object-cover object-[62%_center] opacity-90"
                 priority
               />
               <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-[#101014] via-transparent to-transparent" />
