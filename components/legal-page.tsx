@@ -23,9 +23,8 @@ export function LegalPage({
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
-      <main className="flex-1 bg-[#101014]">
+      <main className="flex-1 bg-background">
         <section className="relative overflow-hidden border-b border-border">
-          <div className="absolute inset-0 tech-grid opacity-35" />
           <Image
             src="/hero-gunslinger.png"
             alt=""

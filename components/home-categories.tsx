@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, Layers3, Package, ShieldCheck } from "lucide-react"
+import { ArrowRight, Package } from "lucide-react"
 import {
   storeCategories,
   type ProductCategory,
@@ -21,63 +21,27 @@ export async function HomeCategories() {
   const categories = storeCategories.filter(
     (category): category is ProductCategory => category !== "All",
   )
-  const productCount = products.length
 
   return (
-    <section
-      id="categorias"
-      className="bg-background"
-    >
+    <section id="categorias" className="bg-background">
       <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 font-display text-[0.65rem] uppercase tracking-[0.24em] text-primary">
-              Catalogo organizado
-            </span>
-            <h2 className="mt-5 max-w-3xl font-display text-4xl font-bold uppercase leading-none text-primary sm:text-5xl">
-              Encontre o recurso certo para o seu servidor
-            </h2>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-foreground/80">
-              Navegue por scripts, custom peds, sistemas, creators, add-ons e
-              recursos gratuitos sem misturar categorias. Cada filtro leva direto
-              aos produtos daquele tipo na loja.
+            <p className="font-display text-xs uppercase tracking-[0.28em] text-primary">
+              Categorias
             </p>
-          </div>
-
-          <div className="grid gap-3 rounded-lg border border-primary/25 bg-card/70 p-4">
-            <div className="flex items-center gap-3 rounded-md border border-border bg-background/55 p-3">
-              <Layers3 className="h-5 w-5 text-primary" />
-              <div>
-                <p className="font-display text-lg font-bold uppercase text-foreground">
-                  {categories.length} categorias
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Separadas para comprar mais rapido
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 rounded-md border border-border bg-background/55 p-3">
-              <ShieldCheck className="h-5 w-5 text-primary" />
-              <div>
-                <p className="font-display text-lg font-bold uppercase text-foreground">
-                  {productCount} produtos
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Com pagina propria e checkout Tebex
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/loja"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 font-display text-xs uppercase text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Abrir loja completa
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            <h2 className="mt-2 font-display text-2xl font-bold uppercase text-foreground sm:text-3xl">
+              Escolha por tipo de recurso
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
+              Scripts, custom peds, systems, creators, add-ons e recursos
+              gratuitos ficam visiveis ja no inicio. Ao abrir uma categoria, a
+              loja mostra somente os produtos daquele tipo.
+            </p>
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
           {categories.map((category) => {
             const count = products.filter(
               (product) => product.category === category,
@@ -87,7 +51,7 @@ export async function HomeCategories() {
               <Link
                 key={category}
                 href={`/loja?categoria=${encodeURIComponent(category)}`}
-                className="group relative min-h-44 overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/50"
+                className="group relative min-h-40 overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/50"
               >
                 <Image
                   src={categoryImages[category]}
@@ -96,8 +60,8 @@ export async function HomeCategories() {
                   sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                   className="object-cover opacity-45 transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/85 to-card/35" />
-                <div className="relative flex min-h-44 flex-col justify-end p-4">
+                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-card/20" />
+                <div className="relative flex min-h-40 flex-col justify-end p-4">
                   <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-md border border-primary/30 bg-primary/10 text-primary">
                     <Package className="h-4 w-4" />
                   </span>

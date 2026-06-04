@@ -58,9 +58,8 @@ const payments = ["VISA", "MASTERCARD", "PIX", "BOLETO"]
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-primary/20 bg-[#070708]">
+    <footer className="border-t border-primary/20 bg-background">
       <div className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 tech-grid opacity-25" />
         <div className="relative mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_1.25fr_1fr] lg:items-start lg:px-8">
           <div>
             <Logo />

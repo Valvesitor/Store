@@ -62,7 +62,6 @@ export default async function AdminLoginPage({
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/92 to-background/70" />
-          <div className="absolute inset-0 tech-grid opacity-35" />
         </div>
 
         <section className="relative mx-auto grid w-full max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-12 lg:px-8">

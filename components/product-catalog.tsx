@@ -104,7 +104,7 @@ export function ProductCatalog({
   return (
     <section
       id="produtos"
-      className="relative overflow-hidden border-b border-border bg-[#101014]"
+      className="relative overflow-hidden border-b border-border bg-background"
     >
       <div className="absolute inset-x-0 top-0 h-[620px]">
         <Image
@@ -117,10 +117,8 @@ export function ProductCatalog({
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/82 to-background/35" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-background/80" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[#101014]" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
       </div>
-      <div className="absolute inset-0 tech-grid opacity-35" />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
 
       <div className="relative mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-end">
@@ -134,7 +132,7 @@ export function ProductCatalog({
                 className="rounded-lg object-cover object-[62%_center] opacity-90"
                 priority
               />
-              <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-[#101014] via-transparent to-transparent" />
+              <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-background via-transparent to-transparent" />
             </div>
 
             <div className="pb-3">

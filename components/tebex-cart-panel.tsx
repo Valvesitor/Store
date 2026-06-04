@@ -267,8 +267,7 @@ export function TebexCartPanel() {
   }
 
   return (
-    <section className="relative overflow-hidden border-b border-border bg-[#101014]">
-      <div className="absolute inset-0 tech-grid opacity-35" />
+    <section className="relative overflow-hidden border-b border-border bg-background">
       <div className="relative mx-auto grid w-full max-w-7xl gap-6 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
         <div>
           <p className="font-display text-xs uppercase tracking-[0.28em] text-primary">

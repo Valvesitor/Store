@@ -45,8 +45,8 @@ export default async function EditProductPage({
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
-      <main className="flex-1 bg-[#101014]">
-        <section className="border-b border-border bg-card/40">
+      <main className="flex-1 bg-background">
+        <section className="border-b border-border bg-background">
           <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             <p className="font-display text-xs uppercase tracking-[0.28em] text-primary">
               Admin / Produto

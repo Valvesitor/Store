@@ -98,8 +98,7 @@ export default async function ProductPage({
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <main className="flex-1">
-        <section className="relative overflow-hidden border-b border-border bg-[#070707]">
-          <div className="absolute inset-0 tech-grid opacity-45" />
+        <section className="relative overflow-hidden border-b border-border bg-background">
           <div className="absolute inset-x-0 top-0 h-px bg-primary/60" />
           <div className="relative mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             <div className="grid gap-6 pb-5 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">

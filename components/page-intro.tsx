@@ -9,7 +9,6 @@ export function PageIntro({
 }) {
   return (
     <section className="relative overflow-hidden border-b border-border bg-background">
-      <div className="absolute inset-0 tech-grid opacity-60" />
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
       <div className="relative mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <p className="font-display text-xs uppercase text-primary">{eyebrow}</p>

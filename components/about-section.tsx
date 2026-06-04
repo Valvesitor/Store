@@ -30,7 +30,7 @@ const benefits = [
 
 export function AboutSection() {
   return (
-    <section id="sobre" className="relative overflow-hidden border-y border-border tech-grid">
+    <section id="sobre" className="relative overflow-hidden border-y border-border bg-background">
       <div className="mx-auto grid w-full max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-12 lg:px-8">
         <div className="lg:col-span-5">
           <p className="font-display text-sm tracking-[0.3em] text-primary">

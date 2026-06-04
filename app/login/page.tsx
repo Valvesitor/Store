@@ -36,7 +36,6 @@ export default function LoginPage() {
             className="object-cover object-center opacity-35"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/65" />
-          <div className="absolute inset-0 tech-grid opacity-40" />
         </div>
 
         <section className="relative mx-auto grid w-full max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-12 lg:px-8">

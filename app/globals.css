@@ -133,13 +133,7 @@
   .font-hero {
     font-family: var(--font-hero);
   }
-  /* Subtle tech grid used behind sections */
   .tech-grid {
-    background-image: linear-gradient(
-        rgba(224, 138, 44, 0.05) 1px,
-        transparent 1px
-      ),
-      linear-gradient(90deg, rgba(224, 138, 44, 0.05) 1px, transparent 1px);
-    background-size: 44px 44px;
+    background-image: none;
   }
 }

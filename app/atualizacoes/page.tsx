@@ -89,7 +89,7 @@ export default function UpdatesPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
-      <main className="flex-1 bg-[#101014]">
+      <main className="flex-1 bg-background">
         <PageIntro
           eyebrow="Atualizacoes"
           title="Novidades e melhorias da loja"
