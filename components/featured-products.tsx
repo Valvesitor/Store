@@ -10,11 +10,8 @@ export async function FeaturedProducts() {
   const featuredProducts = getFeaturedProducts(products)
 
   return (
-    <section className="relative overflow-hidden border-b border-border bg-[#101014]">
-      <div className="absolute inset-0 tech-grid opacity-35" />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-
-      <div className="relative mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <section className="bg-background">
+      <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="font-display text-xs uppercase tracking-[0.24em] text-primary">

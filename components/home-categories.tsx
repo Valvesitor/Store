@@ -26,12 +26,9 @@ export async function HomeCategories() {
   return (
     <section
       id="categorias"
-      className="relative overflow-hidden border-y border-border bg-background"
+      className="bg-background"
     >
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(224,138,44,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(224,138,44,0.035)_1px,transparent_1px)] bg-[size:48px_48px]" />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-
-      <div className="relative mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
           <div>
             <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 font-display text-[0.65rem] uppercase tracking-[0.24em] text-primary">
