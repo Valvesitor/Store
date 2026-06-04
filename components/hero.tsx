@@ -1,10 +1,8 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, Box, Headphones, ShieldCheck, Sparkles } from "lucide-react"
+import { ArrowRight, Sparkles } from "lucide-react"
 import { DiscordIcon } from "@/components/icons"
 import { Button } from "@/components/ui/button"
-import { getProducts } from "@/lib/product-store"
-import { getFeaturedProducts, storeProducts } from "@/lib/store-data"
 
 const highlights = [
   { label: "Scripts", value: "Premium" },
@@ -12,10 +10,7 @@ const highlights = [
   { label: "Suporte", value: "Discord" },
 ]
 
-export async function Hero() {
-  const products = await getProducts()
-  const heroProduct = getFeaturedProducts(products, 1)[0] || storeProducts[0]
-
+export function Hero() {
   return (
     <section id="inicio" className="relative overflow-hidden border-b border-border">
       <div className="absolute inset-0">
@@ -31,25 +26,26 @@ export async function Hero() {
         <div className="absolute inset-0 bg-background/10" />
       </div>
 
-      <div className="relative mx-auto grid min-h-[680px] w-full max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:items-center lg:px-8">
-        <div className="lg:col-span-7">
+      <div className="relative mx-auto flex min-h-[700px] w-full max-w-7xl items-center px-4 py-16 sm:px-6 lg:px-8">
+        <div className="max-w-4xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/35 bg-background/55 px-4 py-1.5 text-primary backdrop-blur">
             <Sparkles className="h-4 w-4" />
             <span className="font-display text-xs uppercase tracking-widest">
-              RedM - Scripts & Custom Peds
+              Scripts & Custom Peds para RedM
             </span>
           </div>
 
-          <h1 className="mt-6 max-w-4xl font-hero text-5xl font-bold uppercase leading-[0.9] tracking-wide text-foreground sm:text-7xl lg:text-[6.6rem]">
+          <h1 className="mt-6 max-w-3xl font-hero text-5xl font-bold uppercase leading-[0.92] tracking-wide text-foreground sm:text-7xl lg:text-[5.8rem] xl:text-[6.4rem]">
             <span className="block">The Wanted</span>
             <span className="block bg-gradient-to-r from-primary via-[#f1c27a] to-primary bg-clip-text text-transparent">
               Sole Studio
             </span>
           </h1>
 
-          <p className="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            Scripts exclusivos, custom peds e sistemas premium para servidores
-            RedM que precisam de performance, originalidade e identidade unica.
+          <p className="mt-6 max-w-2xl text-pretty text-lg leading-8 text-muted-foreground sm:text-xl">
+            Conteudo premium para servidores RedM: scripts exclusivos, custom
+            peds e sistemas criados para performance, originalidade e identidade
+            propria.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -87,56 +83,6 @@ export async function Hero() {
                 </p>
               </div>
             ))}
-          </div>
-        </div>
-
-        <div className="lg:col-span-5">
-          <div className="relative overflow-hidden rounded-lg border border-primary/25 bg-card/80 shadow-2xl shadow-black/40 backdrop-blur">
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
-            <div className="relative aspect-[16/10]">
-              <Image
-                src={heroProduct.image || "/placeholder.jpg"}
-                alt={heroProduct.title}
-                fill
-                sizes="(min-width: 1024px) 40vw, 100vw"
-                className={
-                  heroProduct.imageMode === "contain"
-                    ? "object-contain p-8"
-                    : "object-cover"
-                }
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/35 to-transparent" />
-              <span className="absolute left-4 top-4 rounded border border-primary/30 bg-background/80 px-3 py-1 font-display text-xs uppercase text-primary">
-                Destaque
-              </span>
-            </div>
-
-            <div className="p-5">
-              <p className="font-display text-xs uppercase text-primary">
-                Produto recomendado
-              </p>
-              <h2 className="mt-2 font-display text-2xl font-bold uppercase text-foreground">
-                {heroProduct.title}
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {heroProduct.subtitle}
-              </p>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Box className="h-4 w-4 text-primary" />
-                  {heroProduct.category}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <ShieldCheck className="h-4 w-4 text-primary" />
-                  Seguro
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Headphones className="h-4 w-4 text-primary" />
-                  Suporte
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
