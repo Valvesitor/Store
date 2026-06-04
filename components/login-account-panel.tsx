@@ -153,12 +153,12 @@ export function LoginAccountPanel() {
       : "Use sua conta CFX.re para acessar compras e finalizar pedidos na loja."
 
   return (
-    <div className="mx-auto w-full max-w-xl overflow-hidden rounded-lg border border-border bg-card/90 backdrop-blur">
-      <div className="border-b border-border bg-background/35 p-5">
+    <div className="w-full overflow-hidden rounded-lg border border-primary/25 bg-card/90 shadow-2xl shadow-black/35 backdrop-blur">
+      <div className="border-b border-border bg-background/45 p-6">
         <div className="flex items-start justify-between gap-4">
           <div
             className={cn(
-              "flex h-12 w-12 shrink-0 items-center justify-center rounded-md border",
+              "flex h-14 w-14 shrink-0 items-center justify-center rounded-md border",
               connected
                 ? "border-primary/40 bg-primary/15 text-primary"
                 : "border-border bg-secondary/70 text-muted-foreground",
@@ -181,11 +181,11 @@ export function LoginAccountPanel() {
           </span>
         </div>
 
-        <div className="mt-5">
+        <div className="mt-6">
           <p className="font-display text-xs uppercase tracking-[0.24em] text-primary">
             Minha conta
           </p>
-          <h2 className="mt-2 font-display text-3xl font-bold uppercase text-foreground">
+          <h2 className="mt-2 font-display text-3xl font-bold uppercase leading-tight text-foreground">
             {accountTitle}
           </h2>
           <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted-foreground">
@@ -195,9 +195,8 @@ export function LoginAccountPanel() {
       </div>
 
       {account.status === "connected" || account.status === "pending" ? (
-        <div className="grid gap-4 p-5">
-          <div className="relative overflow-hidden rounded-md border border-primary/25 bg-[#0f0f10] p-4">
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
+        <div className="grid gap-4 p-6">
+          <div className="relative overflow-hidden rounded-md border border-primary/25 bg-background/65 p-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-primary/30 bg-primary/15 text-primary">
@@ -300,7 +299,7 @@ export function LoginAccountPanel() {
       ) : null}
 
       {checking && (
-        <div className="p-5">
+        <div className="p-6">
           <div className="rounded-md border border-border bg-background/55 p-4 text-sm text-muted-foreground">
             Carregando sua sessao...
           </div>
@@ -308,7 +307,7 @@ export function LoginAccountPanel() {
       )}
 
       {error && (
-        <div className="grid gap-3 p-5">
+        <div className="grid gap-3 p-6">
           <div className="rounded-md border border-destructive/35 bg-destructive/10 p-4 text-sm leading-relaxed text-muted-foreground">
             {account.message}
           </div>
@@ -334,7 +333,7 @@ export function LoginAccountPanel() {
       )}
 
       {signedOut && (
-        <div className="p-5">
+        <div className="p-6 [&_button]:mt-0">
           {account.authError && (
             <div className="mb-4 rounded-md border border-destructive/35 bg-destructive/10 p-4 text-sm leading-relaxed text-muted-foreground">
               Nao foi possivel concluir o login pela Tebex. Tente entrar

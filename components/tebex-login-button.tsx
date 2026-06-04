@@ -25,7 +25,7 @@ export function TebexLoginButton() {
 
   return (
     <Button
-      className="mt-6 h-12 w-full bg-primary font-display text-sm uppercase text-primary-foreground hover:bg-primary/90"
+      className="h-12 w-full bg-primary font-display text-sm uppercase text-primary-foreground hover:bg-primary/90"
       onClick={handleLogin}
       disabled={busy}
     >
