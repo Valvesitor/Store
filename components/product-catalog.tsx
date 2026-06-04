@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Filter,
@@ -102,8 +103,8 @@ export function ProductCatalog({
   return (
     <section id="produtos" className="border-b border-border bg-background">
       <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-3 border-b border-border pb-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
+        <div className="grid gap-6 border-b border-border pb-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
+          <div className="max-w-3xl">
             <p className="font-display text-xs uppercase tracking-[0.28em] text-primary">
               Loja RedM
             </p>
@@ -114,12 +115,28 @@ export function ProductCatalog({
               Scripts, systems, peds e add-ons organizados por categoria, com
               compra integrada pela Tebex.
             </p>
+
+            <div className="mt-4 flex w-fit items-center gap-2 rounded-md border border-primary/25 bg-card/60 px-3 py-2">
+              <Package className="h-4 w-4 text-primary" />
+              <span className="font-display text-xs uppercase tracking-widest text-foreground">
+                {visibleProducts.length} produtos
+              </span>
+            </div>
           </div>
 
-          <div className="flex w-fit items-center gap-2 rounded-md border border-primary/25 bg-card/60 px-3 py-2">
-            <Package className="h-4 w-4 text-primary" />
-            <span className="font-display text-xs uppercase tracking-widest text-foreground">
-              {visibleProducts.length} produtos
+          <div className="relative hidden h-44 overflow-hidden rounded-lg border border-primary/25 bg-card/70 shadow-2xl shadow-black/25 lg:block">
+            <Image
+              src="/store-background.png"
+              alt="Paisagem do velho oeste ao por do sol"
+              fill
+              sizes="360px"
+              className="object-cover object-[68%_center]"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-background/75 via-background/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-background/20" />
+            <span className="absolute bottom-4 left-4 rounded border border-primary/30 bg-background/80 px-3 py-1 font-display text-[0.65rem] uppercase tracking-widest text-primary">
+              The Wanted Sole Studio
             </span>
           </div>
         </div>
