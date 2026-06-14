@@ -10,14 +10,14 @@ export async function FeaturedProducts() {
   const featuredProducts = getFeaturedProducts(products)
 
   return (
-    <section className="tws-paper-soft border-b border-primary/15">
+    <section className="relative overflow-hidden bg-background tws-corner-lines">
       <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="font-display text-xs uppercase tracking-[0.24em] text-primary">
               Produtos em destaque
             </p>
-            <h2 className="mt-2 font-display text-3xl font-bold uppercase tracking-[0.04em] text-foreground sm:text-4xl">
+            <h2 className="mt-2 font-display text-3xl font-bold uppercase text-foreground sm:text-4xl">
               Escolhidos para comecar
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
@@ -27,7 +27,7 @@ export async function FeaturedProducts() {
           </div>
           <Button
             variant="outline"
-            className="h-11 w-fit rounded-full border-primary/30 bg-card/70 px-5 font-display text-xs uppercase tracking-[0.2em] text-foreground hover:border-primary/60 hover:bg-primary/10"
+            className="h-11 w-fit border-primary/30 bg-card/70 px-5 font-display text-xs uppercase text-foreground hover:border-primary/60 hover:bg-card"
             asChild
           >
             <Link href="/loja">

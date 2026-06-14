@@ -98,21 +98,21 @@ export default async function ProductPage({
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <main className="flex-1">
-        <section className="relative overflow-hidden border-b border-border bg-background">
+        <section className="relative overflow-hidden border-b border-primary/25 bg-background tws-corner-lines">
           <div className="absolute inset-x-0 top-0 h-px bg-primary/60" />
           <div className="relative mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             <div className="grid gap-6 pb-5 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
               <div className="grid min-h-[150px] gap-5 sm:grid-cols-[150px_minmax(0,1fr)] sm:items-end">
-                <div className="relative hidden h-40 overflow-hidden rounded-lg border border-border sm:block">
+                <div className="relative hidden h-40 overflow-hidden rounded-2xl border border-primary/25 sm:block">
                   <Image
-                    src="/hero-gunslinger.png"
+                    src="/tws-mountains-banner.png"
                     alt="RedM"
                     fill
                     sizes="150px"
                     className="object-cover opacity-90"
                     priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#070707] via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
                 </div>
 
                 <div className="pb-3">
@@ -128,9 +128,9 @@ export default async function ProductPage({
                 </div>
               </div>
 
-              <div className="rounded-lg border border-border bg-card/70 p-5">
+              <div className="rounded-2xl border border-primary/25 bg-card/70 p-5 shadow-sm backdrop-blur">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-primary/30 bg-primary/15">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-primary/30 bg-primary/15">
                     <CheckCircle2 className="h-7 w-7 text-primary" />
                   </div>
                   <div>
@@ -148,7 +148,7 @@ export default async function ProductPage({
 
             <Button
               variant="outline"
-              className="h-10 border-primary/30 bg-card/70 font-display text-xs uppercase text-foreground hover:border-primary/60 hover:bg-card"
+              className="h-10 rounded-full border-primary/30 bg-card/70 font-display text-xs uppercase text-foreground hover:border-primary/60 hover:bg-card"
               asChild
             >
               <Link href="/loja">
@@ -162,14 +162,14 @@ export default async function ProductPage({
                 <div className="flex flex-wrap items-center gap-3">
                   <Link
                     href={`/categorias/${categoryToSlug(product.category)}`}
-                    className="rounded border border-primary/30 bg-primary/10 px-3 py-1.5 font-display text-xs uppercase text-primary transition-colors hover:border-primary/60"
+                    className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 font-display text-xs uppercase text-primary transition-colors hover:border-primary/60"
                   >
                     {product.category}
                   </Link>
-                  <span className="rounded border border-border bg-card/70 px-3 py-1.5 font-display text-xs uppercase text-muted-foreground">
+                  <span className="rounded-full border border-primary/25 bg-card/70 px-3 py-1.5 font-display text-xs uppercase text-muted-foreground">
                     Entrega automatica
                   </span>
-                  <span className="rounded border border-border bg-card/70 px-3 py-1.5 font-display text-xs uppercase text-muted-foreground">
+                  <span className="rounded-full border border-primary/25 bg-card/70 px-3 py-1.5 font-display text-xs uppercase text-muted-foreground">
                     Tebex seguro
                   </span>
                 </div>
@@ -200,8 +200,8 @@ export default async function ProductPage({
               </div>
 
               <aside className="lg:sticky lg:top-24 lg:self-start">
-                <div className="rounded-lg border border-primary/30 bg-card/90 p-5 shadow-2xl shadow-black/30">
-                  <div className="flex items-center justify-between gap-4 border-b border-border pb-5">
+                <div className="rounded-2xl border border-primary/30 bg-card/90 p-5 shadow-xl shadow-primary/10 backdrop-blur">
+                  <div className="flex items-center justify-between gap-4 border-b border-primary/25 pb-5">
                     <div>
                       <p className="font-display text-xs uppercase text-primary">
                         Compra segura
@@ -240,7 +240,7 @@ export default async function ProductPage({
                       return (
                         <div
                           key={item.label}
-                          className="flex items-start gap-3 rounded-md border border-border bg-background/45 p-3"
+                          className="flex items-start gap-3 rounded-2xl border border-primary/20 bg-background/45 p-3"
                         >
                           <Icon className="mt-0.5 h-4 w-4 text-primary" />
                           <div>
@@ -272,7 +272,7 @@ export default async function ProductPage({
                     {product.docsUrl && (
                       <Button
                         variant="outline"
-                        className="h-10 border-border bg-background/70 font-display text-xs uppercase text-foreground hover:border-primary/60"
+                        className="h-10 rounded-full border-primary/25 bg-background/70 font-display text-xs uppercase text-foreground hover:border-primary/60"
                         asChild
                       >
                         <Link href={product.docsUrl}>
@@ -283,7 +283,7 @@ export default async function ProductPage({
                     )}
                     <Button
                       variant="outline"
-                      className="h-10 border-border bg-background/70 font-display text-xs uppercase text-foreground hover:border-primary/60"
+                      className="h-10 rounded-full border-primary/25 bg-background/70 font-display text-xs uppercase text-foreground hover:border-primary/60"
                       asChild
                     >
                       <Link href={`/categorias/${categoryToSlug(product.category)}`}>
@@ -293,7 +293,7 @@ export default async function ProductPage({
                     </Button>
                   </div>
 
-                  <p className="mt-5 rounded-md border border-primary/20 bg-primary/10 p-3 text-sm leading-6 text-muted-foreground">
+                  <p className="mt-5 rounded-2xl border border-primary/20 bg-primary/10 p-3 text-sm leading-6 text-muted-foreground">
                     O carrinho e o checkout usam Tebex. Ao adicionar, o produto
                     fica vinculado ao seu basket; se a Tebex pedir login CFX, voce
                     volta para esta mesma pagina com o item no carrinho.
@@ -317,7 +317,7 @@ export default async function ProductPage({
                 {features.map((feature) => (
                   <div
                     key={feature}
-                    className="flex min-h-20 items-start gap-3 rounded-md border border-border bg-card/60 p-4"
+                    className="flex min-h-20 items-start gap-3 rounded-2xl border border-primary/20 bg-card/60 p-4"
                   >
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                     <p className="text-sm leading-6 text-muted-foreground">
@@ -328,7 +328,7 @@ export default async function ProductPage({
               </div>
             </div>
 
-            <div className="rounded-lg border border-border bg-card/55 p-5">
+            <div className="rounded-2xl border border-primary/20 bg-card/55 p-5">
               <div className="flex items-center gap-3">
                 <FileText className="h-5 w-5 text-primary" />
                 <h2 className="font-display text-2xl font-bold uppercase text-foreground">
@@ -344,7 +344,7 @@ export default async function ProductPage({
             </div>
           </div>
 
-          <aside className="rounded-lg border border-border bg-card/55 p-5">
+          <aside className="rounded-2xl border border-primary/20 bg-card/55 p-5">
             <h2 className="font-display text-2xl font-bold uppercase text-foreground">
               Requisitos
             </h2>
@@ -360,7 +360,7 @@ export default async function ProductPage({
         </section>
 
         {related.length > 0 && (
-          <section className="border-t border-border">
+          <section className="border-t border-primary/25">
             <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
               <h2 className="font-display text-2xl font-bold uppercase text-foreground">
                 Mais em {product.category}
@@ -370,7 +370,7 @@ export default async function ProductPage({
                   <Link
                     key={item.id}
                     href={`/produtos/${productToSlug(item)}`}
-                    className="rounded-md border border-border bg-card/70 px-4 py-3 font-display text-sm uppercase text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+                    className="rounded-full border border-primary/25 bg-card/70 px-4 py-3 font-display text-sm uppercase text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
                   >
                     {item.title}
                   </Link>

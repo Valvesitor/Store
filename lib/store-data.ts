@@ -71,8 +71,8 @@ export const storeProducts: StoreProduct[] = [
     price: "R$ 650,00",
     rating: 5,
     reviews: 36,
-    image: "/products/tws-identity-forge/logo-transparent.png",
-    imageMode: "contain",
+    image: "/products/tws-identity-forge/new-cover.png",
+    imageMode: "cover",
     badge: "Tebex",
     tebexUrl: "https://the-wanted-sole-studio-webstore.tebex.io/package/7457637",
     packageId: "7457637",
@@ -95,9 +95,9 @@ export const storeProducts: StoreProduct[] = [
       "Dependências listadas na documentação oficial",
     ],
     gallery: [
+      "/products/tws-identity-forge/new-cover.png",
+      "/products/tws-identity-forge/new-details.png",
       "/products/tws-identity-forge/logo-transparent.png",
-      "/products/crafting-system.png",
-      "/products/wanted-menu.png",
     ],
   },
   {

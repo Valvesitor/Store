@@ -63,14 +63,14 @@ export function ProductMediaCarousel({
   }
 
   return (
-    <div className="mt-8 overflow-hidden rounded-lg border border-primary/25 bg-[#0f0f10] shadow-2xl shadow-black/30">
+    <div className="mt-8 overflow-hidden rounded-2xl border border-primary/25 bg-[#eadcc5] shadow-xl shadow-primary/10">
       <div className="relative aspect-[16/9] min-h-[260px]">
         {current?.type === "video" ? (
           isDirectVideo(current.src) ? (
             <video
               key={current.src}
               src={current.src}
-              className="h-full w-full bg-black object-contain"
+              className="h-full w-full bg-[#eadcc5] object-contain"
               controls
               playsInline
             />
@@ -79,7 +79,7 @@ export function ProductMediaCarousel({
               key={current.src}
               src={youtubeEmbedUrl(current.src)}
               title={`${title} vídeo`}
-              className="h-full w-full border-0 bg-black"
+              className="h-full w-full border-0 bg-[#eadcc5]"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
             />
@@ -102,7 +102,7 @@ export function ProductMediaCarousel({
         )}
 
         {current?.type !== "video" && (
-          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#efe4d0]/90 via-transparent to-transparent" />
         )}
 
         {canSlide && (
@@ -110,7 +110,7 @@ export function ProductMediaCarousel({
             <Button
               type="button"
               size="icon"
-              className="absolute left-4 top-1/2 h-10 w-10 -translate-y-1/2 border border-primary/30 bg-background/80 text-foreground hover:bg-primary hover:text-primary-foreground"
+              className="absolute left-4 top-1/2 h-10 w-10 -translate-y-1/2 border border-primary/30 bg-card/85 text-foreground hover:bg-primary hover:text-primary-foreground"
               onClick={previous}
               aria-label="Mídia anterior"
             >
@@ -119,7 +119,7 @@ export function ProductMediaCarousel({
             <Button
               type="button"
               size="icon"
-              className="absolute right-4 top-1/2 h-10 w-10 -translate-y-1/2 border border-primary/30 bg-background/80 text-foreground hover:bg-primary hover:text-primary-foreground"
+              className="absolute right-4 top-1/2 h-10 w-10 -translate-y-1/2 border border-primary/30 bg-card/85 text-foreground hover:bg-primary hover:text-primary-foreground"
               onClick={next}
               aria-label="Próxima mídia"
             >
@@ -137,7 +137,7 @@ export function ProductMediaCarousel({
               {badge || "The Wanted Sole Studio"}
             </p>
           </div>
-          <div className="rounded border border-primary/30 bg-background/85 px-4 py-2 text-right">
+          <div className="rounded-full border border-primary/30 bg-card/85 px-4 py-2 text-right">
             <p className="font-display text-xs uppercase text-muted-foreground">Preço</p>
             <p className="font-display text-xl font-bold text-primary">{price}</p>
           </div>
@@ -145,22 +145,22 @@ export function ProductMediaCarousel({
       </div>
 
       {items.length > 1 && (
-        <div className="grid gap-3 border-t border-border bg-background/45 p-3 sm:grid-cols-4">
+        <div className="grid gap-3 border-t border-primary/25 bg-background/45 p-3 sm:grid-cols-4">
           {items.map((item, itemIndex) => (
             <button
               key={`${item.src}-${itemIndex}`}
               type="button"
               onClick={() => setIndex(itemIndex)}
               className={cn(
-                "overflow-hidden rounded-md border bg-[#0f0f10] text-left transition-colors",
+                "overflow-hidden rounded-xl border bg-[#eadcc5] text-left transition-colors",
                 itemIndex === index
                   ? "border-primary"
-                  : "border-border hover:border-primary/50",
+                  : "border-primary/25 hover:border-primary/50",
               )}
             >
               <div className="relative aspect-[5/3]">
                 {item.type === "video" ? (
-                  <div className="flex h-full items-center justify-center bg-black text-primary">
+                  <div className="flex h-full items-center justify-center bg-[#eadcc5] text-primary">
                     <Play className="h-7 w-7" />
                   </div>
                 ) : (

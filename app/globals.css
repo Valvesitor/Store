@@ -3,77 +3,75 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  --background: #0d0c0a;
-  --foreground: #f0eadf;
-  --card: #15120f;
-  --card-foreground: #f0eadf;
-  --popover: #15120f;
-  --popover-foreground: #f0eadf;
-  --primary: #d88a33;
-  --primary-foreground: #15100b;
-  --secondary: #221b13;
-  --secondary-foreground: #f0eadf;
-  --muted: #1b1712;
-  --muted-foreground: #b8ad9c;
-  --accent: #f0b15d;
-  --accent-foreground: #15100b;
-  --destructive: #c6533b;
-  --destructive-foreground: #fff7ea;
-  --border: rgba(216, 138, 51, 0.22);
-  --input: rgba(216, 138, 51, 0.16);
-  --ring: rgba(216, 138, 51, 0.48);
-  --chart-1: #d88a33;
-  --chart-2: #b96f29;
-  --chart-3: #e7b76a;
-  --chart-4: #efe3cf;
-  --chart-5: #4c3b28;
-  --radius: 0.75rem;
-  --sidebar: #15120f;
-  --sidebar-foreground: #f0eadf;
-  --sidebar-primary: #d88a33;
-  --sidebar-primary-foreground: #15100b;
-  --sidebar-accent: #221b13;
-  --sidebar-accent-foreground: #f0eadf;
-  --sidebar-border: rgba(216, 138, 51, 0.22);
-  --sidebar-ring: rgba(216, 138, 51, 0.48);
+ :root {
+  --background: #efe4d0;
+  --foreground: #241f18;
+  --card: rgba(255, 248, 235, 0.78);
+  --card-foreground: #241f18;
+  --popover: #fbf2df;
+  --popover-foreground: #241f18;
+  --primary: #bf6a13;
+  --primary-foreground: #fff8eb;
+  --secondary: rgba(47, 41, 33, 0.08);
+  --secondary-foreground: #2b241b;
+  --muted: rgba(104, 86, 62, 0.12);
+  --muted-foreground: #6f6252;
+  --accent: #c9781d;
+  --accent-foreground: #fff8eb;
+  --destructive: #a73624;
+  --destructive-foreground: #fff8eb;
+  --border: rgba(153, 104, 50, 0.34);
+  --input: rgba(153, 104, 50, 0.18);
+  --ring: rgba(191, 106, 19, 0.45);
+  --chart-1: #bf6a13;
+  --chart-2: #2a241b;
+  --chart-3: #d49a4a;
+  --chart-4: #a15a13;
+  --chart-5: #70523a;
+  --radius: 0.875rem;
+  --sidebar: #fbf2df;
+  --sidebar-foreground: #241f18;
+  --sidebar-primary: #bf6a13;
+  --sidebar-primary-foreground: #fff8eb;
+  --sidebar-accent: rgba(47, 41, 33, 0.08);
+  --sidebar-accent-foreground: #2b241b;
+  --sidebar-border: rgba(153, 104, 50, 0.34);
+  --sidebar-ring: rgba(191, 106, 19, 0.45);
 }
-
-.dark {
-  --background: #0d0c0a;
-  --foreground: #f0eadf;
-  --card: #15120f;
-  --card-foreground: #f0eadf;
-  --popover: #15120f;
-  --popover-foreground: #f0eadf;
-  --primary: #d88a33;
-  --primary-foreground: #15100b;
-  --secondary: #221b13;
-  --secondary-foreground: #f0eadf;
-  --muted: #1b1712;
-  --muted-foreground: #b8ad9c;
-  --accent: #f0b15d;
-  --accent-foreground: #15100b;
-  --destructive: #c6533b;
-  --destructive-foreground: #fff7ea;
-  --border: rgba(216, 138, 51, 0.22);
-  --input: rgba(216, 138, 51, 0.16);
-  --ring: rgba(216, 138, 51, 0.48);
-  --chart-1: #d88a33;
-  --chart-2: #b96f29;
-  --chart-3: #e7b76a;
-  --chart-4: #efe3cf;
-  --chart-5: #4c3b28;
-  --sidebar: #15120f;
-  --sidebar-foreground: #f0eadf;
-  --sidebar-primary: #d88a33;
-  --sidebar-primary-foreground: #15100b;
-  --sidebar-accent: #221b13;
-  --sidebar-accent-foreground: #f0eadf;
-  --sidebar-border: rgba(216, 138, 51, 0.22);
-  --sidebar-ring: rgba(216, 138, 51, 0.48);
+ .dark {
+  --background: #efe4d0;
+  --foreground: #241f18;
+  --card: rgba(255, 248, 235, 0.78);
+  --card-foreground: #241f18;
+  --popover: #fbf2df;
+  --popover-foreground: #241f18;
+  --primary: #bf6a13;
+  --primary-foreground: #fff8eb;
+  --secondary: rgba(47, 41, 33, 0.08);
+  --secondary-foreground: #2b241b;
+  --muted: rgba(104, 86, 62, 0.12);
+  --muted-foreground: #6f6252;
+  --accent: #c9781d;
+  --accent-foreground: #fff8eb;
+  --destructive: #a73624;
+  --destructive-foreground: #fff8eb;
+  --border: rgba(153, 104, 50, 0.34);
+  --input: rgba(153, 104, 50, 0.18);
+  --ring: rgba(191, 106, 19, 0.45);
+  --chart-1: #bf6a13;
+  --chart-2: #2a241b;
+  --chart-3: #d49a4a;
+  --chart-4: #a15a13;
+  --chart-5: #70523a;
+  --sidebar: #fbf2df;
+  --sidebar-foreground: #241f18;
+  --sidebar-primary: #bf6a13;
+  --sidebar-primary-foreground: #fff8eb;
+  --sidebar-accent: rgba(47, 41, 33, 0.08);
+  --sidebar-accent-foreground: #2b241b;
+  --sidebar-border: rgba(153, 104, 50, 0.34);
+  --sidebar-ring: rgba(191, 106, 19, 0.45);
 }
-
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-oswald), ui-sans-serif, system-ui, sans-serif;
@@ -123,34 +121,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    background:
-      radial-gradient(circle at 14% 6%, rgba(216, 138, 51, 0.13), transparent 32rem),
-      radial-gradient(circle at 86% 12%, rgba(240, 225, 197, 0.08), transparent 30rem),
-      linear-gradient(180deg, #0f0e0c 0%, #0a0908 44%, #11100e 100%);
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.24;
-    background-image:
-      linear-gradient(rgba(240, 234, 223, 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(240, 234, 223, 0.03) 1px, transparent 1px),
-      radial-gradient(circle at center, rgba(216, 138, 51, 0.06), transparent 52%);
-    background-size: 84px 84px, 84px 84px, 100% 100%;
-  }
-
-  ::selection {
-    background: rgba(216, 138, 51, 0.35);
-    color: #fff7ea;
-  }
-
-  body > * {
-    position: relative;
-    z-index: 1;
   }
 }
 
@@ -164,73 +134,53 @@
   .tech-grid {
     background-image: none;
   }
+}
 
+
+@layer base {
+  body {
+    background:
+      radial-gradient(circle at 18% 5%, rgba(191,106,19,0.12), transparent 30%),
+      radial-gradient(circle at 88% 12%, rgba(36,31,24,0.08), transparent 34%),
+      linear-gradient(180deg, #f3ead8 0%, #efe4d0 52%, #eadcc5 100%);
+    color: var(--foreground);
+  }
+}
+
+@layer utilities {
   .tws-paper {
     background:
-      radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.45), transparent 18rem),
-      linear-gradient(135deg, rgba(239, 229, 211, 0.98), rgba(198, 181, 153, 0.95));
-    color: #181411;
+      linear-gradient(135deg, rgba(255,248,235,0.92), rgba(238,224,198,0.72)),
+      radial-gradient(circle at 20% 0%, rgba(191,106,19,0.10), transparent 35%);
+    box-shadow: 0 20px 60px rgba(54, 43, 29, 0.10);
   }
-
-  .tws-paper-soft {
-    background:
-      radial-gradient(circle at 20% 0%, rgba(216, 138, 51, 0.12), transparent 24rem),
-      linear-gradient(180deg, rgba(239, 229, 211, 0.08), rgba(13, 12, 10, 0.96));
+  .tws-ink-border {
+    border-color: rgba(191,106,19,0.34);
   }
-
-  .tws-card {
-    background:
-      linear-gradient(180deg, rgba(27, 23, 18, 0.92), rgba(16, 14, 11, 0.96)),
-      radial-gradient(circle at top left, rgba(216, 138, 51, 0.12), transparent 20rem);
-    border-color: rgba(216, 138, 51, 0.24);
-    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.32);
-  }
-
-  .tws-frame {
-    border: 1px solid rgba(216, 138, 51, 0.42);
-    box-shadow:
-      0 24px 90px rgba(0, 0, 0, 0.42),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  }
-
-  .tws-corner-waves {
-    position: relative;
-    isolation: isolate;
-  }
-
-  .tws-corner-waves::before,
-  .tws-corner-waves::after {
+  .tws-corner-lines::before,
+  .tws-corner-lines::after {
     content: "";
     position: absolute;
-    z-index: -1;
-    width: 260px;
-    height: 90px;
-    border-radius: 999px;
-    background:
-      linear-gradient(#151412, #151412) padding-box,
-      linear-gradient(90deg, #d88a33, #f1e5d1, #d88a33) border-box;
-    border: 6px solid transparent;
-    opacity: 0.9;
-    filter: drop-shadow(0 18px 35px rgba(0, 0, 0, 0.35));
+    pointer-events: none;
+    z-index: 0;
+    width: 280px;
+    height: 120px;
+    background: url('/tws-mountains-banner.png') center/cover no-repeat;
+    opacity: 0.14;
+    filter: grayscale(1) sepia(0.28);
   }
-
-  .tws-corner-waves::before {
-    top: -34px;
-    left: -120px;
-    transform: rotate(-18deg);
+  .tws-corner-lines::before {
+    left: -52px;
+    top: -20px;
   }
-
-  .tws-corner-waves::after {
-    right: -120px;
-    bottom: -34px;
-    transform: rotate(-18deg);
+  .tws-corner-lines::after {
+    right: -52px;
+    bottom: -20px;
+    transform: rotate(180deg);
   }
-
-  .tws-banner-bg {
-    background-image:
-      linear-gradient(90deg, rgba(13, 12, 10, 0.94), rgba(13, 12, 10, 0.72), rgba(13, 12, 10, 0.94)),
-      url('/tws-studio-banner.gif');
-    background-position: center;
+  .tws-wave-top {
+    background-image: url('/tws-mountains-banner.png');
     background-size: cover;
+    background-position: center;
   }
 }

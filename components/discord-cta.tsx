@@ -6,15 +6,14 @@ import { DiscordIcon } from "@/components/icons"
 export function DiscordCta() {
   return (
     <section id="discord" className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="tws-corner-waves relative overflow-hidden rounded-[2rem] border border-primary/30">
+      <div className="relative overflow-hidden rounded-3xl border border-primary/30 bg-card/70 shadow-sm">
         <Image
-          src="/tws-studio-banner.gif"
+          src="/tws-mountains-banner.png"
           alt=""
           fill
-          className="object-cover object-center opacity-35"
-          unoptimized
+          className="object-cover object-center opacity-45"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/82 to-background/40" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(239,228,208,0.95)_0%,rgba(239,228,208,0.82)_52%,rgba(239,228,208,0.54)_100%)]" />
         <div className="relative flex flex-col items-start gap-6 p-8 sm:p-12 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-xl">
             <p className="font-display text-xs tracking-[0.3em] text-primary">
@@ -42,7 +41,7 @@ export function DiscordCta() {
             <Button
               size="lg"
               variant="outline"
-              className="h-12 rounded-full border-primary/30 bg-card/70 px-7 font-display text-sm tracking-widest text-foreground hover:bg-primary/10"
+              className="h-12 rounded-full border-primary/30 bg-card/70 px-7 font-display text-sm tracking-widest text-foreground hover:bg-card"
               asChild
             >
               <a href="#produtos">

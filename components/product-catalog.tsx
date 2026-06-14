@@ -103,29 +103,28 @@ export function ProductCatalog({
   return (
     <section
       id="produtos"
-      className="relative overflow-hidden border-b border-primary/20 bg-background"
+      className="relative overflow-hidden border-b border-primary/25 bg-background"
     >
       <div className="absolute inset-x-0 top-0 h-[520px]">
         <Image
-          src="/tws-studio-banner.gif"
-          alt="The Wanted Sole Studio banner"
+          src="/tws-mountains-banner.png"
+          alt="Paisagem do velho oeste ao por do sol"
           fill
           sizes="100vw"
-          className="object-cover object-center opacity-35"
+          className="object-cover opacity-70"
           priority
-          unoptimized
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/78 to-background/45" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/42 to-background/90" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(239,228,208,0.97)_0%,rgba(239,228,208,0.84)_52%,rgba(239,228,208,0.58)_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/90" />
       </div>
 
       <div className="relative mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-3 border-b border-primary/20 pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-3 border-b border-primary/25 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="font-display text-xs uppercase tracking-[0.28em] text-primary">
               Loja RedM
             </p>
-            <h1 className="mt-2 font-display text-4xl font-bold uppercase leading-none tracking-[0.05em] text-foreground sm:text-5xl">
+            <h1 className="mt-2 font-display text-4xl font-bold uppercase leading-none text-foreground sm:text-5xl">
               Produtos digitais
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
@@ -133,7 +132,7 @@ export function ProductCatalog({
               compra integrada pela Tebex.
             </p>
 
-            <div className="mt-4 flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-card/70 px-4 py-2 shadow-[0_14px_35px_rgba(0,0,0,0.2)] backdrop-blur">
+            <div className="mt-4 flex w-fit items-center gap-2 rounded-full border border-primary/25 bg-card/70 px-3 py-2">
               <Package className="h-4 w-4 text-primary" />
               <span className="font-display text-xs uppercase tracking-widest text-foreground">
                 {visibleProducts.length} produtos
@@ -151,16 +150,16 @@ export function ProductCatalog({
               onChange={(event) => setQuery(event.target.value)}
               type="search"
               placeholder="Buscar scripts, sistemas, recursos..."
-              className="h-12 rounded-full border-primary/25 bg-card/75 pl-10 pr-20 text-sm shadow-[0_14px_35px_rgba(0,0,0,0.18)] backdrop-blur"
+              className="h-12 rounded-full border-primary/25 bg-card/75 pl-10 pr-20 text-sm"
               aria-label="Buscar produtos"
             />
-            <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-full border border-primary/25 bg-background/80 px-2 py-1 font-display text-[0.65rem] uppercase text-muted-foreground sm:block">
+            <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-full border border-primary/25 bg-card px-2 py-1 font-display text-[0.65rem] uppercase text-muted-foreground sm:block">
               Ctrl+K
             </span>
           </div>
 
           <div className="flex gap-3">
-            <label className="relative flex h-12 items-center rounded-full border border-primary/25 bg-card/75 pl-10 pr-3 shadow-[0_14px_35px_rgba(0,0,0,0.18)] backdrop-blur">
+            <label className="relative flex h-12 items-center rounded-full border border-primary/25 bg-card/75 pl-10 pr-3">
               <SlidersHorizontal className="pointer-events-none absolute left-3 h-4 w-4 text-primary" />
               <span className="sr-only">Ordenar produtos</span>
               <select
@@ -177,7 +176,7 @@ export function ProductCatalog({
 
             <Button
               type="button"
-              className="h-12 rounded-full bg-primary px-5 font-display text-xs uppercase tracking-[0.18em] text-primary-foreground hover:bg-primary/90"
+              className="h-12 bg-primary px-5 font-display text-xs uppercase text-primary-foreground hover:bg-primary/90"
               onClick={() => setFiltersOpen((value) => !value)}
             >
               <Filter className="h-4 w-4" />
@@ -207,8 +206,8 @@ export function ProductCatalog({
                     }}
                     className={
                       active
-                        ? "flex h-11 items-center gap-2 rounded-full border border-primary bg-primary px-4 font-display text-xs uppercase tracking-[0.16em] text-primary-foreground transition-colors"
-                        : "flex h-11 items-center gap-2 rounded-full border border-primary/20 bg-card/70 px-4 font-display text-xs uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+                        ? "flex h-11 items-center gap-2 rounded-full border border-primary bg-primary px-4 font-display text-xs uppercase text-primary-foreground transition-colors"
+                        : "flex h-11 items-center gap-2 rounded-full border border-primary/25 bg-card/70 px-4 font-display text-xs uppercase text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
                     }
                   >
                     <Package className="h-4 w-4" />
@@ -231,7 +230,7 @@ export function ProductCatalog({
               ))}
             </div>
           ) : (
-            <div className="tws-card rounded-2xl border p-8 text-center">
+            <div className="rounded-2xl border border-primary/25 bg-card/70 p-8 text-center">
               <p className="font-display text-xl uppercase text-foreground">
                 Nenhum produto encontrado
               </p>

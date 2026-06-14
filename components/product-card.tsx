@@ -31,10 +31,10 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   const href = `/produtos/${productToSlug(product)}`
 
   return (
-    <article className="group tws-card flex min-h-full flex-col overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-primary/55">
+    <article className="group flex min-h-full flex-col overflow-hidden rounded-2xl border border-primary/25 bg-card/75 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-primary/55 hover:shadow-lg">
       <Link
         href={href}
-        className="relative block aspect-[4/3] overflow-hidden bg-[#0f0f10]"
+        className="relative block aspect-[4/3] overflow-hidden bg-[#eadcc5]"
       >
         <Image
           src={product.image || "/placeholder.svg"}
@@ -48,19 +48,19 @@ export function ProductCard({ product }: { product: StoreProduct }) {
               : "object-cover",
           )}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#15120f] via-[#15120f]/35 to-transparent" />
-        <span className="absolute left-3 top-3 rounded-full border border-primary/35 bg-[#11100e]/85 px-3 py-1 font-display text-[0.65rem] uppercase tracking-[0.18em] text-primary backdrop-blur">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#fff8eb] via-[#fff8eb]/20 to-transparent" />
+        <span className="absolute left-3 top-3 rounded-full border border-primary/30 bg-[#fff8eb]/90 px-3 py-1 font-display text-[0.65rem] text-primary shadow-sm">
           {product.badge || product.category}
         </span>
       </Link>
 
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>
-          <p className="font-display text-[0.65rem] uppercase tracking-[0.22em] text-primary/85">
+          <p className="font-display text-[0.65rem] text-muted-foreground">
             {product.category}
           </p>
           <Link href={href}>
-            <h3 className="mt-1 font-display text-lg font-semibold uppercase tracking-[0.06em] text-foreground transition-colors hover:text-primary">
+            <h3 className="mt-1 font-display text-base font-semibold text-foreground transition-colors hover:text-primary">
               {product.title}
             </h3>
           </Link>
