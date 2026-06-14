@@ -6,14 +6,15 @@ import { DiscordIcon } from "@/components/icons"
 export function DiscordCta() {
   return (
     <section id="discord" className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="relative overflow-hidden rounded-xl border border-primary/30">
+      <div className="tws-corner-waves relative overflow-hidden rounded-[2rem] border border-primary/30">
         <Image
-          src="/discord-bg.png"
+          src="/tws-studio-banner.gif"
           alt=""
           fill
-          className="object-cover object-center opacity-30"
+          className="object-cover object-center opacity-35"
+          unoptimized
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/82 to-background/40" />
         <div className="relative flex flex-col items-start gap-6 p-8 sm:p-12 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-xl">
             <p className="font-display text-xs tracking-[0.3em] text-primary">
@@ -30,7 +31,7 @@ export function DiscordCta() {
           <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
             <Button
               size="lg"
-              className="h-12 bg-primary px-7 font-display text-sm tracking-widest text-primary-foreground hover:bg-primary/90"
+              className="h-12 rounded-full bg-primary px-7 font-display text-sm tracking-widest text-primary-foreground hover:bg-primary/90"
               asChild
             >
               <a href="https://discord.gg/qE29trG84u">
@@ -41,7 +42,7 @@ export function DiscordCta() {
             <Button
               size="lg"
               variant="outline"
-              className="h-12 border-border bg-card/70 px-7 font-display text-sm tracking-widest text-foreground hover:bg-card"
+              className="h-12 rounded-full border-primary/30 bg-card/70 px-7 font-display text-sm tracking-widest text-foreground hover:bg-primary/10"
               asChild
             >
               <a href="#produtos">

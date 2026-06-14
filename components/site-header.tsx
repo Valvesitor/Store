@@ -15,10 +15,11 @@ import {
 import { cn } from "@/lib/utils"
 
 const navLinks = [
-  { label: "INICIO", href: "/" },
+  { label: "INÍCIO", href: "/" },
   { label: "LOJA", href: "/loja" },
+  { label: "CATEGORIAS", href: "/#categorias" },
   { label: "SUPORTE", href: "/suporte" },
-  { label: "SOBRE NOS", href: "/about" },
+  { label: "SOBRE NÓS", href: "/about" },
 ]
 
 export function SiteHeader() {
@@ -78,8 +79,9 @@ export function SiteHeader() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-primary/20 bg-[#11100e]/95 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur supports-[backdrop-filter]:bg-[#11100e]/82">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
+      <div className="mx-auto flex h-[68px] w-full max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/" aria-label="The Wanted Sole Studio - Inicio">
           <Logo className="md:hidden" compact />
           <Logo className="hidden md:flex" />
@@ -90,7 +92,7 @@ export function SiteHeader() {
             <Link
               key={link.label}
               href={link.href}
-              className="rounded-md px-3 py-2 font-display text-sm tracking-widest text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-full px-3 py-2 font-display text-xs tracking-[0.24em] text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
             >
               {link.label}
             </Link>
@@ -103,7 +105,7 @@ export function SiteHeader() {
             <Input
               type="search"
               placeholder="Buscar produtos..."
-              className="h-9 w-44 border-border bg-secondary/60 pl-9 text-sm lg:w-56"
+              className="h-9 w-44 rounded-full border-primary/20 bg-[#17130f]/80 pl-9 text-sm text-foreground placeholder:text-muted-foreground/80 lg:w-56"
               aria-label="Buscar produtos"
             />
           </div>
@@ -112,8 +114,8 @@ export function SiteHeader() {
             className={cn(
               "h-9 text-muted-foreground hover:text-foreground",
               accountName
-                ? "max-w-44 gap-2 border border-primary/25 bg-primary/10 px-2.5 text-foreground hover:border-primary/50 hover:bg-primary/15"
-                : "w-9 px-0",
+                ? "max-w-44 gap-2 rounded-full border border-primary/30 bg-primary/10 px-2.5 text-foreground hover:border-primary/60 hover:bg-primary/15"
+                : "w-9 rounded-full px-0",
             )}
             aria-label={accountName ? `Minha conta: ${accountName}` : "Minha conta"}
             asChild
@@ -130,7 +132,7 @@ export function SiteHeader() {
           <Button
             variant="ghost"
             size="icon"
-            className="relative text-muted-foreground hover:text-foreground"
+            className="relative rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary"
             aria-label="Carrinho Tebex"
             asChild
           >
@@ -144,7 +146,7 @@ export function SiteHeader() {
           <Button
             variant="ghost"
             size="icon"
-            className="text-muted-foreground hover:text-foreground lg:hidden"
+            className="rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary lg:hidden"
             aria-label={open ? "Fechar menu" : "Abrir menu"}
             onClick={() => setOpen((value) => !value)}
           >
@@ -154,14 +156,14 @@ export function SiteHeader() {
       </div>
 
       {open && (
-        <div className="border-t border-border bg-background lg:hidden">
+        <div className="border-t border-primary/20 bg-[#11100e]/98 lg:hidden">
           <nav className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-4 py-3 sm:px-6">
             {navLinks.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="rounded-md px-3 py-2.5 font-display text-sm tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                className="rounded-md px-3 py-2.5 font-display text-sm tracking-widest text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
               >
                 {link.label}
               </Link>
@@ -169,14 +171,14 @@ export function SiteHeader() {
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="rounded-md px-3 py-2.5 font-display text-sm tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="rounded-md px-3 py-2.5 font-display text-sm tracking-widest text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
             >
               {accountName ? `CONTA: ${accountName}` : "LOGIN"}
             </Link>
             <Link
               href="/carrinho"
               onClick={() => setOpen(false)}
-              className="rounded-md px-3 py-2.5 font-display text-sm tracking-widest text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="rounded-md px-3 py-2.5 font-display text-sm tracking-widest text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
             >
               CARRINHO
             </Link>
@@ -185,7 +187,7 @@ export function SiteHeader() {
               <Input
                 type="search"
                 placeholder="Buscar produtos..."
-                className="h-10 w-full border-border bg-secondary/60 pl-9 text-sm"
+                className="h-10 w-full rounded-full border-primary/20 bg-[#17130f]/80 pl-9 text-sm"
                 aria-label="Buscar produtos"
               />
             </div>

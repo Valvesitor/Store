@@ -3,31 +3,38 @@ import { cn } from "@/lib/utils"
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 120 44"
+      viewBox="0 0 128 48"
       className={cn("h-9 w-auto", className)}
       aria-hidden="true"
       fill="none"
     >
-      {/* dark lens / sole shape */}
       <path
-        d="M6 22C6 22 28 8 60 8C92 8 114 22 114 22C114 22 92 36 60 36C28 36 6 22 6 22Z"
-        fill="#161410"
-        stroke="rgba(224,138,44,0.25)"
-        strokeWidth="1"
-      />
-      {/* orange swoosh */}
-      <path
-        d="M14 25C14 25 34 16 60 16C86 16 104 22 104 22"
-        stroke="#e08a2c"
-        strokeWidth="2.4"
+        d="M14 28C27 13 43 12 59 24C73 34 88 35 114 18"
+        stroke="#151412"
+        strokeWidth="13"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
-        d="M20 19C20 19 38 27 62 27C86 27 100 21 100 21"
-        stroke="#f0ece0"
-        strokeWidth="1.4"
+        d="M14 28C27 13 43 12 59 24C73 34 88 35 114 18"
+        stroke="#f3eadb"
+        strokeWidth="5.5"
         strokeLinecap="round"
-        opacity="0.55"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M15 30C29 17 44 16 59 27C74 37 91 34 114 20"
+        stroke="#d88a33"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 21C28 7 45 8 62 20C78 31 94 29 116 15"
+        stroke="#151412"
+        strokeWidth="7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   )
@@ -45,12 +52,12 @@ export function Logo({
       <LogoMark />
       {!compact && (
         <>
-          <span className="hidden h-7 w-px bg-border sm:block" />
+          <span className="hidden h-8 w-px bg-primary/35 sm:block" />
           <div className="leading-none">
-            <p className="font-display text-base font-semibold tracking-[0.18em] text-foreground">
+            <p className="font-display text-base font-semibold tracking-[0.22em] text-foreground">
               THE WANTED SOLE
             </p>
-            <p className="font-display text-[0.6rem] tracking-[0.55em] text-muted-foreground">
+            <p className="mt-1 font-display text-[0.6rem] tracking-[0.65em] text-primary">
               STUDIO
             </p>
           </div>

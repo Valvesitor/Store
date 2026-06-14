@@ -23,14 +23,15 @@ export async function HomeCategories() {
   )
 
   return (
-    <section id="categorias" className="bg-background">
-      <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+    <section id="categorias" className="relative overflow-hidden border-b border-primary/15 bg-background">
+      <div className="absolute inset-0 tws-banner-bg opacity-10" />
+      <div className="relative mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="font-display text-xs uppercase tracking-[0.28em] text-primary">
               Categorias
             </p>
-            <h2 className="mt-2 font-display text-2xl font-bold uppercase text-foreground sm:text-3xl">
+            <h2 className="mt-2 font-display text-2xl font-bold uppercase tracking-[0.04em] text-foreground sm:text-3xl">
               Escolha por tipo de recurso
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
@@ -51,7 +52,7 @@ export async function HomeCategories() {
               <Link
                 key={category}
                 href={`/loja?categoria=${encodeURIComponent(category)}`}
-                className="group relative min-h-40 overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/50"
+                className="group tws-card relative min-h-40 overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-primary/55"
               >
                 <Image
                   src={categoryImages[category]}
@@ -60,9 +61,9 @@ export async function HomeCategories() {
                   sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                   className="object-cover opacity-45 transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-card/20" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#15120f] via-[#15120f]/85 to-[#15120f]/25" />
                 <div className="relative flex min-h-40 flex-col justify-end p-4">
-                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-md border border-primary/30 bg-primary/10 text-primary">
+                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary">
                     <Package className="h-4 w-4" />
                   </span>
                   <p className="font-display text-[0.65rem] uppercase text-primary">
@@ -71,7 +72,7 @@ export async function HomeCategories() {
                   <h3 className="mt-1 font-display text-lg font-bold uppercase leading-tight text-foreground">
                     {category}
                   </h3>
-                  <span className="mt-3 inline-flex items-center gap-2 font-display text-xs uppercase text-muted-foreground transition-colors group-hover:text-primary">
+                  <span className="mt-3 inline-flex items-center gap-2 font-display text-xs uppercase tracking-[0.18em] text-muted-foreground transition-colors group-hover:text-primary">
                     Ver na loja
                     <ArrowRight className="h-3.5 w-3.5" />
                   </span>
