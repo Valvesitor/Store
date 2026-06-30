@@ -1,12 +1,11 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, Sparkles } from "lucide-react"
-import { DiscordIcon } from "@/components/icons"
+import { ArrowRight, BookOpen, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const highlights = [
-  { label: "Scripts", value: "Premium" },
-  { label: "Custom Peds", value: "Exclusivos" },
+  { label: "Novidades", value: "Sempre" },
+  { label: "Documentação", value: "Completa" },
   { label: "Suporte", value: "Discord" },
 ]
 
@@ -33,7 +32,7 @@ export function Hero() {
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/35 bg-card/70 px-4 py-1.5 text-primary shadow-sm backdrop-blur">
             <Sparkles className="h-4 w-4" />
             <span className="font-display text-xs uppercase tracking-widest">
-              Scripts & Custom Peds para RedM
+              Novidades · Docs · Atualizações
             </span>
           </div>
 
@@ -45,9 +44,9 @@ export function Hero() {
           <div className="mt-5 h-px w-full max-w-xl bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
 
           <p className="mt-6 max-w-2xl text-pretty text-lg leading-8 text-muted-foreground sm:text-xl">
-            Conteúdo premium para servidores RedM: scripts exclusivos, custom
-            peds e sistemas criados para performance, originalidade e identidade
-            própria.
+            O espaço oficial do estúdio: novidades em primeira mão,
+            documentação para tirar dúvidas e o histórico de tudo o que muda
+            a cada versão.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -56,8 +55,8 @@ export function Hero() {
               className="h-12 rounded-full bg-primary px-7 font-display text-sm uppercase text-primary-foreground shadow-md hover:bg-primary/90"
               asChild
             >
-              <Link href="/loja">
-                Ver produtos
+              <Link href="/novidades">
+                Ver novidades
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -67,9 +66,9 @@ export function Hero() {
               className="h-12 rounded-full border-primary/35 bg-card/80 px-7 font-display text-sm uppercase text-foreground shadow-sm hover:border-primary/60 hover:bg-card"
               asChild
             >
-              <Link href="https://discord.gg/qE29trG84u">
-                <DiscordIcon className="h-5 w-5" />
-                Join Discord
+              <Link href="/docs">
+                <BookOpen className="h-5 w-5" />
+                Documentação
               </Link>
             </Button>
           </div>

@@ -3,8 +3,8 @@ import {
   ArrowRight,
   FileText,
   Headphones,
+  Newspaper,
   RefreshCw,
-  ShieldCheck,
 } from "lucide-react"
 import { DiscordIcon } from "@/components/icons"
 import { PageIntro } from "@/components/page-intro"
@@ -27,37 +27,37 @@ const supportCards = [
   {
     icon: RefreshCw,
     title: "Atualizações",
-    desc: "Produtos revisados para manter estabilidade e compatibilidade.",
+    desc: "Histórico de versões, melhorias e correções do site.",
     href: "/atualizacoes",
   },
   {
-    icon: ShieldCheck,
-    title: "Compra segura",
-    desc: "Pedidos protegidos e recursos entregues com acompanhamento.",
-    href: "/loja",
+    icon: Newspaper,
+    title: "Novidades",
+    desc: "Anúncios, lançamentos e bastidores do estúdio.",
+    href: "/novidades",
   },
 ]
 
 const faqs = [
   {
-    question: "Os produtos são para RedM?",
+    question: "Onde vejo as novidades?",
     answer:
-      "Sim. Os scripts, systems, peds e recursos são pensados para servidores RedM.",
+      "Na seção Novidades ficam os anúncios e lançamentos. As mudanças técnicas ficam em Atualizações.",
   },
   {
-    question: "Recebo suporte depois da compra?",
+    question: "Como tiro dúvidas sobre algo?",
     answer:
-      "Sim. O suporte é feito pelo Discord oficial para dúvidas, instalação e atualizações.",
+      "Consulte a Documentação para guias e instruções. Se precisar de ajuda, fale com a equipe no Discord oficial.",
   },
   {
-    question: "Posso pedir um projeto customizado?",
+    question: "Posso falar diretamente com a equipe?",
     answer:
-      "Sim. Projetos personalizados podem ser alinhados diretamente com a equipe pelo Discord.",
+      "Sim. O Discord oficial é o canal direto para dúvidas, sugestões e contato com o estúdio.",
   },
   {
-    question: "Os scripts recebem atualizações?",
+    question: "Com que frequência o conteúdo é atualizado?",
     answer:
-      "Sim. Produtos premium podem receber correções, melhorias e ajustes de compatibilidade.",
+      "Sempre que há algo novo. Acompanhe Novidades e Atualizações, ou ative os avisos pelo Discord.",
   },
 ]
 

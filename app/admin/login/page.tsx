@@ -71,9 +71,9 @@ export default async function AdminLoginPage({
               className="mb-8 h-10 w-fit border-primary/30 bg-card/70 font-display text-xs uppercase text-foreground hover:border-primary/60"
               asChild
             >
-              <Link href="/login">
+              <Link href="/">
                 <ArrowLeft className="h-4 w-4" />
-                Voltar
+                Voltar ao site
               </Link>
             </Button>
 
@@ -84,8 +84,8 @@ export default async function AdminLoginPage({
               Admin
             </h1>
             <p className="mt-4 max-w-md text-sm leading-7 text-muted-foreground">
-              Entrada reservada para gerenciar catalogo, produtos, Tebex e
-              pedidos da loja.
+              Entrada reservada para gerenciar o conteúdo do blog: novidades,
+              documentação e atualizações.
             </p>
           </div>
 

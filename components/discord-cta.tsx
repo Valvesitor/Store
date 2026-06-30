@@ -44,8 +44,8 @@ export function DiscordCta() {
               className="h-12 rounded-full border-primary/30 bg-card/70 px-7 font-display text-sm tracking-widest text-foreground hover:bg-card"
               asChild
             >
-              <a href="#produtos">
-                VISITE A LOJA
+              <a href="/novidades">
+                VER NOVIDADES
                 <ArrowRight className="h-4 w-4" />
               </a>
             </Button>

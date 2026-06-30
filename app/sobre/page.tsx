@@ -7,23 +7,23 @@ import { SiteHeader } from "@/components/site-header"
 const pillars = [
   {
     icon: Sparkles,
-    title: "Exclusividade total",
-    desc: "Nada genérico. Cada produto nasce para servidores que querem se destacar.",
+    title: "Conteúdo original",
+    desc: "Nada genérico. Cada projeto nasce com identidade e personalidade próprias.",
   },
   {
     icon: ShieldCheck,
     title: "Qualidade garantida",
-    desc: "Produtos testados, organizados e desenvolvidos com foco em estabilidade.",
+    desc: "Trabalho testado, organizado e desenvolvido com foco em estabilidade.",
   },
   {
     icon: Headphones,
     title: "Suporte real",
-    desc: "Atendimento para dúvidas, instalação, atualizações e acompanhamento.",
+    desc: "Atendimento para dúvidas, instruções, atualizações e acompanhamento.",
   },
   {
     icon: Award,
     title: "Identidade premium",
-    desc: "Design, sistemas e recursos para dar personalidade única ao servidor.",
+    desc: "Design, sistemas e recursos para dar personalidade única a cada projeto.",
   },
 ]
 
@@ -34,8 +34,8 @@ export default function AboutPage() {
       <main className="flex-1">
         <PageIntro
           eyebrow="Sobre nós"
-          title="O estúdio por trás de conteúdo premium para RedM"
-          description="A The Wanted Sole Studio cria scripts, custom peds, systems e recursos visuais para servidores que precisam de performance, originalidade e identidade própria."
+          title="O estúdio por trás do The Wanted Sole Studio"
+          description="A The Wanted Sole Studio cria projetos digitais com identidade própria. Este blog reúne as novidades, a documentação e o histórico de atualizações do estúdio."
         />
 
         <section className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-12 lg:px-8">
@@ -50,10 +50,10 @@ export default function AboutPage() {
             <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
             <div className="absolute bottom-0 left-0 p-6">
               <p className="font-display text-sm uppercase text-primary">
-                RedM · Scripts & Custom Peds
+                Estilo · Identidade · Tecnologia
               </p>
               <h2 className="mt-2 font-display text-3xl font-bold uppercase text-foreground">
-                Feito para servidores com identidade
+                Feito com identidade própria
               </h2>
             </div>
           </div>
@@ -85,17 +85,17 @@ export default function AboutPage() {
           <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-12 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
             <div>
               <p className="font-display text-xs uppercase text-primary">
-                Official Store
+                Blog oficial
               </p>
               <h2 className="mt-2 font-display text-3xl font-bold uppercase text-foreground">
-                Tudo para elevar sua comunidade RedM
+                Acompanhe tudo em um só lugar
               </h2>
             </div>
             <div className="flex items-center gap-4 text-muted-foreground">
               <Box className="h-8 w-8 text-primary" />
               <p className="max-w-md text-sm leading-relaxed">
-                Scripts, sistemas, peds e add-ons pensados para performance,
-                estilo e manutenção simples.
+                Novidades, documentação e atualizações reunidas com clareza,
+                estilo e organização.
               </p>
             </div>
           </div>

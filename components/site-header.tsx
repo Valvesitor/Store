@@ -1,81 +1,25 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState } from "react"
-import { Menu, Search, ShoppingCart, User, X } from "lucide-react"
+import { useState } from "react"
+import { Menu, X } from "lucide-react"
+import { DiscordIcon } from "@/components/icons"
 import { Logo } from "@/components/logo"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { getBasketUsername } from "@/lib/tebex-account"
-import {
-  fetchTebexBasket,
-  getStoredTebexBasket,
-  getStoredTebexCartCount,
-} from "@/lib/tebex-client"
-import { cn } from "@/lib/utils"
 
 const navLinks = [
   { label: "INICIO", href: "/" },
-  { label: "LOJA", href: "/loja" },
+  { label: "NOVIDADES", href: "/novidades" },
+  { label: "DOCS", href: "/docs" },
+  { label: "ATUALIZAÇÕES", href: "/atualizacoes" },
   { label: "SUPORTE", href: "/suporte" },
-  { label: "SOBRE NOS", href: "/about" },
+  { label: "SOBRE", href: "/sobre" },
 ]
+
+const discordUrl = "https://discord.gg/qE29trG84u"
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
-  const [cartCount, setCartCount] = useState(0)
-  const [accountName, setAccountName] = useState<string>()
-
-  useEffect(() => {
-    function syncCartCount() {
-      setCartCount(getStoredTebexCartCount())
-    }
-
-    syncCartCount()
-    window.addEventListener("tws:tebex-cart-changed", syncCartCount)
-    window.addEventListener("storage", syncCartCount)
-
-    return () => {
-      window.removeEventListener("tws:tebex-cart-changed", syncCartCount)
-      window.removeEventListener("storage", syncCartCount)
-    }
-  }, [])
-
-  useEffect(() => {
-    let active = true
-
-    async function syncAccountName() {
-      const basketIdent = getStoredTebexBasket()
-
-      if (!basketIdent) {
-        setAccountName(undefined)
-        return
-      }
-
-      try {
-        const basket = await fetchTebexBasket(basketIdent)
-        const username = getBasketUsername(basket)
-
-        if (active) {
-          setAccountName(username)
-        }
-      } catch {
-        if (active) {
-          setAccountName(undefined)
-        }
-      }
-    }
-
-    syncAccountName()
-    window.addEventListener("tws:tebex-session-changed", syncAccountName)
-    window.addEventListener("storage", syncAccountName)
-
-    return () => {
-      active = false
-      window.removeEventListener("tws:tebex-session-changed", syncAccountName)
-      window.removeEventListener("storage", syncAccountName)
-    }
-  }, [])
 
   return (
     <header className="sticky top-0 z-50 border-b border-primary/25 bg-[#f3ead8]/85 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-[#f3ead8]/75">
@@ -98,47 +42,13 @@ export function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <div className="relative hidden md:block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Buscar produtos..."
-              className="h-9 w-44 rounded-full border-primary/25 bg-card/70 pl-9 text-sm shadow-sm lg:w-56"
-              aria-label="Buscar produtos"
-            />
-          </div>
           <Button
-            variant="ghost"
-            className={cn(
-              "h-9 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-foreground",
-              accountName
-                ? "max-w-44 gap-2 border border-primary/25 bg-primary/10 px-2.5 text-foreground hover:border-primary/50 hover:bg-primary/15"
-                : "w-9 rounded-full px-0",
-            )}
-            aria-label={accountName ? `Minha conta: ${accountName}` : "Minha conta"}
+            className="hidden h-9 rounded-full bg-primary px-4 font-display text-xs uppercase tracking-widest text-primary-foreground hover:bg-primary/90 sm:inline-flex"
             asChild
           >
-            <Link href="/login">
-              <User className="h-5 w-5 shrink-0" />
-              {accountName && (
-                <span className="hidden max-w-28 truncate font-display text-xs uppercase tracking-widest sm:inline">
-                  {accountName}
-                </span>
-              )}
-            </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative rounded-full text-muted-foreground hover:bg-primary/10 hover:text-foreground"
-            aria-label="Carrinho Tebex"
-            asChild
-          >
-            <Link href="/carrinho">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[0.6rem] font-bold text-primary-foreground">
-                {cartCount}
-              </span>
+            <Link href={discordUrl}>
+              <DiscordIcon className="h-4 w-4" />
+              Discord
             </Link>
           </Button>
           <Button
@@ -167,28 +77,13 @@ export function SiteHeader() {
               </Link>
             ))}
             <Link
-              href="/login"
+              href={discordUrl}
               onClick={() => setOpen(false)}
-              className="rounded-xl px-3 py-2.5 font-display text-sm tracking-widest text-muted-foreground transition-colors hover:bg-primary/10 hover:text-foreground"
+              className="mt-1 flex items-center gap-2 rounded-xl bg-primary px-3 py-2.5 font-display text-sm tracking-widest text-primary-foreground"
             >
-              {accountName ? `CONTA: ${accountName}` : "LOGIN"}
+              <DiscordIcon className="h-4 w-4" />
+              DISCORD
             </Link>
-            <Link
-              href="/carrinho"
-              onClick={() => setOpen(false)}
-              className="rounded-xl px-3 py-2.5 font-display text-sm tracking-widest text-muted-foreground transition-colors hover:bg-primary/10 hover:text-foreground"
-            >
-              CARRINHO
-            </Link>
-            <div className="relative mt-2">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Buscar produtos..."
-                className="h-10 w-full rounded-full border-primary/25 bg-card/70 pl-9 text-sm"
-                aria-label="Buscar produtos"
-              />
-            </div>
           </nav>
         </div>
       )}

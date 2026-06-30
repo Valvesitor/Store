@@ -1,32 +1,29 @@
 import {
+  BookOpen,
   Globe,
   Headphones,
   Instagram,
-  PackageCheck,
-  ShieldCheck,
+  Newspaper,
+  RefreshCw,
   Youtube,
 } from "lucide-react"
 import Link from "next/link"
 import { DiscordIcon } from "@/components/icons"
 import { Logo } from "@/components/logo"
-import { studioLinks, tebexLegalLinks } from "@/lib/legal-content"
+import { studioLinks } from "@/lib/legal-content"
 
 const mainLinks = [
   { label: "Inicio", href: "/" },
-  { label: "Loja", href: "/loja" },
+  { label: "Novidades", href: "/novidades" },
+  { label: "Docs", href: "/docs" },
+  { label: "Atualizações", href: "/atualizacoes" },
   { label: "Suporte", href: "/suporte" },
-  { label: "About", href: studioLinks.about },
 ]
 
 const studioLegalLinks = [
+  { label: "About", href: studioLinks.about },
   { label: "Terms", href: studioLinks.terms },
   { label: "Privacy Policy", href: studioLinks.privacy },
-]
-
-const tebexLinks = [
-  { label: "Impressum", href: tebexLegalLinks.impressum },
-  { label: "Tebex Terms", href: tebexLegalLinks.terms },
-  { label: "Tebex Privacy", href: tebexLegalLinks.privacy },
 ]
 
 const socials = [
@@ -38,14 +35,14 @@ const socials = [
 
 const highlights = [
   {
-    icon: PackageCheck,
-    title: "Entrega digital",
-    text: "Produtos vinculados a Tebex",
+    icon: Newspaper,
+    title: "Novidades",
+    text: "Anúncios e lançamentos",
   },
   {
-    icon: ShieldCheck,
-    title: "Compra segura",
-    text: "Checkout protegido",
+    icon: BookOpen,
+    title: "Documentação",
+    text: "Guias e instruções",
   },
   {
     icon: Headphones,
@@ -53,8 +50,6 @@ const highlights = [
     text: "Atendimento via Discord",
   },
 ]
-
-const payments = ["VISA", "MASTERCARD", "PIX", "BOLETO"]
 
 export function SiteFooter() {
   return (
@@ -64,8 +59,8 @@ export function SiteFooter() {
           <div>
             <Logo />
             <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
-              Scripts exclusivos, custom peds e sistemas premium para
-              servidores RedM. Qualidade, originalidade e identidade propria.
+              O blog oficial do The Wanted Sole Studio: novidades, documentação
+              e atualizações com identidade, estilo e tecnologia.
             </p>
 
             <div className="mt-5 flex gap-2">
@@ -124,36 +119,16 @@ export function SiteFooter() {
             </nav>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 text-center lg:justify-self-end">
-            <div className="flex flex-col items-center">
+          <div className="lg:justify-self-end">
+            <div className="flex flex-col">
               <p className="font-display text-xs uppercase tracking-[0.25em] text-foreground">
                 Studio
               </p>
               <nav
                 aria-label="Links legais do Studio"
-                className="mt-3 flex flex-col items-center gap-2"
+                className="mt-3 flex flex-col gap-2"
               >
                 {studioLegalLinks.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className="text-xs text-muted-foreground transition-colors hover:text-primary"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-
-            <div className="flex flex-col items-center">
-              <p className="font-display text-xs uppercase tracking-[0.25em] text-foreground">
-                Tebex
-              </p>
-              <nav
-                aria-label="Links legais da Tebex"
-                className="mt-3 flex flex-col items-center gap-2"
-              >
-                {tebexLinks.map((link) => (
                   <Link
                     key={link.label}
                     href={link.href}
@@ -166,7 +141,7 @@ export function SiteFooter() {
 
               <Link
                 href="https://discord.gg/qE29trG84u"
-                className="mt-5 inline-flex h-9 items-center justify-center gap-2 rounded-full border border-primary/30 bg-card/70 px-3 font-display text-xs uppercase tracking-widest text-foreground transition-colors hover:border-primary/60 hover:text-primary"
+                className="mt-5 inline-flex h-9 w-fit items-center justify-center gap-2 rounded-full border border-primary/30 bg-card/70 px-3 font-display text-xs uppercase tracking-widest text-foreground transition-colors hover:border-primary/60 hover:text-primary"
               >
                 Discord
                 <DiscordIcon className="h-4 w-4" />
@@ -182,20 +157,14 @@ export function SiteFooter() {
             &copy; {new Date().getFullYear()} The Wanted Sole Studio. Todos os
             direitos reservados.
           </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs text-muted-foreground">
-              Formas de pagamento
-            </span>
-            <div className="flex gap-2">
-              {payments.map((payment) => (
-                <span
-                  key={payment}
-                  className="rounded-full border border-primary/25 bg-card/70 px-2 py-1 font-display text-[0.6rem] tracking-widest text-muted-foreground"
-                >
-                  {payment}
-                </span>
-              ))}
-            </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/atualizacoes"
+              className="inline-flex items-center gap-2 font-display text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Atualizações
+            </Link>
           </div>
         </div>
       </div>
